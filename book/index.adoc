@@ -1,0 +1,20 @@
+ifndef::sourcedir[:sourcedir: ../source]
+
+= JAVA Developer Notes
+Kovteba Dima <kovteba@gmail.com>
+v1.0, 2012-02-10
+:doctype: book
+:icons: font
+:toc: left
+:toclevels: 10
+:sectlinks:
+:partnums:
+:sectnums:
+
+include::english.adoc[]
+
+'''
+
+Introduced in different languages:
+
+- link:ukrainian.html[Ukrainian]

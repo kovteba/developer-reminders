@@ -1,0 +1,11 @@
+ifndef::sourcedir[:sourcedir: ../source]
+
+:doctype: book
+:icons: font
+:toc: left
+:toclevels: 10
+:sectlinks:
+:partnums:
+:sectnums:
+
+== JAVA core
