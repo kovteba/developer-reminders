@@ -1,0 +1,454 @@
+ifndef::imagesdir[:imagesdir: ../../imgs/docker/]
+
+[#docker-container]
+=== Docker Container
+
+image::docker-container.jpg[Docker Container, align="center"]
+
+[[docker-container-definition]]**Docker Container** — це ізольований userspace-процесс або звичайний linux процесс запущений з використанням kernel features для ізоляції та обмеження ресурсів, яке дозволяє запускати додатки та сервіси в контейнеризованому вигляді. Працює поверх ядра Linux (або через WSL2 на Windows) та створюється на основі Docker-образа з використанням <<docker-containerd,containerd>> як high-level контейнерного runtime і <<docker-runc,runc>> як low-level OCI-сумісного runtime для запуску процесів контейнера. Контейнери використовують спільне ядро операційної системи, але мають власні файлові системи, мережеві інтерфейси та процеси. Це дозволяє запускати додатки в ізоляції від інших процесів на хості, забезпечуючи легкість, швидкість та портативність. [[docker-container-process-isolation]]Контейнер реалізує ізоляцію процесів, файлової системи, мережі, користувачів та ресурсів через kernel-примітиви: <<linux-namespaces,namespaces>>, <<linux-cgroups,cgroups>>, <<seccomp,seccomp>>, <<AppArmor/SELinux,AppArmor/SELinux>>, <<linux-capabilities,capabilities>>.
+
+Контейнери не зберігають стан (stateless by design), що робить їх ідеальними для мікросервісної архітектури, де кожен сервіс може бути запущений в окремому контейнері. Вони також легко масштабуються та інтегруються в CI/CD процеси. Presistence даних може бути досягнута через <<docker-volume,volumes>>, bind mounts або external services (наприклад, бази даних). Дуже добре маштабується в кластерних середовищах, таких як <<kubernetes,Kubernetes>>, <<docker-swarm,Swarm>> або Nomad.
+
+//TODO CI/CD — запуск через ephemeral контейнери, reproducible builds (BuildKit, cache mounts, secrets).
+
+[[docker-container-vs-vm]]
+.Docker Container vs Віртуальна машина
+**Виртуальная машина** - це полноценная ОС, яка віртуалізує апаратне забезпечення та запускає окрему гостьову ОС. **Контейнер** - це ізольоване середовище, яке використовує ядро хостової ОС та запускає окремі процеси. Контейнери запускаються швидше, оскільки вони не потребують емуляції апаратного середовища та завантаження окремої ОС.
+
+[[docker-container-vs-vm-comparison]]
+.Порівняння з віртуальними машинами:
+|===
+|Характеристика|Контейнер Docker|Віртуальна машина (VM)
+|Ядро ОС|Спільне з хостом|Власне, повноцінне ядро
+|Швидкість запуску|Секунди|Хвилини
+|Ресурси|Мінімальні|Значно більше
+|Вага (типово)|10–100 МБ|Гігабайти
+|Ізоляція|Через kernel features (LXC, <<linux-namespaces,namespaces>>, <<linux-cgroups,cgroups>>)|Через гіпервізор
+|Портативність|Висока|Середня
+|Мета|Запуск окремих процесів|Запуск повноцінної ОС
+|===
+
+[[docker-container-vs-vm-performance]]
+.Продуктивність
+|===
+|Параметр|Контейнер|Віртуальна машина
+|Startup time|~50–500 мс|~10–60 сек
+|CPU overhead|мінімальний|помітний
+|Memory overhead|мінімальний|високе споживання
+|I/O performance|залежить від storage driver|близьке до native (з pass-through)
+|===
+
+NOTE: Storage drivers: OverlayFS (default), aufs (deprecated), devicemapper, ZFS, Btrfs — кожен має нюанси по performance, stability та layered caching.
+
+[[docker-container-run-architecture]]
+Архітектура запуску контейнера:
+
+1. <<dockercli,Docker CLI>>
+2. <<docker-engine,Docker Engine (dockerd)>>
+3. <<docer-containerd,containerd (high-level runtime)>>
+4. <<docker-runc,runc (OCI low-level runtime)>>
+5. <<linux,Linux kernel (namespaces + cgroups)>>
+
+NOTE: Контейнери не віртуалізують апаратне забезпечення — замість цього вони опираються на ядро хоста і <<lightweight-isolation-primitives,lightweight isolation primitives>>.
+//TODO lightweight isolation primitives
+
+Контейнер состоїть з:
+
+- <<docker-container-filesystem,*Файлова система*>>
+- <<docker-container-processes,*Процеси*>>
+- <<docker-container-network,*Мережа*>>
+- <<docker-container-resources,*Ресурси*>>
+- <<docker-container-network,*network*>>
+
+[[docker-container-filesystem]]
+Файлова система контейнера Docker побудована на основі шарів Docker-образа, які використовують <<cascade-overlay-mounting,каскадне об’єднане монтування>> (OverlayFS, UnionFS) з <<copy-on-write-technic,copy-on-write>>. Це дозволяє створювати ізольовані файлові системи для кожного контейнера, де зміни записуються лише у верхній rw-шар, не змінюючи базовий образ. Це дозволяє економити місце та швидко створювати нові контейнери.
+
+[[docker-container-processes]]
+Процеси в контейнері запускаються в ізольованому PID namespace, що дозволяє їм не бачити процеси на хості та інших контейнерах. Це забезпечує безпеку та ізоляцію, оскільки процеси в контейнері не можуть взаємодіяти з процесами на хості або в інших контейнерах.
+
+[[docker-container-resources]]
+Контейнери обмежуються в використанні ресурсів через control groups (<<cgroups,cgroups>>). Це дозволяє контролювати використання CPU, пам'яті, I/O та інших ресурсів, що забезпечує стабільність та безпеку системи. Наприклад, можна обмежити кількість CPU, пам'яті або I/O, які може використовувати контейнер.
+
+[[docker-container-network]]
+Контейнер має власний network namespace, що дозволяє йому мати окрему IP-адресу, DNS та порти. Це забезпечує ізоляцію мережі між контейнерами та хостом, дозволяючи кожному контейнеру мати свій власний мережевий стек. Контейнери можуть спілкуватися між собою через <<docker-network,Docker network>>. [[docker-container-network-problem]]Але можуть виникнути проблеми спілкування між контейнерами, якщо вони не налаштовані правильно або використовують різні мережеві драйвери. Для пошуку проблем з мережею між контейнерами можна використовувати:
+
+* `docker exec -it <container> sh` для доступу до контейнера і виконання команд ping, curl або netcat до інших контейнерів.
+* `docker network inspect <network>` для перевірки налаштувань мережі.
+
+
+
+[[docker-container-security]]
+Контейнери забезпечують безпеку через кілька механізмів:
+
+- **PID namespace** — ізолює процеси, що дозволяє контейнеру не бачити процеси на хості.
+- **NET namespace** — забезпечує окремий мережевий стек, що дозволяє контейнеру мати власні IP-адреси, порти та DNS.
+- **MNT namespace** — ізолює файлову систему, що дозволяє контейнеру мати власний простір монтування (/, /proc, /sys).
+- **UTS namespace** — ізолює hostname, що дозволяє контейнеру мати власний hostname.
+- **IPC namespace** — забезпечує власну пам'ять для inter-process communication, що дозволяє контейнеру мати власні IPC-ресурси.
+- **User namespace** — дозволяє UID 0 у контейнері не бути root на хості, що забезпечує додатковий рівень безпеки.
+
+[[docker-container-non-root-user]]Для того, щоб запускати контейнери під non-root користувачем, використовуйте флаг `--user`, наприклад:
+
+[source,shell]
+----
+docker run --user 1000 myimage
+----
+
+це є бест практикою для безпеки. Тому що при взломі якщо зловмисник отримає доступ до контейнера, він не отримає root-права на хості. Це мінімізує можливий збиток при взломі. `--user 1000` означає, що контейнер буде запущений від користувача з UID 1000 (На більшості Linux систем це перший створений користувач). Як що в контейнере нема користувача с таким UID, то процеси все одно запустяться і можуть не мати доступу до файлів або дерікторій. Це може бути корисно для запуску додатків, які не потребують root-доступу, або для обмеження доступу до системних ресурсів.
+
+
+[[docker-container-security-additional]]
+Додаткові механізми безпеки:
+
+- **Seccomp** — фільтрація системних викликів, що дозволяє обмежити доступ до небезпечних системних викликів.
+- **AppArmor / SELinux** — мандатне управління доступом, що дозволяє контролювати доступ до ресурсів на основі політик безпеки.
+
+<<linux-namespaces,Namespaces>> — это механизм ядра Linux, который позволяет изолировать системные ресурсы между группами процессов.
+|===
+|Namespace|Изолирует|Детали
+|pid|ID процессов|Процессы не видят друг друга
+|net|Сетевые интерфейсы и IP-стек|Своя сеть, DNS, маршруты
+|mnt|Файловую систему и монтирования|Изоляция /, /proc, /sys
+|ipc|Shared memory|Не пересекаются IPC-ресурсы
+|uts|Hostname, domainname|У контейнера свой hostname
+|user|UID/GID|Разделение root внутри контейнера и на хосте
+|<<linux-cgroups,cgroup>>|Контроль над ресурсами|Контейнер — член своего cgroup
+|===
+
+[[docker-container-security-summary]]Головними аспектами безпеки Docker-контейнерів є:
+
+* Не запускайте контейнери під root-користувачем всередині контейнера.
+* Відключайте зайві Capabilities.
+* Використовуйте AppArmor/SELinux профілі.
+* Скануйте образи на уразливості.
+* Своєчасно оновлюйте.
+
+[[docker-container-pros-and-cons]]
+.Переваги та недоліки контейнерів Docker
+Перевагами контейнерів є:
+
+- Однакове середовище в розробці, тестуванні й продакшені (проблема "It works on my machine" вирішена)
+- Швидкий запуск і масштабування
+- Економія ресурсів у порівнянні з віртуальними машинами
+- Портативність — запуск на будь-якій платформі з Docker Engine
+- Легко інтегруються у CI/CD процеси
+
+Недоліками є:
+
+- Безпека — ізоляція не така сильна, як у віртуальних машинах
+- Складність управління — потребують додаткових інструментів для оркестрації (Kubernetes, Docker Swarm)
+- Залежність від хостової ОС — не можуть запускати різні ОС (наприклад, Windows-контейнер на Linux)
+
+Далі перейдемо до практичного використання Docker-контейнерів.
+
+[source,shell]
+----
+docker run [OPTIONS] IMAGE [COMMAND] [ARG...]
+----
+
+[[docker-container-run-flags]]Флагі яки використовуються при запуску контейнера:
+
+- `--name` — вказує ім'я контейнера;
+- `-d` або `--detach` — запускає контейнер у фоновому режимі;[[docker-container-run-flags-detach]]
+- <<docker-container-publish-flag,`-p`>> або `<<docker-container-publish-flag,--publish`>> — публікує порти контейнера на хості;
+- <<docker-container-run-volume-flag,`-v`>> або <<docker-container-run-volume-flag,`--volume`>> — монтує том або bind mount;
+- <<docker-container-env-flag,`-e`>> або <<docker-container-env-flag,`--env`>> — передає змінні середовища в контейнер;
+- `--env-file` — передає змінні середовища з файлу;
+[[docker-container-resource-limit-flags]]
+- <<docker-container-cpus-flag,`--cpus`>> — обмежує використання CPU (наприклад, `--cpus="1.5"`);
+- `--cpu-period` - встановлює період для обмеження CPU (наприклад, `--cpu-period=100000`);
+- `--cpu-quota` - встановлює квоту для обмеження CPU (наприклад, `--cpu-quota=50000`);
+- `-m` або `--memory` — обмежує використання пам'яті;
+- `--memory-swap` — обмежує використання пам'яті з урахуванням swap;
+- `--cpuset-cpus` — обмежує використання певних CPU;
+//TODO- `--cpu-shares` — встановлює відносну вагу CPU для контейнера (наприклад, `--cpu-shares=512`);
+- `--pids-limit` — обмежує кількість процесів у контейнері (наприклад, `--pids-limit=100`);
+- `--device-read-bps` — обмежує швидкість читання з пристрою (наприклад, `--device-read-bps /dev/sda:1mb`);
+//TODO- `blkio-weight` — встановлює відносну вагу I/O для блочних пристроїв (наприклад, `--blkio-weight=500`);
+- <<docker-container-it-flag,`it`>> — запускає контейнер в інтерактивному режимі (tty) (поєднання `-i` та `-t`);
+- `-i` — інтерактивний режим (stdin залишається відкритим);
+- `-t` — виділяє псевдотермінал (tty);
+- <<docker-container-rm-flag,`--rm`>> — автоматично видаляє контейнер після завершення;
+- `--restart` — вказує політику перезапуску контейнера (наприклад, `always`, `unless-stopped`, `on-failure`);
+- <<docker-container-run-network-flag,`--network`>> — вказує мережу, до якої підключити контейнер;
+- `--entrypoint` — вказує точку входу для контейнера (перезаписує значення з образу);
+- `--mount` - більш гнучкий спосіб підключення томів (наприклад, `--mount source=mydata,target=/app/data`).
+- <<docker-container-privileged-flag,`--privileged`>> — надає контейнеру всі можливості хостової системи (не рекомендується використовувати без потреби).
+
+[[docker-container-publish-flag]]Для того, щоб опублікувати порт контейнера на зовні, використовуйте флаг `-p` або `--publish`. Наприклад:
+
+[source,shell]
+----
+docker run -p <HOST_PORT>:<CONTAINER_PORT> myimage
+----
+
+де:
+
+- `<HOST_PORT>` — порт на хості, на якому буде доступний контейнер;
+- `<CONTAINER_PORT>` — порт всередині контейнера, на якому працює додаток.
+
+
+[[docker-container-env-flag]]Для передачі аргументів контейнеру використовуйте флаг `-e` або `--env <file>`, наприклад:
+
+[source,shell]
+----
+docker run -e APP_ENV=prod -e DB_PASS=secret myimage
+----
+
+[[docker-container-env-file-flag]]або якщо змінних забогато, то можна передати їх з файлу за допомогою флага `--env-file`:
+
+[source,shell]
+----
+docker run --env-file <file> myimage
+----
+
+[[docker-container-cpus-flag]]
+[[docker-container-limit-resources]]`--cpus` — це ручна огортка над `--cpu-period` та `--cpu-quota`, яка дозволяє легко обмежити використання CPU контейнером. Але якщо треба точне управління, наприклад, змінити довжину періодів (для real-time додатків), задати квоту не в цілих ядрах або адаптувати поведінку в embedded-середовищах, то `--cpu-period` + `--cpu-quota` дають повний контроль. Наведемо приклад:
+
+[source,shell]
+----
+docker run --rm -it \
+--cpu-period=100000 \
+--cpu-quota=50000 \
+ubuntu
+----
+
+у цьому випадку контейнер буде обмежений до 50000 / 100000 = 0.5 -> 50% одного ядра CPU. Це означає, що контейнер може використовувати максимум 50% CPU в кожному періоді в 100000 мікросекунд (або 0.1 секунди) тобто 0.05 секунди прицює 0.05 секунди не працює.
+
+
+[[docker-container-it-flag]]
+[[docker-container-run-command-inside]]Для запуску контейнера в інтерактивному режимі з доступом до командного рядка, використовуйте флаг `-it` (поєднання `-i` та `-t`). Це дозволяє вам взаємодіяти з контейнером через термінал. Наприклад:
+
+[source,shell]
+----
+docker exec -it <CONTAAINER_NAME> bash`
+----
+
+Тобто ця команда дозволяє виконувати команди в середені контейнера. В цьому ми викликаєм оболочку bash. Також це може бути корисним якщо на просто треба перевірити наявність файлу в контейнері, наприклад:
+
+[source,shell]
+----
+docker exec -it <CONTAINER_NAME> ls -la
+----
+
+Але в цілому це дозволяє виконувати будь які команди в середені контейнеру.
+
+[[docker-container-rm-flag]]
+Для того, щоб автоматично видалити контейнер після завершення його роботи, використовуйте флаг `--rm`. Це дозволяє уникнути накопичення зупинених контейнерів. Наприклад:
+
+[source,shell]
+----
+docker run --rm myimage
+----
+
+А якщо взяти попередній приклад, наприклад ви створили Docker Image і просто хочете субу перевірити чи є там наприклад якійсь файл то команда
+
+[source,shell]
+----
+`docker run --rm <IMAGE_NAME> ls -l <PATH_TO_FILE>`
+----
+
+Тобто докер запускає контейнер виконує команда і по завершені команди видаляє контейнер.
+
+[[docker-container-run-network-flag]]
+[[docker-container-run-without-network]]Для того щоб запустити контейнер без мережевого стека, використовуйте:
+
+[source,shell]
+----
+docker run --network=none myimage
+----
+
+[[docker-container-privileged-flag]]
+Флаг `--privileged` дає контейнеру майже необмежений доступ до хостової системи. Це може бути корисно для деяких сценаріїв, але також значно знижує безпеку, тому його слід використовувати з обережністю. Використання цього флага:
+
+* Усі Linux Capabilities (capabilities) надаються контейнеру;
+* Доступ до всіх пристроїв в /dev;
+* Можливість монтувати файлові системи, змінювати мережеві інтерфейси та інші системні ресурси;
+* Робота з AppArmor/SELinux може бути ослаблена.
+
+[source,shell]
+----
+docker run --privileged myimage
+----
+
+[[docker-container-state]]
+Контейнер маже бути в наступних станах:
+
+.Running
+Контейнер має стан Running, коли він запущений і виконує процеси. У цьому стані всі процеси активні, і контейнер може обробляти запити.
+
+.Paused
+Контейнер має стан Paused, коли він призупинений. У цьому стані всі процеси зупинені, але зберігають свій стан. Це може бути корисно для тимчасового призупинення роботи контейнера без його зупинки. Для того щоб призупинити контейнер, використовуйте команду:
+
+[source,shell]
+----
+docker pause <container_id>
+----
+
+Команда `docker pause`  надсилає сигнал SIGSTOP усім процесам контейнера. Всі процеси *заморожуються* (їх стан зберігається в пам’яті, але вони не виконуються). І контейнер переходить в стан Paused. Для відновлення контейнера до стану Running, використовуйте команду:
+
+[source,shell]
+----
+docker unpause <container_id>
+----
+
+Ця команда може бути корисною для тимчасового призупинення роботи контейнера, наприклад, для проведення технічного обслуговування або безпечного оновлення мережевого або дискового шару (у деяких сценаріях CI/CD або live-debug). Або для зупинки енергоємного процессу.
+
+.Stopped
+[source,shell]
+----
+docker stop <container_id>
+----
+
+[[docker-container-kill-vs-stop]]Комадна `docker stop` посилає сигнал SIGTERM процесам в контейнері, даючи їм час для коректного завершення. Якщо процеси не завершуються протягом 10 секунд, Docker відправляє сигнал SIGKILL для примусового завершення. Але якщо необхідно одразу відправити сигнал SIGKILL то використовується команда `docker kill` яка моментально зупиняє контейнер не даючи йому час на коректну зупинку процессів. Контейнер зупиняється, але його дані зберігаються, і ви можете знову запустити його пізніше. І переходить у стан Exited. Для відновлення контейнера до стану Running, використовуйте команду:
+
+[source,shell]
+----
+docker start <container_id>
+----
+
+.Exited
+Контейнер має стан Exited, коли він завершив свою роботу. Це може статися через успішне завершення процесу або через помилку. Контейнер все ще існує, і ви можете переглядати його логи або перезапустити його. [[docker-container-end-immediately]]Якщо контейнер одразу після запуску переходить в цей стан, це може бути через те, що процес в контейнері завершився з помилкою або не був запущений або був короткостроковим, наприклад `docker run alpine ls -la`. Це може трапитись через декілька причин:
+
+* Невірна команда ENTRYPOINT або CMD в Dockerfile;
+* Відсутність необхідних залежностей або бібліотек в образі;
+* Помилки в коді додатку, які призводять до аварійного завершення;
+* Неправильні аргументи або змінні середовища, які передані при запуску контейнера.
+
+.Dead
+Контейнер має стан Dead, коли він не відповідає на запити. Це може статися через серйозні помилки в процесах контейнера або проблеми з ресурсами. Контейнер все ще існує, але його неможливо перезапустити без видалення.
+
+[[docker-container-start-speed-up]]Для того, щоб прискорити запуск контейнера:
+
+* Використовуйте легкі образи (alpine, distroless).
+* Використовуйте шари з вже завантаженими залежностями.
+* Відкиньте непотрібні модулі (spring-devtools).
+* Механізми типу GraalVM native-image (якщо виправдано).
+
+[[docker-container-usefull-commands]]
+Розберемо корисні команди які необхідно знати для роботи з Docker Containers
+
+[[docker-container-logs]]Для того щоб подивитися логи працюючого контейнера, використовуйте:
+
+[source,shell]
+----
+docker logs <container_id>
+----
+
+С флагами `-f` (follow) та `--tail` можна "підглядати" в режимі реального часу.
+
+[[docker-container-outside-limit-access]]Для того, щоб обмежити доступ до контейнера ззовні:
+
+* Не публікуйте порти на зовні (не вказуйте -p).
+* Використовуйте firewall на хості.
+* Застосовуйте політики безпеки (docker network та інші).
+
+[[docker-container-run-volume-flag]]
+[[docker-container-file-trasfer]]Для того щоб передати файли з хоста в контейнер (або навпаки) без пересборки образа, використовуйте bind mount (-v /host/path:/container/path), приклад:
+
+[source,shell]
+----
+docker run -v /host/path:/container/path myimage
+----
+
+або копіюйте дані командою `docker cp` приклад:
+
+[source,shell]
+----
+docker cp /host/path mycontainer:/container/path
+----
+
+[[docker-container-save-data-beetwen-restart]]Для того, щоб зберегти дані при перезапуску контейнера БД, використовуйте <<docker-volume,volume>>, наприклад:
+
+[source,shell]
+----
+docker run -v mydb-data:/var/lib/postgresql/data postgres
+----
+
+Перезапуск контейнера не затроне дані в томі.
+
+[[docker-container-capabilities]]
+[[docker-container-add-capabilities]]Для того, щоб додайти Capabilities до контейнера використовуєте флаг `--cap-add`, наприклад:
+
+[source,shell]
+----
+docker run --cap-add=<cap_name> myimage
+----
+
+або для того щоб видаляти Capabilities з контейнера, використовуйте флаг `--cap-drop`:
+
+[source,shell]
+----
+docker run --cap-drop=<cap_name> myimage
+----
+
+[[docker-container-check-capabilities]]
+Для того, щоб перевірити які Capabilities має контейнер, використовуйте команду `docker inspect`:
+
+[source,shell]
+----
+docker inspect <container_id>
+----
+
+та перегляньте секцію CapAdd/CapDrop. По замовчуванню є базовий набір (наприклад, NET_RAW та інші).
+
+[[docker-container-jvm-args]]
+//Для того щоб задати параметри JVM в контейнері:
+//
+// * В Dockerfile через `ENV JAVA_OPTS="-Xms256m -Xmx512m"` та `ENTRYPOINT ["java", "$JAVA_OPTS", "-jar", "/app.jar"]`.
+// * Либо передати при запуске `docker run -e JAVA_OPTS="..."`.
+
+[[docker-MaxRAMPercentage-MaxRAMFraction]]За замовчуванням JVM може "не бачити" обмеження cgroups. -XX:MaxRAMPercentage допомагає JVM коректно визначати доступну пам'ять. Інакше може бути OutOfMemoryError, якщо JVM буде думати, що доступна вся пам'ять хоста. -XX:MaxRAMFraction працює аналогічно, але відносно обсягу пам'яті. Приклад використання:
+
+[source,shell]
+----
+docker run -e JAVA_OPTS="-XX:MaxRAMPercentage=75.0" <IMAGE_NAME>
+----
+
+що означає, що JVM використовує 75% доступної пам'яті.
+
+[source,shell]
+----
+docker run -e JAVA_OPTS="-XX:MaxRAMFraction=0.5" <IMAGE_NAME>
+----
+
+що означає, що JVM використовує половину доступної пам'яті.
+
+[[docker-container-incorrect-timezone]]
+//Java-додаток в контейнері може бачити неправильний час або таймзону через те, що контейнери зазвичай не містять всю базу часових //поясів, можуть не синхронізувати час з NTP. Для вирішення проблеми налаштуйте таймзону (env TZ) або монтування таймзонних даних.
+
+[[docker-container-healthcheck]]
+//Для того щоб перевірити, що контейнер з Java-додатком коректно "живий" (Healthcheck):
+//
+//* В Dockerfile або в docker-compose можна вказати `HEALTHCHECK --interval=30s --timeout=5s CMD curl -f http://localhost:8080/actuator/health || exit 1`. Spring Boot actuator повинен відповідати "UP".
+//
+//Dockerfile буде виглядати наступним чином:
+//
+//[source,docker]
+//----
+//FROM openjdk:17-jdk-alpine
+//COPY target/app.jar /app.jar
+//HEALTHCHECK --interval=30s --timeout=5s CMD curl -f http://localhost:8080/actuator/health || exit 1
+//ENTRYPOINT ["java", "-jar", "/app.jar"]
+//----
+
+[[docker-container-config-files]]
+//Для того, щоб підгрузити зовнішні конфігураційні файли (application.yml) в контейнер:
+//
+//* Використовуйте volume/bind mount, монтуючи локальний application.yml в /app/config/application.yml.
+//* Передавайте змінні середовища для Spring Boot.
+//* Використовуйте Spring Cloud Config Server.
+
+[[docker-testcontainer-for-java]]
+//**Testcontainers** - це бібліотека для інтеграційного тестування, яка дозволяє піднімати тестові бази даних (PostgreSQL, Kafka і //ін.) прямо з коду JUnit. Це дозволяє тестувати з ізоляцією, без необхідності встановлення тестових баз даних на хості.
+
+
+[[docker-container-best-practices]]Best practices:
+
+* Мінімізуй образи (multi-stage builds, Alpine, distroless).
+* Run as non-root + drop capabilities.
+* Використовуй ReadOnly rootfs (--read-only), tmpfs для /tmp.
+* Monitor: docker stats, cAdvisor, Prometheus exporters.
+* Scan images на CVE (Trivy, Grype, Snyk).
+* Використовуй image signing (Cosign, Notary v2).
+* Автоматичне оновлення — через GitOps або image watchers.
