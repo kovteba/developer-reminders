@@ -1,4 +1,5 @@
-ifndef::sourcedir[:sourcedir: ../source]
+ifndef::imagesdir[:imagesdir: source/imgs/docker/]
+ifndef::urksourcedir[:urksourcedir: source/ukrainian]
 
 :doctype: book
 :icons: font
@@ -8,4 +9,6 @@ ifndef::sourcedir[:sourcedir: ../source]
 :partnums:
 :sectnums:
 
-== JAVA core
+== DevOps
+
+include::{urksourcedir}/docker/docker-container.adoc[]
