@@ -3,7 +3,7 @@ ifndef::imagesdir[:imagesdir: ../../imgs/docker/]
 [#docker-container]
 === Docker Container
 
-image::docker-container.png[Docker Container, align="center"]
+image::docker-container.jpg[Docker Container, align="center"]
 
 [[docker-container-definition]]**Docker Container** — це ізольований userspace-процесс або звичайний linux процесс запущений з використанням kernel features для ізоляції та обмеження ресурсів, яке дозволяє запускати додатки та сервіси в контейнеризованому вигляді. Працює поверх ядра Linux (або через WSL2 на Windows) та створюється на основі Docker-образа з використанням <<docker-containerd,containerd>> як high-level контейнерного runtime і <<docker-runc,runc>> як low-level OCI-сумісного runtime для запуску процесів контейнера. Контейнери використовують спільне ядро операційної системи, але мають власні файлові системи, мережеві інтерфейси та процеси. Це дозволяє запускати додатки в ізоляції від інших процесів на хості, забезпечуючи легкість, швидкість та портативність. [[docker-container-process-isolation]]Контейнер реалізує ізоляцію процесів, файлової системи, мережі, користувачів та ресурсів через kernel-примітиви: <<linux-namespaces,namespaces>>, <<linux-cgroups,cgroups>>, <<seccomp,seccomp>>, <<AppArmor/SELinux,AppArmor/SELinux>>, <<linux-capabilities,capabilities>>.
 
