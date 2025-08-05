@@ -75,8 +75,7 @@ NOTE: Контейнери не віртуалізують апаратне за
 * `docker exec -it <container> sh` для доступу до контейнера і виконання команд ping, curl або netcat до інших контейнерів.
 * `docker network inspect <network>` для перевірки налаштувань мережі.
 
-
-
+[[docker-container-process-isolation]]
 [[docker-container-security]]
 Контейнери забезпечують безпеку через кілька механізмів:
 
