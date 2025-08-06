@@ -5,6 +5,23 @@
 [#devops-docker]
 .Docker
 
+[#devops-docker-image]
+.docker image
+- Що таке Docker Image? <<docker-image-definition,Answer>>
+- Яку структуру має Docker Image? <<docker-image-structure,Answer>>
+- З чого складається Docker Image? <<docker-image-layers,Answer>>
+- Що таке Layer в Docker Image? <<docker-layer,Answer>>
+- Що таке Layer Cache в Docker Image? <<docker-layer-cache,Answer>>
+- Які типи Docker Image існують? <<docker-image-types,Answer>>
+- Як зберігати секрети в Docker Image? <<docker-secret,Answer>>
+- Як створити Docker Image? <<docker-image-creation,Answer>>
+- Як створити Docker Image з Multi-stage build? <<docker-multi-stage-build,Answer>>
+- Як завантажити Docker Image з реєстру? <<docker-image-pulling,Answer>>
+- Як опублікувати Docker Image в реєстр? <<docker-image-pushing,Answer>>
+- Як додати теги до Docker Image? <<docker-image-tagging,Answer>>
+- Як перевірити інформацію про Docker Image? <<docker-image-inspection,Answer>>
+- Як видалити Docker Image? <<docker-image-remove,Answer>>
+
 [#devops-docker-container]
 .Docker Container
 - Що таке Docker Container? <<docker-container-definition,Answer>>

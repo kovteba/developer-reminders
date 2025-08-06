@@ -11,4 +11,5 @@ ifndef::urksourcedir[:urksourcedir: source/ukrainian]
 
 == DevOps
 
+include::{urksourcedir}/docker/docker-image.adoc[]
 include::{urksourcedir}/docker/docker-container.adoc[]
