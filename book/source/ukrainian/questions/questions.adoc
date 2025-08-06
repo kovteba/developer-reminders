@@ -1,0 +1,43 @@
+== QUESTIONS
+
+[#devops]
+.DevOps
+[#devops-docker]
+.Docker
+
+[#devops-docker-container]
+.Docker Container
+- Що таке Docker Container? <<docker-container-definition,Answer>>
+- Відмінності Docker Container від VM? <<docker-container-vs-vm, Answer>>
+- Чому Docker Container запускається швидше, ніж VM? <<docker-container-vs-vm, Answer>>
+- Как запустить контейнер в фоновом режиме? <<docker-container-run-flags-detach,Answer>>
+- Як обмежити ресурси контейнера по CPU та пам'яті?<<docker-container-limit-resources, Answer>>
+- Які стани може мати контейнер? <<docker-container-state,Answer>>
+- Через що контейнер може бути завершеним одразу після запуску? <<docker-container-end-immediately,Answer>>
+- Чим відрізняються `docker stop` від `docker kill`? <<docker-container-kill-vs-stop,Answer>>
+- Флаги `docker run`? <<docker-container-run-flags, Answer>>
+- Як зменьшити час запуску Spring Boot в контейнере? <<docker-container-start-speed-up,Answer>>
+- Як шукати проблеми мережі між контейнерами? <<docker-container-network-problem,Answer>>
+- Як і які обмеження можно задати і якими фалгами? <<docker-container-resource-limit-flags,Answer>>
+- Як виконати команду в середені запущеного контейнеру? <<docker-container-run-command-inside,Answer>>
+- Як подивитись логі працюючого контейнера? <<docker-container-logs,Answer>>
+- Як зробити порт видиммин наружу контейнера? <<docker-container-publish-flag,Answer>>
+- Як встановити змінні середовища при запуске контейнера? <<docker-container-env-flag,Answer>>
+- Чи можна використовувати файл зі змінними для запуску контейнера? <<docker-container-env-file-flag,Answer>>
+- Як обмежити доступ до контейнеру зовні? <<docker-container-outside-limit-access, Answer>>
+- Як передати файли до контейнеру (або навпаки) без пересборки образу? <<docker-container-file-trasfer,Answer>>
+- Як зберегти данні при перезапуску контейнера? <<docker-container-save-data-beetwen-restart,Answer>>
+- Як додати Capabilities є у контейнера? <<docker-container-add-capabilities,Answer>>
+- Як перевірити, які Capabilities є у контейнера? <<docker-container-check-capabilities,Answer>>
+- Що робить флаг `--privileged` при запуску контейнера? <<docker-container-privileged-flag,Answer>>
+- Навіщо використовувати non-root user всередині Docker-контейнера? <<docker-container-non-root-user,Answer>>
+- Як запустити контейнер без сетевого стека? <<docker-container-run-without-network,Answer>>
+- Як забеспечується безпека Docker-контейнерів? <<docker-container-security,Answer>>
+- Головні аспекти безпеки Docker-контейнерів? <<docker-container-security-summary,Answer>>
+- Яким чином Docker Container забезпечує ізоляцію процесів? <<docker-container-process-isolation,Answer>>
+- Які Best Practices Docker-контейнерів? <<docker-container-best-practices,Answer>>
+//- Как задать параметры JVM в контейнере? <<docker-container-jvm-args, Answer>>
+//- Почему Java-приложение внутри контейнера может видеть неправильное время или таймзону? <<docker-container-incorrect-timezone, Answer>>
+//- Как проверить, что контейнер с Java-приложением корректно «живой»? (Healthcheck) <<docker-container-healthcheck, Answer>>
+//- Как подгрузить внешние конфигурационные файлы (application.yml) в контейнер? <<docker-container-config-files, Answer>>
+//- Что такое Testcontainers в Java? <<docker-testcontainer-for-java, Answer>>
