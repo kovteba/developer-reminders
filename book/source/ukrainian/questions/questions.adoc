@@ -6,7 +6,7 @@
 .Docker
 
 [#devops-docker-image]
-.docker image
+.Docker Image
 - Що таке Docker Image? <<docker-image-definition,Answer>>
 - Яку структуру має Docker Image? <<docker-image-structure,Answer>>
 - З чого складається Docker Image? <<docker-image-layers,Answer>>
@@ -21,6 +21,46 @@
 - Як додати теги до Docker Image? <<docker-image-tagging,Answer>>
 - Як перевірити інформацію про Docker Image? <<docker-image-inspection,Answer>>
 - Як видалити Docker Image? <<docker-image-remove,Answer>>
+
+[#devops-docker-dockerfile]
+.Dockerfile
+- Що таке Dockerfile? <<docker-dockerfile-definition,Answer>>
+- Головні інструкції які використовуються в Dockerfile? <<docker-dockerfile-instructions,Answer>>
+- Що означає `FROM` в Dockerfile? <<docker-dockerfile-from-definition,Answer>>
+- Використання `FROM`. <<docker-dockerfile-from-usage,Answer>>
+- Best Practices для `FROM`. <<docker-dockerfile-from-best-practices,Answer>>
+- Що означає `RUN` в Dockerfile? <<docker-dockerfile-run-definition,Answer>>
+- Використання `RUN`. <<docker-dockerfile-run-usage,Answer>>
+- Best Practices для `RUN`. <<docker-dockerfile-run-best-practices,Answer>>
+- Що означає `CMD` в Dockerfile? <<docker-dockerfile-cmd-definition,Answer>>
+- Використання `CMD`. <<docker-dockerfile-cmd-usage,Answer>>
+- Кратко про `CMD`. <<docker-dockerfile-cmd-summary,Answer>>
+//TODO - Best Practices для `CMD`. <<docker-dockerfile-cmd-best-practices,Answer>>
+- Що означає `ENTRYPOINT` в Dockerfile? <<docker-dockerfile-entrypoint-definition,Answer>>
+- Використання `ENTRYPOINT`. <<docker-dockerfile-entrypoint-usage,Answer>>
+- Кратко про `ENTRYPOINT`. <<docker-dockerfile-entrypoint-summary,Answer>>
+//TODO - Best Practices для `ENTRYPOINT`. <<docker-dockerfile-entrypoint-best-practices,Answer>>
+- В чому різниця між `CMD` та `ENTRYPOINT`. <<docker-dockerfile-cmd-vs-entrypoint,Answer>>
+- Що означає `COPY` в Dockerfile? <<docker-dockerfile-copy-definition,Answer>>
+- Що означає `ADD` в Dockerfile? <<docker-dockerfile-add-definition,Answer>>
+- Використання `ADD`. <<docker-dockerfile-add-usage,Answer>>
+- В чому різниця між `COPY` та `ADD`. <<docker-dockerfile-copy-vs-add,Answer>>
+- Що означає `WORKDIR` в Dockerfile? <<docker-dockerfile-workdir-definition,Answer>>
+- Що означає `EXPOSE` в Dockerfile? <<docker-dockerfile-expose-definition,Answer>>
+- Що означає `ENV` в Dockerfile? <<docker-dockerfile-env-definition,Answer>>
+- Використання `ENV`. <<docker-dockerfile-env-usage,Answer>>
+- Що означає `ARG` в Dockerfile? <<docker-dockerfile-arg-definition,Answer>>
+- Використання `ARG`. <<docker-dockerfile-arg-usage,Answer>>
+- В чому різниця між `ENV` та `ARG`. <<docker-dockerfile-arg-vs-env,Answer>>
+- Best Practices для `ENV` та `ARG`. <<docker-dockerfile-arg-vs-env-best-practices,Answer>>
+- Коротко для `ENV` та `ARG`. <<docker-dockerfile-arg-vs-env-summary,Answer>>
+- Що означає `USER` в Dockerfile? <<docker-dockerfile-user-definition,Answer>>
+- Що означає `VOLUME` в Dockerfile? <<docker-dockerfile-volume-definition,Answer>>
+- Що означає `LABEL` в Dockerfile? <<docker-dockerfile-label-definition,Answer>>
+- Що означає `HEALTHCHECK` в Dockerfile? <<docker-dockerfile-healthcheck-definition,Answer>>
+- Що означає `SHELL` в Dockerfile? <<docker-dockerfile-shell-definition,Answer>>
+- Як тестувати Dockerfile? <<docker-dockerfile-testing, Answer>>
+- Best Practices при роботі з Dockerfile? <<docker-dockerfile-best-practices, Answer>>
 
 [#devops-docker-container]
 .Docker Container
