@@ -13,3 +13,6 @@ ifndef::urksourcedir[:urksourcedir: source/ukrainian]
 
 include::{urksourcedir}/docker/docker-image.adoc[]
 include::{urksourcedir}/docker/docker-container.adoc[]
+
+
+include::{urksourcedir}/questions/questions.adoc[]
