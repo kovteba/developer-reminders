@@ -1,0 +1,196 @@
+ifndef::imagesdir[:imagesdir: ../../imgs/docker/]
+
+[#docker-volume]
+=== Docker Volume
+
+image::docker-volume.jpg[Docker Image, align="center"]
+
+[[docker-volumes-definition]]**Docker Volumes** — це механізм для зберігання даних поза життєвим циклом контейнера тобто по за файловою системою контенера. Контейнер можна перестворити, а дані в томі залишаться. А також як варіант ділитися файламі між хостом та контейнером або між контейнерами. [[docker-volume-share-between-containers]]Але при одночасному підключенню одного тому до декількох контейнерів можуть виникнути конфлікти, тому потрібно переконатися, що додатки підтримують спільний доступ до томів.
+
+[[docker-volumes-types]]
+Розрізняють три види томів:
+
+* <<docker-volume-anonymous-volume,*Anonymous Volume*>> — це том, який створюється без імені і використовується тільки в одному контейнері;
+* <<docker-volume-bind-mount,*Bind Mount*>> — це прив'язка до каталогу або файлу на хості, який буде доступний в контейнері;
+* <<docker-volume-named-volume,*Named Volume*>> — це том, який створюється з іменем і може бути використаний в декількох контейнерах.
+
+[[docker-volume-anonymous-volume]]*Anonymous Volumes* — це томи, які створюються автоматично без імені при використанні VOLUME в <<docker-dockerfile,Dockerfile>> або docker `run -v /path`. Очевидним мінусом є те, що їх важко ідентифікувати та керувати ними та використовувати повторно.
+
+[[docker-volume-bind-mount]]*Bind Mount* — це механізм, який дозволяє прив'язати каталог або файл на хості до контейнера. Це дозволяє контейнеру отримувати доступ до даних на хості або зберігати дані на хості. Приклад:
+
+[source,shell]
+----
+docker run -v /host/path:/container/path ...
+----
+
+Мінус цього варіанту в, тому що є залежність від файлової системи.
+
+[[docker-volume-named-volume]]Для того, щоб створити тома з іменами треба використовувати `docker-compose` або `docker run -v`:
+
+[source,shell]
+----
+# Створюємо том з іменем вручну
+docker volume create my_named_volume
+
+# Запускаємо контейнер з підключеним іменованим томом
+docker run -d \
+  --name my-container \
+  -v my_named_volume:/app/data \
+  my-image
+
+# або
+docker run -d \
+  --name my-container \
+  --mount type=volume,source=my_named_volume,target=/app/data \
+  myimage
+----
+
+або в docker-compose
+
+[source,yaml]
+----
+version: '3.8'
+services:
+  my-service:
+    image: my-image
+    volumes:
+      - my_named_volume:/app/data
+----
+
+Може бути зручно для повторного використання даних між контейнерами або для резервного копіювання.
+
+[[docker-bind-nount-vs-volume]]Різниця між *Bind Mount* та *Anonymous Volume*:
+
+* *Bind Mount* напряму зв'язує каталог/файл хоста з контейнером;
+* *Anonymous Volume* зберігається в управляємому Docker (наприклад, /var/lib/docker/volumes), не прив'язаний напряму до шляху на хості.
+
+[[docker-volume-name-vs-path]]Різниця між *Named Volume* та *Bind Mount*:
+
+- *Named Volume* — це окремий об'єкт в Docker, який можна використовувати в інших контейнерах;
+- *Bind Mount* — це просто шлях на хості, який можна використовувати тільки в одному контейнері.
+
+Різниця у швидкості доступу до даних: *Named Volume** швидше, але *Bind Mount* має більше можливостей.
+
+[[docker-bind-nount-vs-volume-vs-named]]
+Порівняльня таблиця:
+
+|====
+|Тип тома|Доступ до даних|Повторне використання|Залежність від хоста|Розшарювати між контейнерами|Головне використання
+|Anonymous Volume|Через Docker|Ні|Ні|Технічно так, але незручно|Тимчасові дані
+|Named Volume|Через Docker|Так|Ні|Так|Постійне зберігання даних
+|Bind Mount| Через хост|Ні|Так|Так, якщо вказати той самий шлях|Розробка,тестування
+|====
+
+[[docker-application-log-volume]]Зазвичай логи контейнера виводяться в stdout/stderr (для `docker logs`) або підключаються до централізованої системи логування. Якщо потрібно зберігати логи на хості, можна підключити volume або bind mount для каталогу логів.
+
+[[docker-volumes-usage]]Використання томів в Docker дозволяє:
+
+* Зберігати дані поза контейнером, що дозволяє зберегти їх при перезапуску або видаленні контейнера;
+* Ділитися даними між контейнерами;
+* Зберігати конфігураційні файли, логи та інші дані, які можуть змінюватися під час роботи контейнера;
+* Використовувати дані з хоста в контейнері, наприклад, для розробки або тестування.
+
+[[docker-volume-drivers]]
+Драйвера доступні в volume:
+
+|====
+|Драйвер|Тип зберігання|Призначення
+|local|Локальна ФС (/var/lib/docker/volumes)|За замовчуванням, швидке локальне зберігання
+|nfs|NFS-сервер|Спільний доступ між кількома хостами
+|tmpfs|Оперативна пам’ять|Дуже швидке, але тимчасове зберігання
+|aws|Amazon EBS|Блочне сховище AWS
+|azurefile|Azure File Storage|Хмарне сховище Microsoft Azure
+|gcs|Google Cloud Storage|Хмарне сховище Google
+|efs|AWS Elastic File System|Розподілене хмарне сховище AWS
+|rexray|Багатоплатформне блочне сховище|AWS, GCP, Azure, OpenStack
+|flocker|Кластерне зберігання|Для розподілених систем
+|portworx|Розподілене блокове сховище|Для Kubernetes/Docker кластерів
+|ceph|CephFS або RBD|Масштабоване кластерне сховище
+|====
+
+Для того щоб створити том з використанням специфічного драйвера, можна використовувати команду:
+
+[source,shell]
+----
+docker volume create --driver <ім'я_драйвера> [--opt ключ=значення] <ім'я_тому>
+----
+
+Далі наведемо приклади створення томів, першим спробуємо створити з використанням драйвера `tmpfs`:
+
+[source,shell]
+----
+docker volume create \
+    --driver local \
+    --opt type=tmpfs \
+    --opt device=tmpfs \
+    --opt o=size=200m \
+    tmpfs_volume
+----
+
+Розберемо команду більш детально:
+
+- `docker volume create` — команда для створення нового тому;
+- `--driver local` — вказує, що ми використовуємо локальний драйвер;
+- `--opt type=tmpfs` — вказує тип тома як `tmpfs`, що означає, що дані будуть зберігатися в оперативній пам'яті;
+- `--opt device=tmpfs` — вказує, що ми використовуємо `tmpfs` як пристрій для зберігання даних;
+- `--opt o=size=200m` — вказує, що розмір тома обмежений 200 мегабайтами;
+- `tmpfs_volume` — ім'я створюваного тому.
+
+Ще одним прикладом буде створеня тому з використання NFS-драйвера:
+
+[source,shell]
+----
+docker volume create \
+    --driver local \
+    --opt type=nfs \
+    --opt o=addr=192.168.1.100,rw,nfsvers=4,tcp \
+    --opt device=:/nfs_data \
+    my_nfs_volume
+----
+
+Розберемо команду більш детально:
+
+- `docker volume create` — команда для створення нового тому;
+- `--driver local` — вказує, що ми використовуємо локальний драйвер;
+- `--opt type=nfs` — вказує тип тома як `nfs`, що означає, що дані будуть зберігатися на NFS-сервері;
+- `--opt o=addr=192.168.1.100,rw` — вказує адресу NFS-сервера та режим доступу (читання і запис);
+- `--opt device=:/nfs_data` — вказує шлях до каталогу на NFS-сервері, який буде використовуватися як том;
+- `my_nfs_volume` — ім'я створюваного тому.
+
+
+[[docker-volume-options]]
+Основні опції для `docker volume create --driver local --opt`:
+
+|====
+|Опція|Приклад Значення|Опис
+|type|tmpfs, nfs, ceph, aws, azurefile|Тип тома, який буде створено.
+|device|/path/to/device, :/nfs_data|Шлях до пристрою або каталогу, який буде використовуватися як том.
+|o|rw, ro, size=200m, addr=192.168.1.100|Опції монтування, як у mount -o
+|uid|1000|Власник файлів (User ID)
+|gid|1000|Група файлів (Group ID)
+|mode|0700|Права доступу до каталогу
+|nfsvers|3 або 4|Версія NFS
+|noatime|—|Не оновлювати час доступу до файлів (оптимізація швидкості)
+|soft / hard|—|Поведінка при розриві зв’язку з NFS (soft — повертає помилку, hard — чекає відновлення)
+|timeo|600|Таймаут у десятих частках секунди для NFS
+|tcp / udp|—|Протокол передачі для NFS
+|vers|4.1|Версія протоколу NFS
+|nolock|—|Вимкнення блокування файлів в NFS
+|====
+
+[[docker-volume-command-cheat-sheet]]
+.Команди для роботи з томами в Docker
+- `docker volume ls` - список всіх томів;[[docker-volume-get-all-volumes]]
+- `docker volume inspect <volume_name>` - отримання детальної інформації про том `<volume_name>`, включаючи його шлях на хості;
+- `docker volume rm <volume_name>` - видалення тому `<volume_name>`;
+- `docker volume rm $(docker volume ls -q)` - видалення всіх томів (будьте обережні, це видалить всі томи без підтвердження);
+- `docker volume prune` - видалення всіх не використовуваних томів;[[docker-volume-prune]]
+- `docker volume prune --force` - примусове видалення всіх не використовуваних томів без підтвердження;
+- `docker run -v <volume_name>:/path/in/container <image>` - запуск контейнера з підключеним томом `<volume_name>` до шляху `/path/in/container`;
+- `docker run --mount type=volume,source=<volume_name>,target=/path/in/container <image>` - запуск контейнера з підключеним томом `<volume_name>` до шляху `/path/in/container` (альтернативний синтаксис);
+- `docker volume create <volume_name>` - створення нового тому з іменем `<volume_name>`;
+- `docker volume create --name <volume_name>` - створення нового тому з іменем `<volume_name>`;
+- `docker volume create --driver <driver_name> <volume_name>` - створення нового тому з використанням специфічного драйвера `<driver_name>`;
+- `docker volume create --opt <key>=<value> <volume_name>` - створення нового тому з додатковими опціями `<key>=<value>`.
+
+
