@@ -62,6 +62,24 @@
 - Як тестувати Dockerfile? <<docker-dockerfile-testing, Answer>>
 - Best Practices при роботі з Dockerfile? <<docker-dockerfile-best-practices, Answer>>
 
+[#devops-docker-volume]
+.Docker Volume
+- Що таке VOLUME в Docker? <<docker-volumes-definition,Answer>>
+- Чи можна підключати один том до декількох контейнерів? <<docker-volume-share-between-containers,Answer>>
+- Які типи томів існують в Docker? <<docker-volumes-types,Answer>>
+- Що таке Anonymous Volume? <<docker-volume-anonymous-volume,Answer>>
+- Що таке Bind Mount? <<docker-volume-bind-mount,Answer>>
+- Що таке Named Volume? <<docker-volume-named-volume,Answer>>
+- Різниця між Bind Mount та Volume? <<docker-bind-nount-vs-volume,Answer>>
+- Різниця між Named Volume та Bind Mount <<docker-volume-name-vs-path,Answer>>
+- Різниця між Named Volume та Bind Mount та Anonymous Volume? <<docker-bind-nount-vs-volume-vs-named,Answer>>
+- Необхідно лі монтувати volume для запису логів додатку? <<docker-application-log-volume,Answer>>
+- Цілі використання томів в Docker? <<docker-volumes-usage,Answer>>
+- Які драйвери доступні для томів в Docker? <<docker-volume-drivers,Answer>>
+- Опції для під час створення Volume? <<docker-volume-options,Answer>>
+- Як видалити невикорсовуємі тома? <<docker-volume-prune,Answer>>
+- Як подивитись все доступні Volumes? <<docker-volume-get-all-volumes,Answer>>
+
 [#devops-docker-container]
 .Docker Container
 - Що таке Docker Container? <<docker-container-definition,Answer>>
