@@ -1,9 +1,9 @@
-ifndef::imagesdir[:imagesdir: ../../../imgs/docker/]
+ifndef::imagesdir[:imagesdir: ../../../imgs/]
 
 [#docker-network-host]
 ==== Host Network
 
-image::docker-network-host.jpg[Docker Image, align="center"]
+image::docker/docker-network-host.jpg[Docker Host Network, align="center"]
 
 [[docker-network-host-definition]]`Host` — це тип мережі при якому контейнер не має власної IP-адреси, а використовуватиме IP-адресу хоста. Контейнер не матиме власної IP-адреси, а використовуватиме IP-адресу хоста. Це може бути корисно для високопродуктивних застосунків покращуючи продуктивність, але знижує рівень ізоляції контейнерів.
 

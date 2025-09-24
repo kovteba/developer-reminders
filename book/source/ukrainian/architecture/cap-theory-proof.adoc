@@ -1,9 +1,9 @@
-ifndef::imagesdir[:imagesdir: ../../imgs/architecture/]
+ifndef::imagesdir[:imagesdir: source/imgs/]
 
 [#cap-theory-proof]
 === CAP Theory proof
 
-image::cap-theory-proof.jpg[CAP Theorem, align="center"]
+image::architecture/cap-theory-proof.jpg[CAP Theorem, align="center"]
 
 * 1999 — Ерік Брюер (Eric Brewer) сформулював гіпотезу CAP на конференції PODC (Principles of Distributed Computing);
 * 2002 — гіпотеза була математично доведена Сетом Ґілбертом (Seth Gilbert) і Ненсі Лінч (Nancy Lynch) з MIT у статті:

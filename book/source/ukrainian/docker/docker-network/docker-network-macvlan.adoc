@@ -1,9 +1,9 @@
-ifndef::imagesdir[:imagesdir: ../../../imgs/docker/]
+ifndef::imagesdir[:imagesdir: ../../../imgs/]
 
 [#docker-network-macvlan]
 ==== Macvlan Network
 
-image::docker-network-macvlan.jpg[Docker Image, align="center"]
+image::docker/docker-network-macvlan.jpg[Docker Macvlan Network, align="center"]
 
 [[docker-network-macvlan-definition]]Мережа `Macvlan` — це тип мережі Docker, який дозволяє контейнерам мати власні MAC-адреси та IP-адреси, як фізичні пристрої в локальній мережі. Це дозволяє контейнерам бути безпосередньо доступними в локальній мережі, що може бути корисно для інтеграції з існуючими мережевими інфраструктурами або для застосунків, які потребують унікальних MAC-адрес.
 
@@ -51,7 +51,7 @@ Cons:
 * Проблеми з безпекою, якщо контейнери мають прямий доступ до фізичної мережі без належної ізоляції;
 * Обмежена підтримка на деяких платформах, що може ускладнити використання в гетерогенних середовищах.
 
-[[docker-network-bridge-main-features]]
+[[docker-network-macvlan-main-features]]
 Головні особливості мережі `macvlan`:
 
 * Дозволяє контейнерам мати унікальні MAC-адреси та IP-адреси, як фізичні пристрої в локальній мережі;

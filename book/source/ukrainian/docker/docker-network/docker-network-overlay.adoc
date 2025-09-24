@@ -1,9 +1,9 @@
-ifndef::imagesdir[:imagesdir: ../../../imgs/docker/]
+ifndef::imagesdir[:imagesdir: ../../../imgs/]
 
 [#docker-network-overlay]
 ==== Overlay Network
 
-image::docker-network-overlay.jpg[Docker Image, align="center"]
+image::docker/docker-network-overlay.jpg[Docker Overlay Network, align="center"]
 
 [[docker-network-overlay-definition]]*overlay* — це тип мережі Docker, який дозволяє контейнерам спілкуватися між собою, які запущені на різних Docker-хостах, об'єднуючи їх у єдину віртуальну мережу. Overlay-мережа працює поверх (over) фізичної мережі і забезпечує спілкування між контейнерами, які знаходяться на різних вузлах кластеру (наприклад, у Docker Swarm або Kubernetes). `Overlay` мережі забезпечують високу ізоляцію та безпеку, дозволяючи контейнерам на різних хостах спілкуватися між собою через <<ingress,Ingress>>.
 

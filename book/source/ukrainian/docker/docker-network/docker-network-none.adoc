@@ -1,9 +1,9 @@
-ifndef::imagesdir[:imagesdir: ../../../imgs/docker/]
+ifndef::imagesdir[:imagesdir: ../../../imgs/]
 
 [#docker-network-none]
 ==== None Network
 
-image::docker-network-none.jpg[Docker Image, align="center"]
+image::docker/docker-network-none.jpg[Docker None Network, align="center"]
 
 [[docker-network-none-definition]]*None* — це тип мережі, при якому контейнер не має жодного мережевого інтерфейсу. Контейнер ізольований від будь-якої мережі, включаючи інші контейнери на тому ж хості. Це може бути корисно для застосунків, які не потребують мережевого доступу або коли потрібна максимальна ізоляція.
 

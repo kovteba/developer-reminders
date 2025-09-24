@@ -1,9 +1,9 @@
-ifndef::imagesdir[:imagesdir: ../../imgs/docker/]
+ifndef::imagesdir[:imagesdir: source/imgs/]
 
 [#docker-image]
 === Docker Image
 
-image::docker-image.jpg[Docker Image, align="center"]
+image::docker/docker-image.jpg[Docker Image, align="center"]
 
 [[docker-image-definition]]*Docker Image* — це незмінний (immutable) шаблон, який містить все необхідне для запуску додатку в контейнері: вихідний код, залежності, бібліотеки, системні утиліти та конфігурацію середовища. Образ формується на основі <<docker-dockerfile,Dockerfile>> — спеціального файлу інструкцій, який описує процес створення образу.
 
