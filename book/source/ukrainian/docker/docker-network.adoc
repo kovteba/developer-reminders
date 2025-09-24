@@ -1,0 +1,36 @@
+ifndef::imagesdir[:imagesdir: ../../imgs/docker/]
+
+[#docker-network]
+=== Docker Network
+
+image::docker-networks.jpg[Docker Image, align="center"]
+
+[[docker-network-definition]]*Docker Network* — це механізм, який дозволяє контейнерам спілкуватися один з одним та з зовнішнім світом. Docker автоматично створює мережу `bridge`, яка використовується за замовчуванням для всіх контейнерів. Але можна створювати власні мережі для кращої організації та безпеки. [[docker-network-types]]Існують кілька типів мереж в Docker:
+
+* <<docker-network-bridge,*Bridge*>>;
+* <<docker-network-host,*Host*>>;
+* <<docker-network-overlay,*Overlay*>>;
+* <<docker-network-macvlan,*Macvlan*>>;
+* <<docker-network-none,*None*>>.
+
+include::docker-network/docker-network-bridge.adoc[]
+include::docker-network/docker-network-host.adoc[]
+include::docker-network/docker-network-macvlan.adoc[]
+include::docker-network/docker-network-none.adoc[]
+include::docker-network/docker-network-overlay.adoc[]
+
+
+[[docker-network-comparison]]
+.Порівняння типів мереж в Docker:
+
+[cols="2,1,1,1,1,1", options="header"]
+|===
+|Параметр/Мережа             |bridge          |host                  |overlay             |macvlan            |none
+|Видимость между контейнерами|Да              |Только через localhost|Да (между нодами)   |Да (в пределах LAN)|Нет
+|Изоляция                    |Хорошая         |Нет                   |Отличная            |Частичная          |Полная
+|Поддерживает DNS            |Да              |Нет                   |Да                  |Нет (обычно)       |Нет
+|Хост-IP доступ              |Только через NAT|Прямой                |Только через Ingress|Прямой             |Нет
+|Производительность          |Средняя         |Высокая               |Ниже из-за VXLAN    |Высокая            |Высокая
+|Использование в проде       |Часто           |Ограничено            |Swarm/Compose       |Специфика LAN      |Никогда
+|Используется по умолчанию   |Да              |Нет                   |Нет                 |Нет                |Нет
+|===
