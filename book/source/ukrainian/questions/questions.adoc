@@ -1,5 +1,33 @@
 == QUESTIONS
 
+[#architecture]
+.Architecture
+
+[#architecture-cap-theory]
+- Що буде, якщо Consul втратить 2 вузли в кластері з 5? Які гарантії збережуться? <<cap-theorem-quorum,Answer>>
+
+[#service-discovery-questions]
+.Service Discovery Questions
+- Що таке Service Discovery і чому він важливий у розподілених системах? <<service-discovery-definition,Answer>>
+- Які основні типи Service Discovery ви знаєте? Поясніть різницю між ними. <<service-discovery-types,Answer>>
+- Що таке Client-side discovery? <<client-side-discovery,Answer>>
+- Як працює Client-side discovery? <<client-side-discovery-how-it-works,Answer>>
+- Які переваги та недоліки Client-side discovery? <<client-side-discovery-pros-and-cons,Answer>>
+- Що таке Server-side discovery? <<server-side-discovery,Answer>>
+- Як працює Server-side discovery? <<server-side-discovery-how-it-works,Answer>>
+- Які переваги та недоліки Server-side discovery? <<server-side-discovery-pros-and-cons,Answer>>
+- Що таке DNS-based discovery? <<dns-based-discovery,Answer>>
+- Як працює DNS-based discovery? <<dns-based-discovery-how-it-works,Answer>>
+- Які переваги та недоліки DNS-based discovery? <<dns-based-discovery-pros-and-cons,Answer>>
+- Що таке Key-Value Store-based discovery? <<key-value-store-based-discovery,Answer>>
+- Як працює Key-Value Store-based discovery? <<key-value-store-based-discovery-how-it-works,Answer>>
+- Які переваги та недоліки Key-Value Store-based discovery? <<key-value-store-based-discovery-pros-and-cons,Answer>>
+- Які переваги та недоліки кожного типу Service Discovery? <<service-discovery-types-comparison,Answer>>
+- Де використовується Service Discovery? <<service-discovery-where-used,Answer>>
+- Що дає Service Discovery у контексті мікросервісної архітектури? <<service-discovery-what-for,Answer>>
+- Які інструменти для Service Discovery ви знаєте? <<service-discovery-tools,Answer>>
+- Які головні компоненти системи Service Discovery? <<service-discovery-main-components,Answer>>
+
 [#devops]
 .DevOps
 [#devops-docker]
