@@ -1,9 +1,9 @@
-ifndef::imagesdir[:imagesdir: ../../imgs/docker/]
+ifndef::imagesdir[:imagesdir: source/imgs/]
 
 [#docker-volume]
 === Docker Volume
 
-image::docker-volume.jpg[Docker Image, align="center"]
+image::docker/docker-volume.jpg[Docker Value, align="center"]
 
 [[docker-volumes-definition]]**Docker Volumes** — це механізм для зберігання даних поза життєвим циклом контейнера тобто по за файловою системою контенера. Контейнер можна перестворити, а дані в томі залишаться. А також як варіант ділитися файламі між хостом та контейнером або між контейнерами. [[docker-volume-share-between-containers]]Але при одночасному підключенню одного тому до декількох контейнерів можуть виникнути конфлікти, тому потрібно переконатися, що додатки підтримують спільний доступ до томів.
 

@@ -1,9 +1,9 @@
-ifndef::imagesdir[:imagesdir: ../../imgs/docker/]
+ifndef::imagesdir[:imagesdir: ../../imgs]
 
 [#docker-network]
 === Docker Network
 
-image::docker-networks.jpg[Docker Image, align="center"]
+image::docker/docker-networks.jpg[Docker Networks, align="center"]
 
 [[docker-network-definition]]*Docker Network* — це механізм, який дозволяє контейнерам спілкуватися один з одним та з зовнішнім світом. Docker автоматично створює мережу `bridge`, яка використовується за замовчуванням для всіх контейнерів. Але можна створювати власні мережі для кращої організації та безпеки. [[docker-network-types]]Існують кілька типів мереж в Docker:
 

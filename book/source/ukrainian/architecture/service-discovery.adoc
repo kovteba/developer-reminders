@@ -1,9 +1,9 @@
-ifndef::imagesdir[:imagesdir: ../../imgs/architecture/]
+ifndef::imagesdir[:imagesdir: source/imgs/]
 
 [#service-discovery]
 === Service Discovery
 
-image::service-discovery.jpg[Docker Image, align="center"]
+image::architecture/service-discovery.jpg[Service Discovery, align="center"]
 
 [[service-discovery-definition]]*Service Discovery* — це механізм, який дозволяє автоматично знаходити та підключатися до сервісів у розподілених системах, таких як Docker Swarm або Kubernetes. Це особливо важливо в середовищах, де сервіси можуть динамічно змінювати IP-адресу, масштабуватися або переміщуватися між різними вузлами.
 
