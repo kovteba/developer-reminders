@@ -9,6 +9,12 @@ ifndef::urksourcedir[:urksourcedir: source/ukrainian]
 :partnums:
 :sectnums:
 
+== Architecture
+
+include::{urksourcedir}/architecture/cap-theory.adoc[]
+include::{urksourcedir}/architecture/cap-theory-proof.adoc[]
+include::{urksourcedir}/architecture/service-discovery.adoc[]
+
 == DevOps
 
 include::{urksourcedir}/docker/docker-image.adoc[]
@@ -17,8 +23,6 @@ include::{urksourcedir}/docker/docker-volume.adoc[]
 include::{urksourcedir}/docker/docker-container.adoc[]
 include::{urksourcedir}/docker/docker-network.adoc[]
 
-include::{urksourcedir}/architecture/cap-theory.adoc[]
-include::{urksourcedir}/architecture/cap-theory-proof.adoc[]
-include::{urksourcedir}/architecture/service-discovery.adoc[]
+
 
 include::{urksourcedir}/questions/questions.adoc[]
