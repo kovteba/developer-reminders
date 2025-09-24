@@ -1,9 +1,9 @@
-ifndef::imagesdir[:imagesdir: ../../imgs/architecture/]
+ifndef::imagesdir[:imagesdir: source/imgs/]
 
 [#cap-theory]
 === CAP Theory
 
-image::cap-theory.jpg[CAP Theorem, align="center"]
+image::architecture/cap-theory.jpg[CAP Theorem, align="center"]
 
 [[cap-theorem-definition]]*CAP-теорія* — це фундаментальна концепція, яка описує обмеження при проєктуванні розподілених систем. Вона була сформульована в 1999 році Еріком Брюером (Eric Brewer), а у 2002 році <<cap-theory-proof,математично доведена>>. Ця теорія особливо важлива при створенні систем Service Discovery, баз даних, кластерів та хмарних інфраструктур.
 

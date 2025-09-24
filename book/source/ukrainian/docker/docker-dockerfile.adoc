@@ -1,9 +1,9 @@
-ifndef::imagesdir[:imagesdir: ../../imgs/docker/]
+ifndef::imagesdir[:imagesdir: source/imgs/]
 
 [#docker-dockerfile]
 === Dockerfile
 
-image::docker-dockerfile.jpg[Docker Image, align="center"]
+image::docker/docker-dockerfile.jpg[DockerFile, align="center"]
 
 [[docker-dockerfile-definition]]*dockerfile* — це текстовий файл, який містить набір інструкцій для створення Docker-образу. Він визначає, як збирати образ, які команди виконувати, які файли копіювати, які порти відкривати тощо. Dockerfile використовується командою `docker build` для створення нового образу на основі вказаних інструкцій.
 

@@ -1,9 +1,9 @@
-ifndef::imagesdir[:imagesdir: ../../../imgs/docker/]
+ifndef::imagesdir[:imagesdir: ../../../imgs/]
 
 [#docker-network-bridge]
 ==== Bridge Network
 
-image::docker-network-bridge.jpg[Docker Image, align="center"]
+image::docker/docker-network-bridge.jpg[Docker Bridge Network, align="center"]
 
 [[docker-network-bridge-definition]]Мережа `bridge` є мережею, яка створюється Docker за замовчуванням. Створюється мост (docker0) на хосте, контейнери під'єднуються до нього що дозволяє контейнерам на одному хості спілкуватися між собою. Кожен контейнер отримує власну IP-адресу в межах цієї мережі. Це забезпечує ізоляцію між контейнерами, але дозволяє їм спілкуватися один з одним через IP-адреси або імена хостів (вони ж назви контейнерів).
 
