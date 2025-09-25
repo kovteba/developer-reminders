@@ -1,10 +1,10 @@
-ifndef::imagesdir[:imagesdir:imgs/]
 ifndef::urksourcedir[:urksourcedir: source/ukrainian]
 ifndef::engsourcedir[:engsourcedir: source/english]
 
 == JAVA Developer Notes
 Kovteba Dima <kovteba@gmail.com>
 v1.0, 2012-02-10
+
 :doctype: book
 :icons: font
 :toc: left
