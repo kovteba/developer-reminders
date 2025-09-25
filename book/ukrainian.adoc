@@ -1,4 +1,3 @@
-// ifndef::imagesdir[:imagesdir: ../source/imgs/]
 ifndef::urksourcedir[:urksourcedir: source/ukrainian]
 
 :doctype: book
