@@ -1,0 +1,99 @@
+ifndef::imagesdir[:imagesdir: ../../../../imgs/]
+
+[#uml-class-diagram]
+==== UML Class Diagram
+
+image::architecture/uml-class-diagram.jpg[UML Class Diagram, align="center"]
+
+
+* *UML Class Diagram* є одним з найпоширеніших типів діаграм у UML. Він використовується для моделювання статичної структури системи, показуючи класи, їх атрибути, методи та відносини між ними. Це структурний тип діаграми, який описую класи та їх атрибути(поля), методи, інтерфейси та їх взаємозв'язки. Що дозволяє візуалізувати архітектуру системи та її компоненти.
+
+Головні цілі UML Class Diagram:
+
+* *Проєктування системи* — Допомагає розробникам у створенні архітектури програмного забезпечення, визначаючи основні компоненти та їх взаємодії;
+* *Аналіз структури* — Дозволяє аналізувати існуючі системи, виявляючи потенційні проблеми або області для покращення;
+* Документування: Служить як документація для розробників, що полегшує розуміння структури системи;
+* *Комунікація* — Сприяє кращому спілкуванню між членами команди, забезпечуючи спільне розуміння структури системи.
+* *Reverse engineering* — Допомагає у відновленні структури існуючого коду для кращого розуміння його архітектури.
+
+.Головні єлементи UML Class Diagram:
+|====
+|Елемент|Опис
+|Класс|Прямоугольник с 3 секциями: имя, поля, методы
+|Интерфейс|Класс с пометкой <<interface>>
+|Наследование|Стрелка с пустым треугольником (A → B: A наследует B)
+|Реализация интерфейса|Пунктирная стрелка с треугольником
+|Ассоциация|Связь между объектами (двунаправленная / однонаправленная)
+|Композиция|Жёсткая связь (жизненный цикл зависит) — чёрный ромб
+|Агрегация|Слабая связь (независимые объекты) — ◇ белый ромб
+|Зависимость|Пунктирная стрелка (например, метод использует другой класс)
+|Множественность|[0..1], [1], [0..*] и т. д. — сколько объектов связано
+|====
+
+Нведемо приклад UML Class Diagram для системи замовлення товарів в інтернет-магазині:
+
+[plantuml]
+----
+@startuml
+interface PaymentMethod {
+    +authorize(amount: double): boolean
+}
+
+abstract class Person {
+    -id: Long
+    -name: String
+    +getName(): String
+}
+
+class Customer extends Person {
+    -email: String
+    +placeOrder(order: Order): void
+}
+
+class Order {
+    -orderId: Long
+    -date: LocalDate
+    +addItem(item: OrderItem): void
+    +calculateTotal(): double
+}
+
+class OrderItem {
+    -product: Product
+    -quantity: int
+    -price: double
+    +getSubtotal(): double
+}
+
+class Product {
+    -productId: Long
+    -name: String
+    -price: double
+}
+
+class CreditCardPayment implements PaymentMethod {
+    -cardNumber: String
+    -expiryDate: String
+    +authorize(amount: double): boolean
+}
+
+Customer "1" -- "*" Order : places
+Order "1" o-- "*" OrderItem : contains
+OrderItem "1" *-- "1" Product : for
+Order "1" --> "1" PaymentMethod : uses
+
+@enduml
+----
+
+.Таблиця з поясненнями елементів діаграми:
+|====
+|Елемент |Де в прикладі |Що означає
+|Клас |Customer, Order, Product |Звичайний клас із полями та методами
+|Абстрактний клас |Person |Не можна створити напряму (використовується як основа)
+|Інтерфейс |PaymentMethod |Описує контракт (поведінку), який реалізують класи
+|Успадкування |Customer extends Person |Customer успадковує властивості та методи Person
+|Реалізація інтерфейсу |CreditCardPayment implements PaymentMethod |Клас реалізує методи інтерфейсу
+|Асоціація |Customer -- Order |Один Customer може мати багато Order
+|Агрегація |Order o-- OrderItem |Слабкий зв’язок: Order містить OrderItem, але ті можуть існувати окремо
+|Композиція |OrderItem *-- Product |Міцний зв’язок: якщо OrderItem видалено — Product також не потрібен
+|Множинність |"1" -- "*" |Кількість об’єктів у зв’язку: один до багатьох, один до одного тощо
+|====
