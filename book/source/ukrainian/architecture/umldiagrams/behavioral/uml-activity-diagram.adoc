@@ -1,0 +1,108 @@
+ifndef::imagesdir[:imagesdir: ../../../../imgs/]
+
+[#uml-activity-diagram]
+==== UML Activity Diagram
+
+image::architecture/uml-activity-diagram.jpg[UML Activity Diagram, align="center"]
+
+[[uml-activity-diagram-definition]]*UML Activity Diagram* — це тип діаграми в Unified Modeling Language (UML), який використовується для моделювання потоків робіт або процесів у системі. Вона відображає послідовність дій, рішення та паралельні потоки, що допомагає у розумінні бізнес-процесів або алгоритмів. Діаграма діяльності є поведінковою діаграмою, яка фокусується на динамічних аспектах системи, показуючи, як різні дії пов'язані між собою і як вони виконуються у часі.
+
+[[uml-activity-diagram-main-goals]]
+Головні цілі UML Activity Diagram:
+
+* Моделювання бізнес-процесів і робочих потоків;
+* Опис алгоритмів поведінки системи;
+* Проєктування потоків у use case’ах;
+* Аналіз workflow процесів;
+* Планування поведінки об'єктів при виконанні завдань.
+
+[[uml-activity-diagram-main-elements]]
+.Головні елементи UML Activity Diagram
+|====
+|Элемент|Назначение
+|Initial Node|Старт процесса. Черная точка.
+|Activity (Action)|Конкретное действие или операция. Прямоугольник с закруглёнными углами.
+|Control Flow|Стрелки, указывающие порядок выполнения.
+|Decision Node|Условие (ветвление), ромб с выходами.
+|Merge Node|Объединение нескольких путей. Тоже ромб.
+|Fork Node|Распараллеливание задач. Чёрная горизонтальная полоса.
+|Join Node|Синхронизация задач. Чёрная горизонтальная полоса.
+|Final Node|Конец процесса. Белый круг с чёрной окантовкой.
+|Swimlanes (Optional)|Деление на роли (участников), показывают кто выполняет какие действия.
+|Object Node|Передача объектов между действиями.
+|Interruptible Region|Область, выполнение которой может быть прервано.
+|====
+
+[[uml-activity-diagram-example]]
+Наведемо приклад UML Activity Diagram:
+
+[plantuml]
+----
+@startuml
+|Customer|
+start
+:Browse Products;
+:Select Product;
+
+|System|
+:Check Stock;
+if (In Stock?) then (yes)
+  :Add to Cart;
+else (no)
+  stop
+endif
+
+:Request Login;
+
+|Customer|
+:Enter Credentials;
+
+|System|
+:Validate Credentials;
+if (Valid?) then (yes)
+  :Show Checkout Page;
+else (no)
+  :Show Error Message;
+  stop
+endif
+
+fork
+  :Calculate Shipping;
+fork again
+  :Apply Discount;
+end fork
+
+:Generate Order Summary;
+
+|PaymentGateway|
+:Process Payment;
+
+|System|
+if (Payment Success?) then (yes)
+  :Send Confirmation Email;
+  :Update Inventory;
+else (no)
+  :Cancel Order;
+endif
+
+stop
+@enduml
+----
+
+[[uml-class-activity-diagram-example-explanation]]
+.Таблиця з поясненнями елементів діаграми
+
+|====
+|Элемент UML|Где в примере
+|Initial Node|start
+|Action (Activity)|:Browse Products;, :Add to Cart;, :Validate Credentials;
+|Control Flow|Между всеми действиями
+|Decision Node|if (In Stock?) then (yes)...
+|Merge Node|Имплицитно в endif после ветвления
+|Fork Node|fork перед Calculate Shipping и Apply Discount
+|Join Node|end fork
+|Final Node|stop
+|Swimlanes|`
+|Object Flow|Generate Order Summary → Process Payment (имплицитно)
+|Exception Path|Ветка Show Error Message, Cancel Order
+|====

@@ -3,7 +3,7 @@ ifndef::imagesdir[:imagesdir: ../../../../imgs/]
 [#uml-use-case-diagram]
 ==== UML Use Case Diagram
 
-image::architecture/uml-use-case-diagram.jpg[UML Sequence Diagram, align="center"]
+image::architecture/uml-use-case-diagram.jpg[UML Use Case Diagram, align="center"]
 
 [[uml-use-case-diagram-definition]]*UML Use Case Diagram* використовується для моделювання функціональних можливостей системи з точки зору користувачів (акторів) та їх взаємодії з системою. Вона допомагає визначити, які функції система повинна виконувати, і як користувачі будуть взаємодіяти з нею. Це поведінковий тип діаграми, який описує функціональні можливості системи та взаємодії між користувачами (акторами) і системою через випадки використання (use cases).
 
@@ -17,7 +17,7 @@ image::architecture/uml-use-case-diagram.jpg[UML Sequence Diagram, align="center
 * *Документування системи* — Служить як документація для розробників, що полегшує розуміння функціональності системи.
 
 [[uml-use-case-diagram-main-elements]]
-.Головні елементи UML Use Case Diagram:
+.Головні елементи UML Use Case Diagram
 |====
 |Элемент|Описание
 |Actor (Актор)|Внешний пользователь системы — человек, организация или другая система
@@ -81,7 +81,7 @@ User <|-- Guest
 
 
 [[uml-class-use-case-diagram-example-explanation]]
-.Таблиця з поясненнями елементів діаграми:
+.Таблиця з поясненнями елементів діаграми
 |====
 |Елемент |Де в прикладі |Що означає
 |Актор (Actor)|Customer, Admin, Guest, PaymentGateway|Зовнішній учасник, який взаємодіє з системою
