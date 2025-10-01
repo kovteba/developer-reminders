@@ -1,0 +1,94 @@
+ifndef::imagesdir[:imagesdir: ../../../../imgs/]
+
+[#uml-use-case-diagram]
+==== UML Use Case Diagram
+
+image::architecture/uml-use-case-diagram.jpg[UML Sequence Diagram, align="center"]
+
+[[uml-use-case-diagram-definition]]*UML Use Case Diagram* використовується для моделювання функціональних можливостей системи з точки зору користувачів (акторів) та їх взаємодії з системою. Вона допомагає визначити, які функції система повинна виконувати, і як користувачі будуть взаємодіяти з нею. Це поведінковий тип діаграми, який описує функціональні можливості системи та взаємодії між користувачами (акторами) і системою через випадки використання (use cases).
+
+[[uml-sequence-diagram-main-goals]]
+Головні цілі UML Use Case Diagram:
+
+* *Визначення вимог* — Допомагає у зборі та документуванні функціональних вимог системи з точки зору користувачів;
+* *Комунікація з зацікавленими сторонами* — Сприяє кращому розумінню вимог між розробниками, замовниками та іншими зацікавленими сторонами;
+* *Планування розробки* — Служить основою для планування розробки, тестування та впровадження системи;
+* *Аналіз функціональності* — Дозволяє аналізувати функціональні можливості системи та виявляти потенційні проблеми або області для покращення;
+* *Документування системи* — Служить як документація для розробників, що полегшує розуміння функціональності системи.
+
+[[uml-use-case-diagram-main-elements]]
+.Головні елементи UML Use Case Diagram:
+|====
+|Элемент|Описание
+|Actor (Актор)|Внешний пользователь системы — человек, организация или другая система
+|Use Case (Вариант использования)|Функция, которую система выполняет (действие, которое может быть выполнено пользователем)
+|System Boundary|Прямоугольник, который ограничивает область системы
+|Association (Связь)|Линия между актором и вариантом использования, обозначает взаимодействие
+|Include|Один use case всегда включает другой
+|Extend|Один use case может быть дополнен другим при определённом условии
+|Generalization (Наследование)|Акторы или use cases могут быть обобщены (наследование)
+|====
+
+[[uml-use-case-diagram-example]]
+Наведемо приклад UML Use Case Diagram:
+
+[plantuml]
+----
+@startuml
+
+actor Customer
+actor Admin
+actor Guest
+actor PaymentGateway
+
+rectangle "Online Shopping System" {
+
+  (Browse Products)
+  (Register Account)
+  (Login)
+  (Place Order)
+  (Apply Discount)
+  (Make Payment)
+  (Manage Inventory)
+  (Generate Report)
+  (Logout)
+
+  Customer --> (Browse Products)
+  Guest --> (Browse Products)
+  Guest --> (Register Account)
+  Customer --> (Login)
+  Customer --> (Place Order)
+  Customer --> (Logout)
+  Customer --> (Make Payment)
+  Admin --> (Login)
+  Admin --> (Manage Inventory)
+  Admin --> (Generate Report)
+  Admin --> (Logout)
+
+  (Place Order) .> (Login) : <<include>>
+  (Place Order) .> (Apply Discount) : <<extend>>
+
+  (Make Payment) --> PaymentGateway
+}
+
+' Эмуляция абстрактного актора (необязательно)
+rectangle "Abstract Actor: User" as User
+User <|-- Customer
+User <|-- Guest
+
+@enduml
+----
+
+
+[[uml-class-use-case-diagram-example-explanation]]
+.Таблиця з поясненнями елементів діаграми:
+|====
+|Елемент |Де в прикладі |Що означає
+|Актор (Actor)|Customer, Admin, Guest, PaymentGateway|Зовнішній учасник, який взаємодіє з системою
+|Варіант використання (Use Case)|Browse Products, Register Account, Login, Place Order, Apply Discount, Make Payment, Manage Inventory, Generate Report, Logout|Функція або дія, яку система виконує для актора
+|Межа системи (System Boundary)|Прямокутник з написом "Online Shopping System"|Обмежує область системи, показуючи, що знаходиться всередині і що зовні
+|Асоціація (Association)|Лінії між акторами і варіантами використання|Показує взаємодію між актором і варіантом використання
+|Include|Стрілка з написом <<include>> від Place Order до Login|Показує, що один варіант використання завжди включає інший
+|Extend|Стрілка з написом <<extend>> від Place Order до Apply Discount|Показує, що один варіант використання може бути доповнений іншим за певної умови
+|Успадкування (Generalization)|Стрілки від Customer і Guest до Abstract Actor: User|Показує, що актори можуть бути узагальнені (успадковані)
+|====

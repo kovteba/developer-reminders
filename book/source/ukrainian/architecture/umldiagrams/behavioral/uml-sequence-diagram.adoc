@@ -18,6 +18,7 @@ image::architecture/uml-sequence-diagram.jpg[UML Sequence Diagram, align="center
 * *Підтримка розробки* — Сприяє кращому розумінню складних систем під час розробки, що допомагає уникнути помилок і покращує якість коду.
 
 [[uml-sequence-diagram-main-elements]]
+.Головні елементи UML Sequence Diagram:
 |===
 |Элемент|Значение
 |Актор (Actor)|Зовнішній учасник, який взаємодіє з системою (людина або інша система)
