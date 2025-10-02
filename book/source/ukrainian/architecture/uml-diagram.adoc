@@ -40,7 +40,7 @@ include::umldiagrams/structural/uml-component-diagram.adoc[]
 // include::umldiagrams/structural/uml-composite-structure-diagram.adoc[]
 // include::umldiagrams/structural/uml-object-diagram.adoc[]
 // include::umldiagrams/structural/uml-package-diagram.adoc[]
-// include::umldiagrams/structural/uml-deployment-diagram.adoc[]
+include::umldiagrams/structural/uml-deployment-diagram.adoc[]
 // include::umldiagrams/structural/uml-profile-diagram.adoc[]
 
 include::umldiagrams/behavioral/uml-use-case-diagram.adoc[]
