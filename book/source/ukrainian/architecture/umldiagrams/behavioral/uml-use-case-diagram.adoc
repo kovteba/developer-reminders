@@ -35,7 +35,6 @@ image::architecture/uml-use-case-diagram.jpg[UML Use Case Diagram, align="center
 [plantuml]
 ----
 @startuml
-
 actor Customer
 actor Admin
 actor Guest
@@ -75,7 +74,6 @@ rectangle "Online Shopping System" {
 rectangle "Abstract Actor: User" as User
 User <|-- Customer
 User <|-- Guest
-
 @enduml
 ----
 

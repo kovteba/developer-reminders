@@ -36,7 +36,7 @@ image::architecture/uml-diagram.jpg[UML Diagram, align="center"]
 * <<uml-timing-diagram,*Діаграма часових діаграм (Timing Diagram)*>> — ілюструє зміни станів об'єктів у часі, що допомагає у моделюванні реального часу;
 
 include::umldiagrams/structural/uml-class-diagram.adoc[]
-// include::umldiagrams/structural/uml-component-diagram.adoc[]
+include::umldiagrams/structural/uml-component-diagram.adoc[]
 // include::umldiagrams/structural/uml-composite-structure-diagram.adoc[]
 // include::umldiagrams/structural/uml-object-diagram.adoc[]
 // include::umldiagrams/structural/uml-package-diagram.adoc[]

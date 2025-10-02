@@ -84,14 +84,12 @@ if (Payment Success?) then (yes)
 else (no)
   :Cancel Order;
 endif
-
 stop
 @enduml
 ----
 
 [[uml-class-activity-diagram-example-explanation]]
 .Таблиця з поясненнями елементів діаграми
-
 |====
 |Элемент UML|Где в примере
 |Initial Node|start

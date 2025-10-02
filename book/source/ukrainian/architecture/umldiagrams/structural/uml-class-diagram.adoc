@@ -17,7 +17,7 @@ image::architecture/uml-class-diagram.jpg[UML Class Diagram, align="center"]
 * *Reverse engineering* — Допомагає у відновленні структури існуючого коду для кращого розуміння його архітектури.
 
 [[uml-class-diagram-main-elements]]
-.Головні єлементи UML Class Diagram:
+.Головні елементи UML Class Diagram:
 |====
 |Елемент|Опис
 |Класс|Прямоугольник с 3 секциями: имя, поля, методы
@@ -82,12 +82,11 @@ Customer "1" -- "*" Order : places
 Order "1" o-- "*" OrderItem : contains
 OrderItem "1" *-- "1" Product : for
 Order "1" --> "1" PaymentMethod : uses
-
 @enduml
 ----
 
 [[uml-class-diagram-example-explanation]]
-.Таблиця з поясненнями елементів діаграми:
+.Таблиця з поясненнями елементів діаграми
 |====
 |Елемент |Де в прикладі |Що означає
 |Клас |Customer, Order, Product |Звичайний клас із полями та методами
