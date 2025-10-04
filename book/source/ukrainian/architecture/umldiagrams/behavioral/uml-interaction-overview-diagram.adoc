@@ -1,0 +1,12 @@
+ifndef::imagesdir[:imagesdir: ../../../../imgs/]
+
+[#uml-interaction-overview-diagram]
+==== UML Interaction Overview Diagram
+
+image::architecture/uml-interaction-overview-diagram.jpg[UML Interaction Overview Diagram, align="center"]
+
+[[uml-interaction-overview-diagram-definition]]*UML Interaction Overview Diagram* (діаграма огляду взаємодій) використовується для надання загального огляду складних взаємодій у системі, комбінуючи елементи <<uml-activity-diagram,діаграм діяльності>> та <<uml-sequence-diagram,послідовностей>>. Вона допомагає візуалізувати, як різні частини системи взаємодіють між собою через серії повідомлень і дій. Це поведінковий тип діаграми, який описує потоки управління та взаємодії між об'єктами.
+
+
+
+
