@@ -3,11 +3,11 @@ ifndef::imagesdir[:imagesdir: ../../../../imgs/]
 [#uml-use-case-diagram]
 ==== UML Use Case Diagram
 
-image::architecture/uml-use-case-diagram.jpg[UML Use Case Diagram, align="center"]
+image::architecture/umldiagrams/behavioral/uml-use-case-diagram.jpg[UML Use Case Diagram, align="center"]
 
 [[uml-use-case-diagram-definition]]*UML Use Case Diagram* використовується для моделювання функціональних можливостей системи з точки зору користувачів (акторів) та їх взаємодії з системою. Вона допомагає визначити, які функції система повинна виконувати, і як користувачі будуть взаємодіяти з нею. Це поведінковий тип діаграми, який описує функціональні можливості системи та взаємодії між користувачами (акторами) і системою через випадки використання (use cases).
 
-[[uml-sequence-diagram-main-goals]]
+[[uml-use-case-diagram-main-goals]]
 Головні цілі UML Use Case Diagram:
 
 * *Визначення вимог* — Допомагає у зборі та документуванні функціональних вимог системи з точки зору користувачів;
@@ -77,8 +77,7 @@ User <|-- Guest
 @enduml
 ----
 
-
-[[uml-class-use-case-diagram-example-explanation]]
+[[uml-use-case-diagram-example-explanation]]
 .Таблиця з поясненнями елементів діаграми
 |====
 |Елемент |Де в прикладі |Що означає
