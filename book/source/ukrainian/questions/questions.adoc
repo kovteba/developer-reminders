@@ -38,6 +38,13 @@
 - Які найпопулярніші типи діаграм UML? <<uml-diagram-most-popular-types,Answer>>
 - Наведіть порівняльну таблицю типів діаграм UML. <<uml-diagram-comparative-table,Answer>>
 - Яка послідовність використання діаграм UML? <<uml-diagram-usage-sequence,Answer>>
+
+.Activity Diagram
+- Що таке UML Activity Diagram?<<uml-activity-diagram-definition,Answer>>
+- Які головні цілі UML Activity Diagram?<<uml-activity-diagram-main-goals,Answer>>
+- Які головні елементи UML Activity Diagram?<<uml-activity-diagram-main-elements,Answer>>
+- Наведіть приклад UML Activity Diagram.<<uml-activity-diagram-example,Answer>>
+
 - Що таке Package Diagram? <<uml-package-diagram-definition,Answer>>
 - Що таке UML Deployment Diagram?<<uml-deployment-diagram-definition>>
 - Які головні цілі UML Deployment Diagram?<<uml-deployment-diagram-main-goals>>
