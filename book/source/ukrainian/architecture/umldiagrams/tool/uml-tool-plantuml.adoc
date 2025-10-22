@@ -19,7 +19,10 @@ image::architecture/umldiagrams/tool/uml-tool-plantuml.jpg[PlantUML Tool, align=
 7. `Participant` — Визначає учасників (акторів або системи) у діаграмах послідовностей;
 8. `Note` — Додає примітки до діаграми;
 9. `Abstract` — Визначає абстрактні класи;
-10. `Enum` — Визначає перерахування.
+10. `Enum` — Визначає перерахування;
+11. `Node` — Визначає вузли у діаграмах розгортання;
+12. `Database` — Визначає бази даних у діаграмах розгортання.
+
 
 [plantuml]
 ----
@@ -126,33 +129,32 @@ end
 [plantuml]
 ----
 @startuml
-class Class1
-class Class2
-class Class3
-class Class4
-class Class5
-class Class6
-class Class7
-class Class8
-class Class9
-class Class10
-class Class11
-class Class12
-class Class13
-class Class14
-class Class15
-'class Class16
-'class Class17
-interface Interface1
-
-Class1 -- Class2 : association
-Class6 --> Class7 : association1
-Class8 <--> Class9 : association2
-Class10 -> Class11 : association3
-Class3 ..|> Interface1 : implements
-Class4 --|> Class5 : extends
-Class12 *-- Class13 : composition
-Class14 o-- Class15 : aggregation
-
+'class Class1
+'class Class2
+'class Class3
+'class Class4
+'class Class5
+'class Class6
+'class Class7
+'class Class8
+'class Class9
+'class Class10
+'class Class11
+'class Class12
+'class Class13
+'class Class14
+'class Class15
+''class Class16
+''class Class17
+'interface Interface1
+'
+'Class1 -- Class2 : association
+'Class6 --> Class7 : association1
+'Class8 <--> Class9 : association2
+'Class10 -> Class11 : association3
+'Class3 ..|> Interface1 : implements
+'Class4 --|> Class5 : extends
+'Class12 *-- Class13 : composition
+'Class14 o-- Class15 : aggregation
 @enduml
 ----
