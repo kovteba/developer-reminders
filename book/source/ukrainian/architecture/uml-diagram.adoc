@@ -28,7 +28,7 @@ image::architecture/uml-diagram.jpg[UML Diagram, align="center"]
 [[uml-diagram-structural-diagram-types]]
 До Структурних діаграм відносяться:
 
-* <<uml-class-diagram,*Діаграма класів (Class Diagram)*>> — показує класи системи, їх атрибути, методи та взаємозв'язки між ними. Це основний інструмент для моделювання об'єктно-орієнтованих систем;
+* <<uml-class-diagram,*Діаграма класів (Class Diagram)*>> — показує класи системи, їх атрибути, методи та взаємозв'язки між ними. Це основний інструмент для моделювання об'єктноорієнтованих систем;
 * <<uml-component-diagram,*Діаграма компонентів (Component Diagram)*>> — ілюструє організацію та залежності між різними компонентами системи, що допомагає у плануванні архітектури програмного забезпечення;
 * <<uml-composite-structure-diagram,*Диаграмма композитной структуры (Composite structure diagram)*>> — відображає внутрішню структуру класів і компонентів, включаючи їхні частини та зв'язки;
 * <<uml-deployment-diagram,*Діаграма розгортання (Deployment Diagram)*>> — показує фізичне розгортання артефактів на вузлах, що допомагає у плануванні інфраструктури;
@@ -37,20 +37,20 @@ image::architecture/uml-diagram.jpg[UML Diagram, align="center"]
 * <<uml-profile-diagram,*Діаграма профілів (Profile Diagram)*>> — дозволяє створювати спеціалізовані розширення UML для конкретних доменів або платформ.
 
 include::umldiagrams/behavioral/uml-activity-diagram.adoc[]
-include::umldiagrams/behavioral/uml-communication-diagram.adoc[]
+// include::umldiagrams/behavioral/uml-communication-diagram.adoc[]
 include::umldiagrams/behavioral/uml-interaction-overview-diagram.adoc[]
 include::umldiagrams/behavioral/uml-sequence-diagram.adoc[]
 include::umldiagrams/behavioral/uml-state-machine-diagram.adoc[]
-include::umldiagrams/behavioral/uml-timing-diagram.adoc[]
+// include::umldiagrams/behavioral/uml-timing-diagram.adoc[]
 include::umldiagrams/behavioral/uml-use-case-diagram.adoc[]
 
 include::umldiagrams/structural/uml-class-diagram.adoc[]
 include::umldiagrams/structural/uml-component-diagram.adoc[]
-include::umldiagrams/structural/uml-composite-structure-diagram.adoc[]
+// include::umldiagrams/structural/uml-composite-structure-diagram.adoc[]
 include::umldiagrams/structural/uml-deployment-diagram.adoc[]
-include::umldiagrams/structural/uml-object-diagram.adoc[]
+// include::umldiagrams/structural/uml-object-diagram.adoc[]
 include::umldiagrams/structural/uml-package-diagram.adoc[]
-include::umldiagrams/structural/uml-profile-diagram.adoc[]
+// include::umldiagrams/structural/uml-profile-diagram.adoc[]
 
 [[uml-diagram-most-popular-types]]
 Частіше за все, використовуються наступні діаграми:
@@ -62,6 +62,7 @@ include::umldiagrams/structural/uml-profile-diagram.adoc[]
 * <<uml-component-diagram,*Діаграма компонентів (Component Diagram)*>>;
 * <<uml-deployment-diagram,*Діаграма розгортання (Deployment Diagram)*>>.
 
+[[uml-diagram-comparative-table]]
 Далі наведемо порівняльну таблицю всіх типів діаграм UML:
 
 |====
@@ -82,6 +83,7 @@ include::umldiagrams/structural/uml-profile-diagram.adoc[]
 |Timing Diagram|Поведенкова|Моделювання змін станів об'єктів у часі|Об'єкти, стани, часові шкали
 |====
 
+[[uml-diagram-usage-sequence]]
 Послідовність використання діаграм UML:
 
 1. Визначення вимог: Використання Use Case діаграм для збору та аналізу вимог від зацікавлених сторін;
@@ -92,3 +94,4 @@ include::umldiagrams/structural/uml-profile-diagram.adoc[]
 6. Планування розгортання: Використання Deployment діаграм для визначення фізичного розгортання системи;
 7. Документування: Використання Profile діаграм для створення спеціалізованих розширень UML, якщо необхідно.
 
+include::umldiagrams/tool/uml-tool-plantuml.adoc[]

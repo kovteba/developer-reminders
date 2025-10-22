@@ -1,0 +1,8 @@
+ifndef::imagesdir[:imagesdir: ../../../../imgs/]
+
+[#uml-object-diagram]
+==== UML Object Diagram
+
+image::architecture/uml-object-diagram.jpg[UML Object Diagram, align="center"]
+
+[[uml-object-diagram-definition]]*UML Object Diagram* (діаграма об'єктів) використовується для моделювання конкретних екземплярів класів та їхніх зв'язків у певний момент часу. Вона показує, як об'єкти взаємодіють один з одним, ілюструючи структуру системи на рівні об'єктів. Це структурний тип діаграми, який описує конкретні екземпляри класів та їхні зв'язки.
