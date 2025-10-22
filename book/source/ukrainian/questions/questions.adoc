@@ -45,6 +45,17 @@
 - Які головні елементи UML Activity Diagram?<<uml-activity-diagram-main-elements,Answer>>
 - Наведіть приклад UML Activity Diagram.<<uml-activity-diagram-example,Answer>>
 
+.Communication Diagram
+- Що таке UML Communication Diagram?<<uml-communication-diagram-definition,Answer>>
+
+.Interaction Overview Diagram
+- Що таке UML Interaction Overview Diagram?<<uml-interaction-overview-diagram-definition,Answer>>
+
+.Sequence Diagram
+- Що таке UML Sequence Diagram?<<uml-sequence-diagram,Answer>>
+- Які головні цілі UML Sequence Diagram?<<uml-sequence-diagram-main-goals,Answer>>
+- Які основні елементи UML Sequence Diagram?<<uml-sequence-diagram-main-elements,Answer>>
+
 - Що таке Package Diagram? <<uml-package-diagram-definition,Answer>>
 - Що таке UML Deployment Diagram?<<uml-deployment-diagram-definition>>
 - Які головні цілі UML Deployment Diagram?<<uml-deployment-diagram-main-goals>>
