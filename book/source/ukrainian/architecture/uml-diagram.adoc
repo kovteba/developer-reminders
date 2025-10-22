@@ -41,7 +41,7 @@ include::umldiagrams/behavioral/uml-communication-diagram.adoc[]
 include::umldiagrams/behavioral/uml-interaction-overview-diagram.adoc[]
 include::umldiagrams/behavioral/uml-sequence-diagram.adoc[]
 include::umldiagrams/behavioral/uml-state-machine-diagram.adoc[]
-// include::umldiagrams/behavioral/uml-timing-diagram.adoc[]
+include::umldiagrams/behavioral/uml-timing-diagram.adoc[]
 include::umldiagrams/behavioral/uml-use-case-diagram.adoc[]
 
 include::umldiagrams/structural/uml-class-diagram.adoc[]
