@@ -3,7 +3,7 @@ ifndef::imagesdir[:imagesdir: ../../../../imgs/]
 [#uml-state-machine-diagram]
 ==== UML State Machine Diagram
 
-image::architecture/uml-state-machine-diagram.jpg[UML State Machine Diagram, align="center"]
+image::architecture/umldiagrams/behavioral/uml-state-machine-diagram.jpg[UML State Machine Diagram, align="center"]
 
 [[uml-state-machine-diagram-definition]]*UML State Machine Diagram* (діаграма станів) використовується для моделювання поведінки системи або об'єкта у відповідь на зовнішні події. Вона показує різні стани, в яких може перебувати об'єкт, а також переходи між цими станами, що допомагає зрозуміти, як система реагує на різні події та умови. Це поведінковий тип діаграми, який описує стани об'єктів і переходи між ними.
 
@@ -19,14 +19,29 @@ image::architecture/uml-state-machine-diagram.jpg[UML State Machine Diagram, ali
 [[uml-state-machine-diagram-main-elements]]
 .Головні елементи UML Use Case Diagram
 |====
-|Элемент|Обозначение|Назначение
-|Initial state|Черный кружок (●)|Начальное состояние
-|State (состояние)|Прямоугольник с закругл. углами|Представляет состояние объекта
-|Final state|Черный кружок в белом кольце|Конечное состояние
-|Transition (переход)|Стрелка между состояниями|Показывает изменение состояния при событии
-|Event (событие)|Подписано на стрелке|Вызывает переход
-|Action / Activity|Поведение, выполняемое при переходе или в состоянии|
-|Choice / Junction|Ромб|Ветка переходов по условиям
-|Entry / Exit|Поведение при входе/выходе|entry / ..., exit / ...
-|Substate / Composite state|Состояние, внутри которого другие состояния|Упрощает большие диаграммы
+|Элемент                    |Призначення                                |Позначення
+|Initial state              |Чорний кружок                              |Початковий стан
+|State (состояние)          |Прямокутник із заокругленими кутами        |Представляє стан об'єкта
+|Final state                |Чорний кружок з білим кружечком всередині  |Кінцевий стан
+|Transition (переход)       |Стрілка між станами                        |Зміни стану при події
+|Event (событие)            |Підпис на переході                         |Подія, що викликає перехід
+|Action / Activity          |Поведінка під час переходу                 |action / ..., activity / ...
+|Choice / Junction          |Ромб                                       |Гілка перехідів
+|Entry / Exit               |Поведінка при вході/виході                 |entry / ..., exit / ...
+|Substate / Composite state |Стан всередині іншого стану                |Підстан
 |====
+
+Приведимо приклад UML State Machine Diagram:
+
+[plantuml]
+----
+@startuml
+[*] --> Idle
+
+Idle --> Processing : Start
+Processing --> Waiting : Wait
+Waiting --> Processing : Resume
+Processing --> Finished : Complete
+Finished --> [*]
+@enduml
+----
