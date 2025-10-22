@@ -3,7 +3,6 @@ ifndef::imagesdir[:imagesdir: ../../../../imgs/]
 [#uml-communication-diagram]
 ==== UML Communication Diagram
 
-image::architecture/uml-communication-diagram.jpg[UML Communication Diagram, align="center"]
+image::architecture/umldiagrams/behavioral/uml-communication-diagram.jpg[UML Communication Diagram, align="center"]
 
-[[uml-communication-diagram-definition]]*UML Communication Diagram* (діаграма комунікацій) використовується для моделювання взаємодій між об'єктами або компонентами системи з акцентом на їхні зв'язки. Вона показує, як об'єкти взаємодіють один з одним через повідомлення, ілюструючи структуру взаємодій у вигляді мережі. Це поведінковий тип діаграми, який описує взаємодії між об'єктами з акцентом на їхні зв'язки.
-
+[[uml-communication-diagram-definition]]*UML Communication Diagram* (діаграма комунікацій) використовується для моделювання взаємодій між об'єктами або компонентами системи з акцентом на їхні зв'язки. Вона показує, як об'єкти взаємодіють один з одним через повідомлення, ілюструючи структуру взаємодій у вигляді мережі. Це поведінковий тип діаграми, який описує взаємодії між об'єктами з акцентом на їхні зв'язки. Спеціального типу діаграм для Communication Diagram не має, тому для їх створення використовується синтаксис діаграм послідовностей (<<uml-sequence-diagram,Sequence Diagram>>).
