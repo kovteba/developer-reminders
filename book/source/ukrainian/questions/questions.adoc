@@ -64,6 +64,11 @@
 .Timing Diagram
 - Що таке UML Timing Diagram?<<uml-timing-diagram-definition,Answer>>
 
+.Use Case Diagram
+- Що таке UML Use Case Diagram?<<uml-use-case-diagram-definition,Answer>>
+- Які головні цілі UML Use Case Diagram?<<uml-use-case-diagram-main-goals,Answer>>
+- Які головні елементи UML Use Case Diagram?<<uml-use-case-diagram-main-elements,Answer>>
+- Наведіть приклад UML Use Case Diagram.<<uml-use-case-diagram-example,Answer>>
 
 
 - Що таке Package Diagram? <<uml-package-diagram-definition,Answer>>
@@ -72,9 +77,7 @@
 - Які головні елементи UML Deployment Diagram?<<uml-deployment-diagram-main-elements>>
 - Наведіть приклад UML Deployment Diagram.<<uml-deployment-diagram-example>>
 - Що таке UML Use Case Diagram?<<uml-use-case-diagram-definition,Answer>>
-- Які головні цілі UML Use Case Diagram?<<uml-use-case-diagram-main-goals,Answer>>
-- Які головні елементи UML Use Case Diagram?<<uml-use-case-diagram-main-elements,Answer>>
-- Наведіть приклад UML Use Case Diagram.<<uml-use-case-diagram-example,Answer>>
+
 
 
 [#devops]

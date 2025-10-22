@@ -19,14 +19,14 @@ image::architecture/umldiagrams/behavioral/uml-use-case-diagram.jpg[UML Use Case
 [[uml-use-case-diagram-main-elements]]
 .Головні елементи UML Use Case Diagram
 |====
-|Элемент|Описание
-|Actor (Актор)|Внешний пользователь системы — человек, организация или другая система
-|Use Case (Вариант использования)|Функция, которую система выполняет (действие, которое может быть выполнено пользователем)
-|System Boundary|Прямоугольник, который ограничивает область системы
-|Association (Связь)|Линия между актором и вариантом использования, обозначает взаимодействие
-|Include|Один use case всегда включает другой
-|Extend|Один use case может быть дополнен другим при определённом условии
-|Generalization (Наследование)|Акторы или use cases могут быть обобщены (наследование)
+|Элемент                        |Описание
+|Актор (Actor)                  |Зовнішній користувач системи — людина, організація або інша система
+|Варіант використання (Use Case)|Функція, яку виконує система (дія, яку може виконати користувач)
+|Межі системи (System Boundary) |Прямокутник, що обмежує область системи
+|Зв’язок (Association)          |Лінія між актором і варіантом використання, що позначає взаємодію
+|Include (Включення)            |Один варіант використання завжди включає інший
+|Extend (Розширення)            |Один варіант використання може бути доповнений іншим за певної умови
+|Узагальнення (Generalization)  |Актори або варіанти використання можуть бути узагальнені (успадкування)
 |====
 
 [[uml-use-case-diagram-example]]
@@ -35,57 +35,45 @@ image::architecture/umldiagrams/behavioral/uml-use-case-diagram.jpg[UML Use Case
 [plantuml]
 ----
 @startuml
+left to right direction
+
 actor Customer
+actor "Payment Gateway" as Gateway
 actor Admin
 actor Guest
-actor PaymentGateway
 
-rectangle "Online Shopping System" {
-
+rectangle "E-commerce Website" {
   (Browse Products)
   (Register Account)
   (Login)
   (Place Order)
-  (Apply Discount)
-  (Make Payment)
-  (Manage Inventory)
-  (Generate Report)
-  (Logout)
-
-  Customer --> (Browse Products)
-  Guest --> (Browse Products)
-  Guest --> (Register Account)
-  Customer --> (Login)
-  Customer --> (Place Order)
-  Customer --> (Logout)
-  Customer --> (Make Payment)
-  Admin --> (Login)
-  Admin --> (Manage Inventory)
-  Admin --> (Generate Report)
-  Admin --> (Logout)
-
-  (Place Order) .> (Login) : <<include>>
-  (Place Order) .> (Apply Discount) : <<extend>>
-
-  (Make Payment) --> PaymentGateway
+  (Cancel Order)
+  (Process Refund)
+  (Update Product Listings)
+  (Manage User Accounts)
+  (View Reports)
 }
 
-' Эмуляция абстрактного актора (необязательно)
-rectangle "Abstract Actor: User" as User
-User <|-- Customer
-User <|-- Guest
+Guest -- (Browse Products)
+Guest -- (Register Account)
+
+Customer -- (Login)
+Customer -- (Browse Products)
+Customer -- (Add to Cart)
+Customer -- (Place Order)
+Customer -- (Cancel Order)
+
+(Place Order) --> (Add to Cart) : <<include>>
+(Place Order) ..> (Process Refund) : <<extend>>
+(Cancel Order) ..> (Process Refund) : <<include>>
+
+Admin -- (Update Product Listings)
+Admin -- (Manage User Accounts)
+Admin -- (View Reports)
+
+Gateway -- (Process Refund)
+
+' Actor generalizations
+Customer <|-- Guest
 @enduml
 ----
-
-[[uml-use-case-diagram-example-explanation]]
-.Таблиця з поясненнями елементів діаграми
-|====
-|Елемент |Де в прикладі |Що означає
-|Актор (Actor)|Customer, Admin, Guest, PaymentGateway|Зовнішній учасник, який взаємодіє з системою
-|Варіант використання (Use Case)|Browse Products, Register Account, Login, Place Order, Apply Discount, Make Payment, Manage Inventory, Generate Report, Logout|Функція або дія, яку система виконує для актора
-|Межа системи (System Boundary)|Прямокутник з написом "Online Shopping System"|Обмежує область системи, показуючи, що знаходиться всередині і що зовні
-|Асоціація (Association)|Лінії між акторами і варіантами використання|Показує взаємодію між актором і варіантом використання
-|Include|Стрілка з написом <<include>> від Place Order до Login|Показує, що один варіант використання завжди включає інший
-|Extend|Стрілка з написом <<extend>> від Place Order до Apply Discount|Показує, що один варіант використання може бути доповнений іншим за певної умови
-|Успадкування (Generalization)|Стрілки від Customer і Guest до Abstract Actor: User|Показує, що актори можуть бути узагальнені (успадковані)
-|====
