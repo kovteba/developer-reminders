@@ -56,6 +56,11 @@
 - Які головні цілі UML Sequence Diagram?<<uml-sequence-diagram-main-goals,Answer>>
 - Які основні елементи UML Sequence Diagram?<<uml-sequence-diagram-main-elements,Answer>>
 
+.State Machine Diagram
+- Що таке UML State Machine Diagram?<<uml-state-machine-diagram-definition,Answer>>
+- Які головні цілі UML State Machine Diagram?<<uml-state-machine-diagram-main-goals,Answer>>
+- Які головні елементи UML State Machine Diagram?<<uml-state-machine-diagram-main-elements,Answer>>
+
 - Що таке Package Diagram? <<uml-package-diagram-definition,Answer>>
 - Що таке UML Deployment Diagram?<<uml-deployment-diagram-definition>>
 - Які головні цілі UML Deployment Diagram?<<uml-deployment-diagram-main-goals>>
@@ -65,9 +70,7 @@
 - Які головні цілі UML Use Case Diagram?<<uml-use-case-diagram-main-goals,Answer>>
 - Які головні елементи UML Use Case Diagram?<<uml-use-case-diagram-main-elements,Answer>>
 - Наведіть приклад UML Use Case Diagram.<<uml-use-case-diagram-example,Answer>>
-- Що таке UML State Machine Diagram?<<uml-state-machine-diagram-definition,Answer>>
-- Які головні цілі UML State Machine Diagram?<<uml-state-machine-diagram-main-goals,Answer>>
-- Які головні елементи UML State Machine Diagram?<<uml-state-machine-diagram-main-elements,Answer>>
+
 
 [#devops]
 .DevOps
