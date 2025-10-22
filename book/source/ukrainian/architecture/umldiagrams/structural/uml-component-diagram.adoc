@@ -3,7 +3,7 @@ ifndef::imagesdir[:imagesdir: ../../../../imgs/]
 [#uml-component-diagram]
 ==== UML Component Diagram
 
-image::architecture/uml-component-diagram.jpg[UML Component Diagram, align="center"]
+image::architecture/umldiagrams/structural/uml-component-diagram.jpg[UML Component Diagram, align="center"]
 
 [[uml-component-diagram-definition]]*UML Component Diagram* ілюструє організацію та залежності між різними компонентами системи. Вона допомагає у плануванні архітектури програмного забезпечення, показуючи, як компоненти взаємодіють один з одним і які інтерфейси вони використовують для цієї взаємодії. Це структурний тип діаграми, який описує компоненти системи та їх взаємозв'язки.
 
