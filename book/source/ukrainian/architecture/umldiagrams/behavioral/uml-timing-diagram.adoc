@@ -3,6 +3,33 @@ ifndef::imagesdir[:imagesdir: ../../../../imgs/]
 [#uml-timing-diagram]
 ==== UML Timing Diagram
 
-image::architecture/uml-timing-diagram.jpg[UML Timing Diagram, align="center"]
+image::architecture/umldiagrams/behavioral/uml-timing-diagram.jpg[UML Timing Diagram, align="center"]
 
-[[uml-timing-diagram-definition]]*UML Timing Diagram*  використовується для моделювання змін станів об'єктів або систем у часі. Вона показує, як різні об'єкти змінюють свої стани протягом певного періоду часу, що допомагає у розумінні поведінки системи в реальному часі. Це поведінковий тип діаграми, який ілюструє зміни станів об'єктів у часі.
+[[uml-timing-diagram-definition]]*UML Timing Diagram* — використовується для моделювання змін станів об'єктів або систем у часі. Вона показує, як різні об'єкти змінюють свої стани протягом певного періоду часу, що допомагає у розумінні поведінки системи в реальному часі. Це поведінковий тип діаграми, який ілюструє зміни станів об'єктів у часі.
+
+[plantuml]
+----
+@startuml
+hide footbox
+robust "Client" as C
+robust "Server" as S
+
+@0
+C is Idle
+S is Idle
+
+@100
+C -> S : Request
+
+@200
+S is Processing
+
+@300
+S -> C : Response
+C is Processing
+
+@400
+C is Done
+S is Idle
+@enduml
+----

@@ -61,6 +61,11 @@
 - Які головні цілі UML State Machine Diagram?<<uml-state-machine-diagram-main-goals,Answer>>
 - Які головні елементи UML State Machine Diagram?<<uml-state-machine-diagram-main-elements,Answer>>
 
+.Timing Diagram
+- Що таке UML Timing Diagram?<<uml-timing-diagram-definition,Answer>>
+
+
+
 - Що таке Package Diagram? <<uml-package-diagram-definition,Answer>>
 - Що таке UML Deployment Diagram?<<uml-deployment-diagram-definition>>
 - Які головні цілі UML Deployment Diagram?<<uml-deployment-diagram-main-goals>>
