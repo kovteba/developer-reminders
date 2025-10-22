@@ -37,7 +37,7 @@ image::architecture/uml-diagram.jpg[UML Diagram, align="center"]
 * <<uml-profile-diagram,*Діаграма профілів (Profile Diagram)*>> — дозволяє створювати спеціалізовані розширення UML для конкретних доменів або платформ.
 
 include::umldiagrams/behavioral/uml-activity-diagram.adoc[]
-// include::umldiagrams/behavioral/uml-communication-diagram.adoc[]
+include::umldiagrams/behavioral/uml-communication-diagram.adoc[]
 include::umldiagrams/behavioral/uml-interaction-overview-diagram.adoc[]
 include::umldiagrams/behavioral/uml-sequence-diagram.adoc[]
 include::umldiagrams/behavioral/uml-state-machine-diagram.adoc[]
