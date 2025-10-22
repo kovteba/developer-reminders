@@ -1,0 +1,160 @@
+ifndef::imagesdir[:imagesdir: ../../../../imgs/]
+
+[#uml-tool-plantuml]
+==== PlantUML Tool
+
+image::architecture/umldiagrams/tool/uml-tool-plantuml.jpg[PlantUML Tool, align="center"]
+
+[[uml-tool-plantuml-definition]]*PlantUML* — це інструмент для створення UML-діаграм за допомогою простого текстового опису. Він підтримує різні типи UML-діаграм, включаючи діаграми класів, послідовностей, компонентів та інші. PlantUML дозволяє розробникам швидко створювати та оновлювати діаграми без необхідності використовувати складні графічні інтерфейси.
+
+[[uml-tool-plantuml-keywords]]
+Ключеві слова PlantUML:
+
+1. `Package` — Використовується для групування елементів діаграми;
+2. `Class` — Визначає класи в діаграмах класів;
+3. `Interface` — Визначає інтерфейси;
+4. `Component` — Визначає компоненти;
+5. `Object` — Визначає об'єкти;
+6. `Actor` — Визначає акторів у діаграмах послідовностей;
+7. `Participant` — Визначає учасників (акторів або системи) у діаграмах послідовностей;
+8. `Note` — Додає примітки до діаграми;
+9. `Abstract` — Визначає абстрактні класи;
+10. `Enum` — Визначає перерахування;
+11. `Node` — Визначає вузли у діаграмах розгортання;
+12. `Database` — Визначає бази даних у діаграмах розгортання.
+
+
+[plantuml]
+----
+@startuml
+component "System" {
+
+    package "User" {
+        enum Status {
+            ACTIVE
+            INACTIVE
+            PENDING
+        }
+
+        abstract class Admin extends User {
+            +manageUsers(): void
+            +viewReports(): void
+        }
+
+        abstract class User {
+            +id: int
+            +name: string
+            +getStatus(): Status
+        }
+        note left of User : User class.
+
+        interface Authenticator {
+            +login(username: string, password: string): boolean
+            +logout(): void
+        }
+    }
+}
+@enduml
+----
+
+[[uml-tool-plantuml-flow-control-components]]
+Компоненти які можуть керувати потоком в PlantUML:
+
+1. `alt` — Альтернатива: розділення на варіанти (if / else if / else);
+2. `else` — Альтернативна гілка alt;
+3. `opt` — Опціональний блок (аналог if, але без else);
+4. `loop` — Повторення: цикл із зазначеною умовою або описом;
+5. `par` — Паралельне виконання;
+6. `break` — Переривання сценарію;
+7. `critical` — Критична секція (послідовні дії, що не повинні перериватися);
+8. `group` — Групування дій під спільною назвою;
+9. `end` — Завершення блоку (alt, opt, loop тощо).
+
+[plantuml]
+----
+@startuml
+actor User
+participant "Login Service" as Login
+participant "Dashboard Service" as Dashboard
+database DB
+
+User -> Login : Enter credentials
+
+alt Valid credentials
+    Login -> DB : Verify credentials
+    DB --> Login : OK
+    Login -> User : Access granted
+else Invalid credentials
+    Login -> User : Access denied
+end
+
+opt Remember me selected
+    Login -> DB : Store token
+end
+
+loop 3 times
+    User -> Login : Retry login
+end
+
+critical Transaction
+    Login -> DB : Start session
+    Login -> DB : Save login log
+end
+
+group Finalizing login
+    Login -> User : Redirect to dashboard
+end
+
+break Session timeout
+    User -> Login : Session expired
+    Login -> User : Please login again
+end
+@enduml
+----
+
+
+Типи стрілок в PlantUML
+
+1. `--` — Пряма лінія (асоціація);
+2. `-->` — Стрілка з односторонньою навігацією;
+3. `<-->` — Стрілка з двосторонньою навігацією;
+4. `->` — Проста стрілка (вказує напрямок);
+5. `..>` — Пунктирна стрілка (залежність);
+6. `..` — Пунктирна лінія (реалізація);
+7. `*--` — Сполучення з композицією (композиція);
+8. `o--` — Сполучення з агрегацією (агрегація);
+9. `--|>` — Наслідування (розширення);
+10. `..|>` — Реалізація інтерфейсу.
+
+[plantuml]
+----
+@startuml
+'class Class1
+'class Class2
+'class Class3
+'class Class4
+'class Class5
+'class Class6
+'class Class7
+'class Class8
+'class Class9
+'class Class10
+'class Class11
+'class Class12
+'class Class13
+'class Class14
+'class Class15
+''class Class16
+''class Class17
+'interface Interface1
+'
+'Class1 -- Class2 : association
+'Class6 --> Class7 : association1
+'Class8 <--> Class9 : association2
+'Class10 -> Class11 : association3
+'Class3 ..|> Interface1 : implements
+'Class4 --|> Class5 : extends
+'Class12 *-- Class13 : composition
+'Class14 o-- Class15 : aggregation
+@enduml
+----

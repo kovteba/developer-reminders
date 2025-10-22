@@ -1,0 +1,8 @@
+ifndef::imagesdir[:imagesdir: ../../../../imgs/]
+
+[#uml-timing-diagram]
+==== UML Timing Diagram
+
+image::architecture/uml-timing-diagram.jpg[UML Timing Diagram, align="center"]
+
+[[uml-timing-diagram-definition]]*UML Timing Diagram*  використовується для моделювання змін станів об'єктів або систем у часі. Вона показує, як різні об'єкти змінюють свої стани протягом певного періоду часу, що допомагає у розумінні поведінки системи в реальному часі. Це поведінковий тип діаграми, який ілюструє зміни станів об'єктів у часі.

@@ -29,6 +29,28 @@
 - Які інструменти для Service Discovery ви знаєте? <<service-discovery-tools,Answer>>
 - Які головні компоненти системи Service Discovery? <<service-discovery-main-components,Answer>>
 
+[#architecture-uml-diagrams]
+.UML Diagrams
+- Що таке UML? <<uml-definition,Answer>>
+- Які основні типи діаграм UML? <<uml-diagram-types,Answer>>
+- Які діаграми відносяться до Поведенкових діаграм? <<uml-diagram-behavioral-diagram-types,Answer>>
+- Які діаграми відносяться до Структурних діаграм? <<uml-diagram-structural-diagram-types,Answer>>
+- Які найпопулярніші типи діаграм UML? <<uml-diagram-most-popular-types,Answer>>
+- Наведіть порівняльну таблицю типів діаграм UML. <<uml-diagram-comparative-table,Answer>>
+- Яка послідовність використання діаграм UML? <<uml-diagram-usage-sequence,Answer>>
+- Що таке Package Diagram? <<uml-package-diagram-definition,Answer>>
+- Що таке UML Deployment Diagram?<<uml-deployment-diagram-definition>>
+- Які головні цілі UML Deployment Diagram?<<uml-deployment-diagram-main-goals>>
+- Які головні елементи UML Deployment Diagram?<<uml-deployment-diagram-main-elements>>
+- Наведіть приклад UML Deployment Diagram.<<uml-deployment-diagram-example>>
+- Що таке UML Use Case Diagram?<<uml-use-case-diagram-definition,Answer>>
+- Які головні цілі UML Use Case Diagram?<<uml-use-case-diagram-main-goals,Answer>>
+- Які головні елементи UML Use Case Diagram?<<uml-use-case-diagram-main-elements,Answer>>
+- Наведіть приклад UML Use Case Diagram.<<uml-use-case-diagram-example,Answer>>
+- Що таке UML State Machine Diagram?<<uml-state-machine-diagram-definition,Answer>>
+- Які головні цілі UML State Machine Diagram?<<uml-state-machine-diagram-main-goals,Answer>>
+- Які головні елементи UML State Machine Diagram?<<uml-state-machine-diagram-main-elements,Answer>>
+
 [#devops]
 .DevOps
 [#devops-docker]
