@@ -7,7 +7,15 @@
 [#architecture-cap-theory]
 - Що буде, якщо Consul втратить 2 вузли в кластері з 5? Які гарантії збережуться? <<cap-theorem-quorum,Answer>>
 
-[#service-discovery-questions]
+[#architecture-design-patterns]
+.Design Patterns Questions
+- Що таке патерни проектування і чому вони важливі? <<design-patterns-definition,Answer>>
+- Які основні категорії патернів проектування ви знаєте? <<design-pattern-categories,Answer>>
+- Наведіть приклади породжувальних патернів проектування. <<design-pattern-creational-patterns,Answer>>
+- Наведіть приклади структурних патернів проектування. <<design-pattern-structural-patterns,Answer>>
+- Наведіть приклади поведінкових патернів проектування. <<design-pattern-behavioral-patterns,Answer>>
+
+[#architecture-service-discovery-questions]
 .Service Discovery Questions
 - Що таке Service Discovery і чому він важливий у розподілених системах? <<service-discovery-definition,Answer>>
 - Які основні типи Service Discovery ви знаєте? Поясніть різницю між ними. <<service-discovery-types,Answer>>
