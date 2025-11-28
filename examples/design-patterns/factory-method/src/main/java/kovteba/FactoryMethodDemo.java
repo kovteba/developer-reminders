@@ -19,8 +19,6 @@ public class FactoryMethodDemo {
         NotificationFactory factory2 = new EmailNotificationFactory();
         factory2.sendNotification();
 
-//        DriverManager.getConnection();
-//        Logger.getLogger();
         DocumentBuilderFactory.newInstance();
     }
 }

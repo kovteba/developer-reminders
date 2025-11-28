@@ -38,6 +38,17 @@
 - Як Factory Method допомагає реалізувати кешування об’єктів?<<design-patten-factory-method-caching,Answer>>
 - Як Factory Method допомагає уникнути великих switch-case конструкцій?<<design-patten-factory-method-solid-switch,Answer>>
 
+.Abstract Factory Questions
+- Що таке патерн Abstract Factory?<<design-pattern-abstract-factory-definition,Answer>>
+- Чим Abstract Factory відрізняється від Factory Method?<<design-pattern-abstract-factory-difference-factory-method,Answer>>
+- Які переваги використання Abstract Factory?<<design-pattern-abstract-factory-oсp-benefit,Answer>>
+- У яких випадках доцільно застосовувати Abstract Factory?<<design-pattern-abstract-factory-usage,Answer>>
+- Наведіть приклад використання патерну Abstract Factory.<<design-pattern-abstract-factory-example,Answer>>
+- Як Abstract Factory підтримує принцип OCP?<<design-pattern-abstract-factory-oсp-benefit,Answer>>
+- Які є реальні приклади використання Abstract Factory у Java?<<design-pattern-abstract-factory-usage,Answer>>
+- Як Abstract Factory допомагає забезпечити узгодженість об’єктів?<<design-pattern-abstract-factory-purpose,Answer>>
+- Як Abstract Factory інтегрується з іншими патернами проєктування?<<design-pattern-abstract-factory-usage,Answer>>
+
 [#architecture-service-discovery-questions]
 .Service Discovery Questions
 - Що таке Service Discovery і чому він важливий у розподілених системах? <<service-discovery-definition,Answer>>
