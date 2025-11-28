@@ -1,0 +1,85 @@
+ifndef::imagesdir[:imagesdir: ../../../../imgs/]
+ifndef::exampledir[:exampledir: ../../../../../../examples/design-patterns/factory-method/src/main/java/kovteba]
+
+[#design-pattern-factory-method]
+==== Factory Method
+
+image::architecture/designpattern/structural/design-patterns-factory-method.jpg[Factory Method, align="center"]
+
+[[design-patten-factory-method-definition]]*Factory Method* — це патерн проєктування, який належить до категорії <<design-pattern-creational-patterns,породжувальних патернів>> і визначає спільний інтерфейс для створення об’єктів, дозволяючи підкласам вирішувати, який конкретний клас інстанціювати. Його головна мета — ізолювати процес створення об’єктів від бізнес-логіки та прибрати прямі виклики `new`, що підвищує гнучкість, тестованість і масштабованість системи. [[design-patten-factory-method-main-idea]]Ідея полягає в тому, щоб делегувати створення об’єктів через абстрактний метод у базовому класі, тоді як конкретні підкласи реалізують власні варіанти цього методу та повертають різні реалізації інтерфейсу або абстрактного класу продукту.
+
+[[design-patten-factory-method-difference-simple-factory]]На відміну від <<design-pattern-simple-facory,*Simple Factory* (статичної фабрики)>>, де вибір конкретного класу визначається всередині одного статичного методу `create()`, *Factory Method* використовує поліморфізм і дозволяє розширювати логіку створення об’єктів шляхом перевизначення методу в підкласах. Це дає можливість адаптувати поведінку фабрики без модифікації вихідного коду, що відповідає принципу <<solid-ocp,OCP (Open/Closed Principle)>>. [[design-patten-factory-method-difference-abstract-factory]]Водночас Factory Method часто плутають із <<design-pattern-abstract-factory,Abstract Factory>>, але різниця полягає в тому, що Factory Method створює *один* об’єкт певного типу, тоді як Abstract Factory генерує *сімейство пов’язаних об’єктів*, які узгоджено працюють між собою.
+
+[[design-patten-factory-method-ocp-benefit]]Ключова перевага Factory Method у підтримці розширюваності — якщо потрібно додати новий тип продукту, достатньо створити новий підклас із власною реалізацією фабричного методу. Це дозволяє розвивати систему без зміни існуючого коду, що і є суттю принципу <<solid-ocp,OCP>>. [[design-patten-factory-method-unnecessary-cases]]Проте, якщо система завжди створює один і той самий тип об’єкта, без необхідності варіацій, застосування патерна буде зайвим — у такому випадку доречніше використати звичайний конструктор або механізм <<spring-di,Dependency Injection>>.
+
+[[design-patten-factory-method-inheritance]]Реалізація Factory Method майже завжди спирається на успадкування: базовий клас визначає метод `createNotification()`, який підкласи перевизначають, створюючи власні реалізації. Це дозволяє зберігати клієнтський код стабільним і не залежним від конкретних типів.
+
+[[design-patten-factory-method-framework-usage]]Патерн активно використовується у фреймворках: у **JDBC** метод `DriverManager.getConnection()` самостійно визначає, який драйвер БД створити, а в **Spring Framework** будь-який метод із анотацією `@Bean` є фактично фабричним методом, який створює та реєструє об’єкт у контексті. У **SLF4J** метод `LoggerFactory.getLogger()` також є прикладом Factory Method, який приховує конкретний механізм логування (Logback, Log4j тощо). [[design-patten-factory-method-jdk-examples]]У стандартній бібліотеці Java можна знайти десятки прикладів цього паттерна: `Calendar.getInstance()`, `FileSystem.getFileSystem()`, `DocumentBuilderFactory.newInstance()` — усі вони делегують створення конкретної реалізації під час виконання, забезпечуючи незалежність клієнтського коду від реалізації. [[design-patten-factory-method-spring-example]]У Spring це виглядає так:
+
+[source,java]
+----
+@Bean
+public DataSource dataSource() {
+    return new HikariDataSource();
+}
+----
+контейнер Spring сам викликає цей метод, створює об’єкт і керує його життєвим циклом.
+
+[[design-patten-factory-method-real-example]]У практичних задачах Factory Method часто використовують для вибору серед різних реалізацій, наприклад, `PaymentProviderFactory`, яка може повертати `StripeProvider`, `PayPalProvider` або `MockProvider` залежно від конфігурації. Це дозволяє змінювати поведінку програми без переписування коду, просто замінюючи фабрику або її параметри.
+
+[[design-patten-factory-method-testing-benefits]]Однією з важливих переваг є підтримка тестування: *Factory Method* дає змогу легко підміняти створення об’єктів тестовими (mock) реалізаціями, що робить юніт-тести ізольованими й швидкими.
+
+[[design-patten-factory-method-di-integration]]Крім того, *Factory Method* чудово поєднується з DI. DI відповідає за постачання залежностей, а фабричний метод визначає, який саме клас створити у поточному середовищі (наприклад, через Spring-профілі `@Profile("dev")`, `@Profile("prod")`).
+
+[[design-patten-factory-method-runtime-selection]]Для динамічного вибору типу під час виконання часто використовують мапу фабрик:
+
+[source,java]
+----
+Map<String, Supplier<Product>> factories = Map.of("A", ConcreteA::new, "B", ConcreteB::new);
+Product p = factories.get(type).get();
+----
+
+це дозволяє підключати нові типи продуктів без зміни основної логіки.
+
+[[design-patten-factory-method-difference-reflection]]На відміну від Reflection або `ServiceLoader`, Factory Method забезпечує *типобезпечність* і контроль на рівні компіляції. Reflection створює об’єкти динамічно, але без compile-time перевірки типів, тоді як фабричний метод гарантує стабільність і інтеграцію з поліморфізмом.
+
+[[design-patten-factory-method-plugin-architecture]]Це також основа для створення <<architecture-plug-in,plug-in архітектур>>, де кожен плагін має власну фабрику, яка створює потрібні об’єкти, не зачіпаючи ядро системи. [[design-patten-factory-method-anti-patterns]]Якщо у проєкті починають з’являтися десятки дрібних фабрик, які не додають користі, Factory Method може перетворитися на антипатерн — у такому випадку доцільно використовувати DI або просту мапу типів `Map<Class, Supplier>`.
+
+[[design-patten-factory-method-caching]]Factory Method також часто застосовують для реалізації кешів і пулів об’єктів, коли метод спочатку перевіряє, чи існує потрібний об’єкт у пам’яті, і повертає його, або створює новий.
+
+[[design-patten-factory-method-solid-switch]]Ще одна перевага — можливість позбутися великих `switch-case` конструкцій, замінюючи їх поліморфізмом. Замість перевірок типів створюється набір класів, кожен з яких реалізує свій метод `create()`. Це робить код чистішим, розширюваним і більш відповідним принципам SOLID. [[design-patten-factory-method-summary]]Загалом, *Factory Method* — це ключовий інструмент побудови розширюваної архітектури в Java. Він інкапсулює створення об’єктів, усуває жорсткі залежності, полегшує тестування, підтримує різні середовища виконання й допомагає дотримуватися принципів чистого дизайну. Саме тому цей патерн є фундаментальним елементом у більшості сучасних Java-фреймворків.
+
+[source,java]
+----
+include::{exampledir}/notification/Notification.java[tags=Notification]
+----
+
+[source,java]
+----
+include::{exampledir}/notification/impl/SMSNotification.java[tags=SMSNotification]
+----
+
+[source,java]
+----
+include::{exampledir}/notification/impl/EmailNotification.java[tags=EmailNotification]
+----
+
+[source,java]
+----
+include::{exampledir}/factory/NotificationFactory.java[tags=NotificationFactory]
+----
+
+[source,java]
+----
+include::{exampledir}/factory/impl/SMSNotificationFactory.java[tags=SMSNotificationFactory]
+----
+
+[source,java]
+----
+include::{exampledir}/factory/impl/EmailNotificationFactory.java[tags=EmailNotificationFactory]
+----
+
+[source,java]
+----
+include::{exampledir}/FactoryMethodDemo.java[tags=FactoryMethodDemo]
+----
