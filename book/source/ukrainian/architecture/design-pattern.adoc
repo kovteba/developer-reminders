@@ -49,3 +49,4 @@ image::architecture/designpattern/design-pattern.jpg[Design Patterns, align="cen
 * <<design-pattern-visitor,*Visitor*>> — дозволяє додавати нові операції до об'єктів без зміни їх класів, розділяючи алгоритм від структури об'єктів.
 
 include::./designpattern/structural/design-pattern-factory-method.adoc[]
+include::./designpattern/structural/design-pattern-abstract-factory.adoc[]

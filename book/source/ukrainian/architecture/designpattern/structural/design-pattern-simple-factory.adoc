@@ -1,0 +1,6 @@
+ifndef::imagesdir[:imagesdir: ../../../../imgs/]
+ifndef::exampledir[:exampledir: ../../../../../../examples/design-patterns/abstract-factory/src/main/java/kovteba]
+
+[#design-pattern-simple-factory]
+==== Simple Factory
+// TODO

@@ -1,5 +1,5 @@
 ifndef::imagesdir[:imagesdir: ../../../../imgs/]
-ifndef::exampledir[:exampledir: ../../../../../../examples/design-patterns/factory-method/src/main/java/kovteba]
+ifndef::factorymethodexampledir[:factorymethodexampledir: ../../../../../../examples/design-patterns/factory-method/src/main/java/kovteba]
 
 [#design-pattern-factory-method]
 ==== Factory Method
@@ -51,35 +51,35 @@ Product p = factories.get(type).get();
 
 [source,java]
 ----
-include::{exampledir}/notification/Notification.java[tags=Notification]
+include::{factorymethodexampledir}/notification/Notification.java[tags=Notification]
 ----
 
 [source,java]
 ----
-include::{exampledir}/notification/impl/SMSNotification.java[tags=SMSNotification]
+include::{factorymethodexampledir}/notification/impl/SMSNotification.java[tags=SMSNotification]
 ----
 
 [source,java]
 ----
-include::{exampledir}/notification/impl/EmailNotification.java[tags=EmailNotification]
+include::{factorymethodexampledir}/notification/impl/EmailNotification.java[tags=EmailNotification]
 ----
 
 [source,java]
 ----
-include::{exampledir}/factory/NotificationFactory.java[tags=NotificationFactory]
+include::{factorymethodexampledir}/factory/NotificationFactory.java[tags=NotificationFactory]
 ----
 
 [source,java]
 ----
-include::{exampledir}/factory/impl/SMSNotificationFactory.java[tags=SMSNotificationFactory]
+include::{factorymethodexampledir}/factory/impl/SMSNotificationFactory.java[tags=SMSNotificationFactory]
 ----
 
 [source,java]
 ----
-include::{exampledir}/factory/impl/EmailNotificationFactory.java[tags=EmailNotificationFactory]
+include::{factorymethodexampledir}/factory/impl/EmailNotificationFactory.java[tags=EmailNotificationFactory]
 ----
 
 [source,java]
 ----
-include::{exampledir}/FactoryMethodDemo.java[tags=FactoryMethodDemo]
+include::{factorymethodexampledir}/FactoryMethodDemo.java[tags=FactoryMethodDemo]
 ----

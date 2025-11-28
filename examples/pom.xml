@@ -10,6 +10,8 @@
 
     <artifactId>examples</artifactId>
 
+    <packaging>pom</packaging>
+
     <modules>
         <module>design-patterns</module>
     </modules>
