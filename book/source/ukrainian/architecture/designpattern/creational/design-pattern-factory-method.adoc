@@ -4,7 +4,7 @@ ifndef::factorymethodexampledir[:factorymethodexampledir: ../../../../../../exam
 [#design-pattern-factory-method]
 ==== Factory Method
 
-image::architecture/designpattern/structural/design-patterns-factory-method.jpg[Factory Method, align="center"]
+image::architecture/designpattern/creational/design-patterns-factory-method.jpg[Factory Method, align="center"]
 
 [[design-patten-factory-method-definition]]*Factory Method* — це патерн проєктування, який належить до категорії <<design-pattern-creational-patterns,породжувальних патернів>> і визначає спільний інтерфейс для створення об’єктів, дозволяючи підкласам вирішувати, який конкретний клас інстанціювати. Його головна мета — ізолювати процес створення об’єктів від бізнес-логіки та прибрати прямі виклики `new`, що підвищує гнучкість, тестованість і масштабованість системи. [[design-patten-factory-method-main-idea]]Ідея полягає в тому, щоб делегувати створення об’єктів через абстрактний метод у базовому класі, тоді як конкретні підкласи реалізують власні варіанти цього методу та повертають різні реалізації інтерфейсу або абстрактного класу продукту.
 

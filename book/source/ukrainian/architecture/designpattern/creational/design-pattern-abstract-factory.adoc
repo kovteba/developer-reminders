@@ -4,7 +4,7 @@ ifndef::abstractfactoryexampledir[:abstractfactoryexampledir: ../../../../../../
 [#design-pattern-abstract-factory]
 ==== Abstract Factory
 
-image::architecture/designpattern/structural/design-patterns-abstract-factory.jpg[Abstract Factory, align="center"]
+image::architecture/designpattern/creational/design-patterns-abstract-factory.jpg[Abstract Factory, align="center"]
 
 [[design-pattern-abstract-factory-definition]]*Abstract Factory* — це патерн проєктування, який належить до категорії <<design-pattern-creational-patterns,породжувальних патернів>> і надає інтерфейс для створення *сімейства взаємопов’язаних об’єктів* без необхідності вказувати їх конкретні класи. На відміну від <<design-patten-factory-method,Factory Method>>, який створює один продукт, *Abstract Factory* дозволяє створювати групу продуктів, які повинні узгоджено взаємодіяти між собою. [[design-pattern-abstract-factory-main-idea]]Основна ідея полягає в тому, щоб інкапсулювати створення цілих сімейств об’єктів у фабриках, які конкретні платформи, системи або конфігурації можуть перевизначати на свій розсуд.
 

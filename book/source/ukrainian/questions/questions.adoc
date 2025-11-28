@@ -38,6 +38,7 @@
 - Як Factory Method допомагає реалізувати кешування об’єктів?<<design-patten-factory-method-caching,Answer>>
 - Як Factory Method допомагає уникнути великих switch-case конструкцій?<<design-patten-factory-method-solid-switch,Answer>>
 
+[#architecture-design-patterns-abstract-factory]
 .Abstract Factory Questions
 - Що таке патерн Abstract Factory?<<design-pattern-abstract-factory-definition,Answer>>
 - Чим Abstract Factory відрізняється від Factory Method?<<design-pattern-abstract-factory-difference-factory-method,Answer>>
@@ -48,6 +49,17 @@
 - Які є реальні приклади використання Abstract Factory у Java?<<design-pattern-abstract-factory-usage,Answer>>
 - Як Abstract Factory допомагає забезпечити узгодженість об’єктів?<<design-pattern-abstract-factory-purpose,Answer>>
 - Як Abstract Factory інтегрується з іншими патернами проєктування?<<design-pattern-abstract-factory-usage,Answer>>
+
+[#architecture-design-patterns-builder]
+.Builder Questions
+- Що таке патерн проєктування Builder?<<design-pattern-builder-definition,Answer>>
+- Яка основна ідея патерна Builder?<<design-pattern-builder-main-idea,Answer>>
+- Яку проблему вирішує патерн Builder?<<design-pattern-builder-problem,Answer>>
+- Як працює патерн Builder?<<design-pattern-builder-solution,Answer>>
+- Де зазвичай використовується патерн Builder у Java?<<design-pattern-builder-usage,Answer>>
+- Наведіть приклад реалізації патерна Builder.<<design-pattern-builder-example,Answer>>
+- Які переваги використання патерна Builder?<<design-pattern-builder-benefits,Answer>>
+- Підсумуйте основні ідеї патерна Builder.<<design-pattern-builder-summary,Answer>>
 
 [#architecture-service-discovery-questions]
 .Service Discovery Questions
