@@ -53,3 +53,5 @@ include::./designpattern/creational/design-pattern-factory-method.adoc[]
 include::./designpattern/creational/design-pattern-abstract-factory.adoc[]
 
 include::./designpattern/creational/design-pattern-builder.adoc[]
+
+include::./designpattern/creational/design-pattern-prototype.adoc[]

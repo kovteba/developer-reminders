@@ -61,6 +61,17 @@
 - Які переваги використання патерна Builder?<<design-pattern-builder-benefits,Answer>>
 - Підсумуйте основні ідеї патерна Builder.<<design-pattern-builder-summary,Answer>>
 
+[#architecture-design-patterns-prototype]
+.Prototype Questions
+- Що таке патерн проєктування Prototype?<<design-pattern-prototype-definition,Answer>>
+- Яка основна ідея патерну Prototype?<<design-pattern-prototype-main-idea,Answer>>
+- В яких випадках слід використовувати патерн Prototype?<<design-pattern-prototype-usage,Answer>>
+- Чим патерн Prototype відрізняється від простого копіювання об’єктів?<<design-pattern-prototype-difference-from-copy,Answer>>
+- Яка різниця між поверхневим (shallow) та глибоким (deep) копіюванням у контексті Prototype?<<design-pattern-prototype-shallow-vs-deep,Answer>>
+- Які переваги надає використання патерну Prototype?<<design-pattern-prototype-benefits,Answer>>
+- Наведіть приклад реалізації патерну Prototype.<<design-pattern-prototype-example,Answer>>
+- Які типові сценарії використання патерну Prototype?<<design-pattern-prototype-usage,Answer>>
+
 [#architecture-service-discovery-questions]
 .Service Discovery Questions
 - Що таке Service Discovery і чому він важливий у розподілених системах? <<service-discovery-definition,Answer>>
