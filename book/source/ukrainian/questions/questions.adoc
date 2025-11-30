@@ -83,6 +83,19 @@
 - Чому використання `volatile` важливе у потокобезпечній реалізації Singleton? <<design-pattern-singleton-dcl,Answer>>
 - Як Singleton впливає на тестування та підтримку коду? <<design-pattern-singleton-problems,Answer>>
 
+[#architecture-design-patterns-adapter]
+.Adapter Questions
+- Що таке патерн Adapter? <<design-pattern-adapter-definition,Answer>>
+- Яка основна ідея патерна Adapter? <<design-pattern-adapter-main-idea,Answer>>
+- В яких ситуаціях корисно застосовувати патерн Adapter? <<design-pattern-adapter-purpose,Answer>>
+- Які переваги надає використання патерна Adapter? <<design-pattern-adapter-benefits,Answer>>
+- Які недоліки має патерн Adapter? <<design-pattern-adapter-drawbacks,Answer>>
+- Які принципи SOLID підтримує патерн Adapter? <<design-pattern-adapter-solid,Answer>>
+- Які є варіанти реалізації патерна Adapter? <<design-pattern-adapter-object,Answer>>, <<design-pattern-adapter-class-example,Answer>>
+- Наведіть приклад реалізації об’єктного адаптера. <<design-pattern-adapter-object-example,Answer>>
+- Наведіть приклад реалізації класового адаптера. <<design-pattern-adapter-class-example,Answer>>
+- Де можна знайти використання патерна Adapter у Java? <<design-pattern-adapter-java-usage,Answer>>
+
 [#architecture-service-discovery-questions]
 .Service Discovery Questions
 - Що таке Service Discovery і чому він важливий у розподілених системах? <<service-discovery-definition,Answer>>

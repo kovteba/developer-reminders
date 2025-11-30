@@ -1,0 +1,122 @@
+ifndef::imagesdir[:imagesdir: ../../../../imgs/]
+ifndef::adapterexampledir[:adapterexampledir: ../../../../../../examples/design-patterns/adapter/src/main/java/kovteba]
+
+[#design-pattern-adapter]
+==== Adapter
+
+image::architecture/designpattern/structural/design-patterns-adapter.jpg[Adapter, align="center"]
+
+[[design-pattern-adapter-definition]]*Adapter* — це патерн проєктування, який належить до категорії <<design-pattern-structural-patterns,структурних патернів>> і дозволяє об’єктам з *несумісними інтерфейсами* працювати разом. Він виступає “перекладачем” між старими та новими компонентами системи, інкапсулюючи  логіку перетворення одного інтерфейсу в інший.
+
+[[design-pattern-adapter-main-idea]]Основна ідея патерна полягає в тому, щоб обгорнути існуючий клас у спеціальний адаптер, який реалізує потрібний інтерфейс. Клієнтський код працює лише з цим інтерфейсом і не знає нічого про внутрішню структуру або протиріччя між компонентами.
+
+[[design-pattern-adapter-purpose]]
+Adapter корисний у ситуаціях, коли:
+
+* Потрібно інтегрувати сторонню бібліотеку або застарілий компонент;
+* Інтерфейс існуючого класу не підходить для поточного клієнтського коду;
+* Хочеться уникнути зміни стабільного або стороннього коду;
+* Система переходить на нові API, але старі частини ще не переписані;
+* Необхідно забезпечити зворотну сумісність.
+
+Це робить Adapter незамінним у еволюційній розробці, коли система поступово оновлюється без масових переробок.
+
+[[design-pattern-adapter-benefits]]
+Головні переваги патерна Adapter:
+
+* Дозволяє інтегрувати несумісні інтерфейси;
+* Не вимагає зміни існуючого або стороннього коду;
+* Підвищує гнучкість системи;
+* Спрощує міграцію на нові API;
+* Підтримує принципи SOLID.
+
+[[design-pattern-adapter-drawbacks]]
+Головні недоліки патерна Adapter:
+
+* Може збільшити кількість обгорток;
+* Може ускладнити архітектуру, якщо адаптерів занадто багатож;
+* Часто потрібна документація, щоб розуміти, який адаптер за що відповідає.
+
+[[design-pattern-adapter-solid]]
+Adapter підтримує кілька принципів SOLID:
+
+* *OCP* — нові адаптери можна додавати без зміни старого коду;
+* *SRP* — адаптація винесена в окремий клас;
+* *LSP* — клієнт працює через інтерфейс, не залежить від реалізації;
+* *DIP* — залежність будується від абстракції (інтерфейсу), а не конкретного класу.
+
+Існує два основні способи реалізації:
+
+[[design-pattern-adapter-object]]
+.Object Adapter (композиція)
+
+І першим варіантом є об’єктний адаптер. Використовує композицію: адаптер містить оригінальний об’єкт і делегує йому роботу.
+
+[[design-pattern-adapter-object-example]]
+Уявімо, що є сторонній клас `LegacyPrinter`, який має метод `printData()`.
+[source,java]
+----
+include::{adapterexampledir}/objectadapter/LegacyPrinter.java[tags=LegacyPrinter]
+----
+
+А сучасний код очікує інтерфейс `Printer` із методом `print()`.
+[source,java]
+----
+include::{adapterexampledir}/objectadapter/Printer.java[tags=Printer]
+----
+
+Ми створюємо адаптер, який перетворює новий інтерфейс на старий.
+[source,java]
+----
+include::{adapterexampledir}/objectadapter/PrinterAdapter.java[tags=PrinterAdapter]
+----
+
+Тепер клієнтський код може працювати з адаптером, не знаючи про `LegacyPrinter`.
+[source,java]
+----
+include::{adapterexampledir}/objectadapter/ObjectAdapterDemo.java[tags=ObjectAdapterDemo]
+----
+
+[[design-pattern-adapter-class-example]]
+.Class Adapter (успадкування)
+Другим варіантом є класовий адаптер. Адаптер наслідує і цільовий інтерфейс, і адаптований клас.І можливий лише в мовах із множинним наслідуванням або через хитрі трюки. У Java практично не застосовується (через відсутність multiple inheritance).
+
+Як і в попередньому прикладі, маємо `LegacyPrinter`
+[source,java]
+----
+include::{adapterexampledir}/classadapter/LegacyPrinter.java[tags=LegacyPrinter]
+----
+
+Та інтерфейс `Printer`
+[source,java]
+----
+include::{adapterexampledir}/classadapter/Printer.java[tags=Printer]
+----
+
+Створюємо адаптер, який наслідує обидва.
+[source,java]
+----
+include::{adapterexampledir}/classadapter/ClassPrinterAdapter.java[tags=ClassPrinterAdapter]
+----
+
+Клієнтський код залишається незмінним.
+[source,java]
+----
+include::{adapterexampledir}/classadapter/ClassAdapterDemo.java[tags=ClassAdapterDemo]
+----
+
+Якщо порівняти обидва підходи:
+
+* Об’єктний адаптер більш гнучкий, оскільки використовує композицію і дозволяє адаптувати будь-який клас;
+* Класовий адаптер простіший, але обмежений мовними особливостями (наприклад, Java не підтримує множинне наслідування).
+
+[[design-pattern-adapter-java-usage]]
+Зараз спробуємо знайти використання Adapter у реальних проєктах.
+
+* *Collections API* — Наприклад, `Arrays.asList()` адаптує масив у List.
+* *InputStream / Reader API* — `InputStreamReader` адаптує байтовий потік до символьного.
+* *Spring Framework* — `HandlerAdapter`, `WebMvcConfigurer`, `Converter`, `AdapterFactory` — повсюдди адаптери;
+* *JDBC* - Driver підключається через адаптер до конкретного протоколу БД.
+
+[[design-pattern-adapter-summary]]*Adapter* — це ключовий структурний патерн, який дозволяє поєднувати старі та нові частини системи без зміни їх внутрішньої реалізації. Він робить архітектуру більш гнучкою, підтримуваною та зрозумілою, особливо в довгострокових проєктах,
+де інтеграція різних компонентів є необхідною умовою розвитку.
