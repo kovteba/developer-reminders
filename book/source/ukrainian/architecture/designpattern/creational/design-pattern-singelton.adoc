@@ -1,0 +1,84 @@
+ifndef::imagesdir[:imagesdir: ../../../../imgs/]
+ifndef::singlentonexampledir[:singlentonexampledir: ../../../../../../examples/design-patterns/singleton/src/main/java/kovteba]
+
+[#design-pattern-singleton]
+==== Singleton
+
+image::architecture/designpattern/creational/design-patterns-singleton.jpg[Singleton, align="center"]
+
+[[design-pattern-singleton-definition]]*Singleton* — це патерн проєктування, який належить до категорії <<design-pattern-creational-patterns,породжувальних патернів>> і гарантує, що клас матиме **лише один екземпляр** у системі, забезпечуючи глобальну точку доступу до нього. [[design-pattern-singleton-main-idea]]Основна ідея полягає у контролі створення об’єкта: якщо екземпляр уже існує — повертається він; якщо ні — створюється новий. Це робить Singleton корисним для ресурсів, які повинні існувати в одному екземплярі: логери, конфігурації, кеші, драйвери, пул з’єднань.
+
+[[design-pattern-singleton-when-to-use]]Патерн Singleton застосовують тоді, коли:
+
+* Потрібно мати **одну глобальну точку доступу**;
+* Об’єкт є **унікальним ресурсом** (конфігурація, драйвер, менеджер);
+* Потрібно керувати **життєвим циклом** ресурсу;
+* Створення об’єкта є дорогим, а повторювати його небажано.
+
+[[design-pattern-singleton-problems]]Однак зловживання Singleton може призвести до антипатернів: прихованих залежностей, глобального стану, проблем з тестуванням. Тому його слід використовувати обачно і переважно тоді, коли сама природа об’єкта вимагає єдиного екземпляра. Далі розглянемо кілька популярних реалізацій Singleton у Java.
+
+[[design-pattern-singleton-lazy]]
+.Лінива ініціалізація (lazy initialization)
+
+Проста реалізація, яка створює екземпляр лише під час першого виклику. Однак вона **не потокобезпечна**, тому не підходить для багатопотокових систем.
+
+[source,java]
+----
+include::{singlentonexampledir}/LazySingleton.java[tags=LazySingleton]
+----
+
+[[design-pattern-singleton-dcl]]
+.Потокобезпечний Singleton (Double-Checked Locking)
+
+Класичний варіант, який забезпечує безпечний доступ у багатопотоковому середовищі. Використання ключового слова `volatile` гарантує коректну публікацію об'єкта.
+
+[source,java]
+----
+include::{singlentonexampledir}/ThreadSafeSingleton.java[tags=ThreadSafeSingleton]
+----
+
+Пояснення:
+
+* `volatile` необхідний для уникнення "partial construction".
+* Подвійна перевірка (`if (instance == null)`) зменшує витрати синхронізації.
+* Це один з найпопулярніших варіантів Singleton у Java.
+
+[[design-pattern-singleton-holder]]
+.Singleton через статичний внутрішній клас (Bill Pugh Singleton)
+
+Найкраща сучасна реалізація:
+
+* потокобезпечна;
+* лінива;
+* не використовує synchronized;
+* найзручніша для продакшена.
+
+[source,java]
+----
+include::{singlentonexampledir}/Singleton.java[tags=Singleton]
+----
+
+Пояснення:
+
+* Внутрішній клас завантажується у JVM лише тоді, коли викликається `getInstance()`.
+* Завантаження класів у JVM — **потокобезпечне** за стандартом.
+* Це поєднує переваги eager/lazy та гарантує стабільність.
+
+[[design-pattern-singleton-benefits]]
+.Переваги Singleton:
+
+* Гарантує один екземпляр у системі;
+* Забезпечує глобальну точку доступу;
+* Контролює життєвий цикл об'єкта;
+* Може кешувати складні або дорогі ресурси;
+* Добре поєднується з ленивою ініціалізацією.
+
+[[design-pattern-singleton-drawbacks]]
+.Недоліки Singleton:
+
+* Може перетворитися на глобальний стан (антипатерн);
+* Ускладнює тестування (особливо без DI);
+* Порушує принципи SRP та DIP, якщо використовується надмірно;
+* Може створювати приховані залежності між компонентами.
+
+[[design-pattern-singleton-summary]]*Singleton* — це простий, але потужний патерн, який гарантує існування лише одного екземпляра класу та забезпечує зручний централізований доступ до нього.Правильні реалізації, такі як **Double-Checked Locking** або **Bill Pugh Singleton**, дозволяють ефективно й безпечно використовувати цей патерн у реальних Java-застосунках.
