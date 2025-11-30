@@ -13,8 +13,7 @@ ifndef::urksourcedir[:urksourcedir: source/ukrainian]
 include::{urksourcedir}/architecture/cap-theory.adoc[]
 include::{urksourcedir}/architecture/cap-theory-proof.adoc[]
 include::{urksourcedir}/architecture/service-discovery.adoc[]
-
-
+include::{urksourcedir}/architecture/design-pattern.adoc[]
 
 == DevOps
 
