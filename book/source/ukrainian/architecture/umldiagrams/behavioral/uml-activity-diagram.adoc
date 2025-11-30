@@ -1,0 +1,89 @@
+ifndef::imagesdir[:imagesdir: ../../../../imgs/]
+
+[#uml-activity-diagram]
+==== UML Activity Diagram
+
+image::architecture/umldiagrams/behavioral/uml-activity-diagram.jpg[UML Activity Diagram, align="center"]
+
+[[uml-activity-diagram-definition]]*UML Activity Diagram* — це тип діаграми в Unified Modeling Language (UML), який використовується для моделювання потоків робіт або процесів у системі. Вона відображає послідовність дій, рішення та паралельні потоки, що допомагає у розумінні бізнес-процесів або алгоритмів. Діаграма діяльності є поведінковою діаграмою, яка фокусується на динамічних аспектах системи, показуючи, як різні дії пов'язані між собою і як вони виконуються у часі.
+
+[[uml-activity-diagram-main-goals]]
+Головні цілі UML Activity Diagram:
+
+* Моделювання бізнес-процесів і робочих потоків;
+* Опис алгоритмів поведінки системи;
+* Проєктування потоків у use case’ах;
+* Аналіз workflow процесів;
+* Планування поведінки об'єктів при виконанні завдань.
+
+[[uml-activity-diagram-main-elements]]
+.Головні елементи UML Activity Diagram
+|====
+|Елемент                                    |Призначення                                |Позначення
+|Початковий вузол                           |Старт процесу                              |Чорне коло
+|Дія (Activity / Action)                    |Конкретна дія або операція                 |Прямокутник із заокругленими кутами
+|Потік керування (Control Flow)             |Стрілки, що вказують порядок виконання     |Стрілки між діями
+|Вузол розгалуження (Decision Node)         |Умова (розгалуження)                       |Ромб із гілками
+|Вузол об'єднання (Merge Node)              |Об’єднання кількох шляхів                  |Ромб з однією вхідною та кількома вихідними стрілками
+|Вузол розподілу (Fork Node)                |Паралельне виконання завдань               |Вертикальна чорна смуга
+|Вузол злиття (Join Node)                   |Синхронізація завдань                      |Вертикальна чорна смуга
+|Кінцевий вузол (Final Node)                |Кінець процесу                             |Чорне коло з білим кружечком всередині
+|Доріжки (Swimlanes, необов’язково)         |Розподіл за ролями (хто що виконує)        |Вертикальні або горизонтальні смуги
+|Вузол об’єкта (Object Node)                |Передача об'єктів між діями                |Прямокутник з іменем об'єкта
+|Переривна область (Interruptible Region)   |Область, виконання якої може бути перерване|Прямокутник з пунктирною лінією
+|====
+
+[[uml-activity-diagram-example]]
+Наведемо приклад UML Activity Diagram:
+
+[plantuml]
+----
+@startuml
+|Customer|
+start
+:Browse Products;
+:Select Product;
+
+|System|
+:Check Stock;
+if (In Stock?) then (yes)
+  :Add to Cart;
+else (no)
+  stop
+endif
+
+:Request Login;
+
+|Customer|
+:Enter Credentials;
+
+|System|
+:Validate Credentials;
+if (Valid?) then (yes)
+  :Show Checkout Page;
+else (no)
+  :Show Error Message;
+  stop
+endif
+
+fork
+  :Calculate Shipping;
+fork again
+  :Apply Discount;
+end fork
+
+:Generate Order Summary;
+
+|PaymentGateway|
+:Process Payment;
+
+|System|
+if (Payment Success?) then (yes)
+  :Send Confirmation Email;
+  :Update Inventory;
+else (no)
+  :Cancel Order;
+endif
+stop
+@enduml
+----

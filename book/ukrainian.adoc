@@ -14,6 +14,8 @@ include::{urksourcedir}/architecture/cap-theory.adoc[]
 include::{urksourcedir}/architecture/cap-theory-proof.adoc[]
 include::{urksourcedir}/architecture/service-discovery.adoc[]
 
+
+
 == DevOps
 
 include::{urksourcedir}/docker/docker-image.adoc[]

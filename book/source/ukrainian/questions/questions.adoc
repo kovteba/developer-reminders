@@ -7,7 +7,83 @@
 [#architecture-cap-theory]
 - Що буде, якщо Consul втратить 2 вузли в кластері з 5? Які гарантії збережуться? <<cap-theorem-quorum,Answer>>
 
-[#service-discovery-questions]
+[#architecture-design-patterns]
+.Design Patterns Questions
+- Що таке патерни проектування і чому вони важливі? <<design-patterns-definition,Answer>>
+- Які основні категорії патернів проектування ви знаєте? <<design-pattern-categories,Answer>>
+- Наведіть приклади породжувальних патернів проектування. <<design-pattern-creational-patterns,Answer>>
+- Наведіть приклади структурних патернів проектування. <<design-pattern-structural-patterns,Answer>>
+- Наведіть приклади поведінкових патернів проектування. <<design-pattern-behavioral-patterns,Answer>>
+
+[#architecture-design-patterns-factory-method]
+.Factory Method Questions
+- Що таке Factory Method? <<design-patten-factory-method-definition,Answer>>
+- Коли слід використовувати Factory Method? <<design-pattern-design-patten-factory-method-when-to-use,Answer>>
+- Яка основна ідея Factory Method? <<design-patten-factory-method-main-idea,Answer>>
+- У чому різниця між Factory Method і Simple Factory? <<design-patten-factory-method-difference-simple-factory,Answer>>
+- У чому різниця між Factory Method і Abstract Factory? <<design-patten-factory-method-difference-abstract-factory,Answer>>
+- Які переваги Factory Method з точки зору OCP? <<design-patten-factory-method-ocp-benefit,Answer>>
+- Коли не слід використовувати Factory Method? <<design-patten-factory-method-unnecessary-cases,Answer>>
+- Чи завжди Factory Method реалізується через успадкування? <<design-patten-factory-method-inheritance,Answer>>
+- Як Factory Method використовується у відомих фреймворках? <<design-patten-factory-method-framework-usage,Answer>>
+- Які приклади Factory Method є у стандартній бібліотеці Java? <<design-patten-factory-method-jdk-examples,Answer>>
+- Як виглядає приклад Factory Method у Spring Framework? <<design-patten-factory-method-spring-example,Answer>>
+- Який реальний приклад використання Factory Method? <<design-patten-factory-method-real-example,Answer>>
+- Які переваги Factory Method для тестування? <<design-patten-factory-method-testing-benefits,Answer>>
+- Як Factory Method інтегрується з Dependency Injection? <<design-patten-factory-method-di-integration,Answer>>
+- Як реалізувати динамічний вибір типу за допомогою Factory Method? <<design-patten-factory-method-runtime-selection,Answer>>
+- У чому різниця між Factory Method і Reflection? <<design-patten-factory-method-difference-reflection,Answer>>
+- Як Factory Method підтримує архітектуру плагінів? <<design-patten-factory-method-plugin-architecture,Answer>>
+- Які антипатерни пов’язані з Factory Method? <<design-patten-factory-method-anti-patterns,Answer>>
+- Як Factory Method допомагає реалізувати кешування об’єктів? <<design-patten-factory-method-caching,Answer>>
+- Як Factory Method допомагає уникнути великих switch-case конструкцій? <<design-patten-factory-method-solid-switch,Answer>>
+
+[#architecture-design-patterns-abstract-factory]
+.Abstract Factory Questions
+- Що таке патерн Abstract Factory? <<design-pattern-abstract-factory-definition,Answer>>
+- Чим Abstract Factory відрізняється від Factory Method? <<design-pattern-abstract-factory-difference-factory-method,Answer>>
+- Які переваги використання Abstract Factory? <<design-pattern-abstract-factory-oсp-benefit,Answer>>
+- У яких випадках доцільно застосовувати Abstract Factory? <<design-pattern-abstract-factory-usage,Answer>>
+- Наведіть приклад використання патерну Abstract Factory. <<design-pattern-abstract-factory-example,Answer>>
+- Як Abstract Factory підтримує принцип OCP? <<design-pattern-abstract-factory-oсp-benefit,Answer>>
+- Які є реальні приклади використання Abstract Factory у Java? <<design-pattern-abstract-factory-usage,Answer>>
+- Як Abstract Factory допомагає забезпечити узгодженість об’єктів? <<design-pattern-abstract-factory-purpose,Answer>>
+- Як Abstract Factory інтегрується з іншими патернами проєктування? <<design-pattern-abstract-factory-usage,Answer>>
+
+[#architecture-design-patterns-builder]
+.Builder Questions
+- Що таке патерн проєктування Builder? <<design-pattern-builder-definition,Answer>>
+- Яка основна ідея патерна Builder? <<design-pattern-builder-main-idea,Answer>>
+- Яку проблему вирішує патерн Builder? <<design-pattern-builder-problem,Answer>>
+- Як працює патерн Builder? <<design-pattern-builder-solution,Answer>>
+- Де зазвичай використовується патерн Builder у Java? <<design-pattern-builder-usage,Answer>>
+- Наведіть приклад реалізації патерна Builder. <<design-pattern-builder-example,Answer>>
+- Які переваги використання патерна Builder? <<design-pattern-builder-benefits,Answer>>
+- Підсумуйте основні ідеї патерна Builder. <<design-pattern-builder-summary,Answer>>
+
+[#architecture-design-patterns-prototype]
+.Prototype Questions
+- Що таке патерн проєктування Prototype? <<design-pattern-prototype-definition,Answer>>
+- Яка основна ідея патерну Prototype? <<design-pattern-prototype-main-idea,Answer>>
+- В яких випадках слід використовувати патерн Prototype? <<design-pattern-prototype-usage,Answer>>
+- Чим патерн Prototype відрізняється від простого копіювання об’єктів? <<design-pattern-prototype-difference-from-copy,Answer>>
+- Яка різниця між поверхневим (shallow) та глибоким (deep) копіюванням у контексті Prototype? <<design-pattern-prototype-shallow-vs-deep,Answer>>
+- Які переваги надає використання патерну Prototype? <<design-pattern-prototype-benefits,Answer>>
+- Наведіть приклад реалізації патерну Prototype. <<design-pattern-prototype-example,Answer>>
+- Які типові сценарії використання патерну Prototype? <<design-pattern-prototype-usage,Answer>>
+
+[#architecture-design-patterns-singleton]
+.Singleton Questions
+- Що таке патерн Singleton? <<design-pattern-singleton-definition,Answer>>
+- Коли слід використовувати Singleton? <<design-pattern-singleton-when-to-use,Answer>>
+- Які проблеми можуть виникнути при використанні Singleton? <<design-pattern-singleton-problems,Answer>>
+- Які є популярні реалізації Singleton у Java? <<design-pattern-singleton-lazy,Answer>>, <<design-pattern-singleton-dcl,Answer>>, <<design-pattern-singleton-holder,Answer>>
+- Які переваги та недоліки патерну Singleton? <<design-pattern-singleton-benefits,Answer>>, <<design-pattern-singleton-drawbacks,Answer>>
+- Як працює реалізація Singleton через статичний внутрішній клас? <<design-pattern-singleton-holder,Answer>>
+- Чому використання `volatile` важливе у потокобезпечній реалізації Singleton? <<design-pattern-singleton-dcl,Answer>>
+- Як Singleton впливає на тестування та підтримку коду? <<design-pattern-singleton-problems,Answer>>
+
+[#architecture-service-discovery-questions]
 .Service Discovery Questions
 - Що таке Service Discovery і чому він важливий у розподілених системах? <<service-discovery-definition,Answer>>
 - Які основні типи Service Discovery ви знаєте? Поясніть різницю між ними. <<service-discovery-types,Answer>>
@@ -28,6 +104,57 @@
 - Що дає Service Discovery у контексті мікросервісної архітектури? <<service-discovery-what-for,Answer>>
 - Які інструменти для Service Discovery ви знаєте? <<service-discovery-tools,Answer>>
 - Які головні компоненти системи Service Discovery? <<service-discovery-main-components,Answer>>
+
+[#architecture-uml-diagrams]
+.UML Diagrams
+- Що таке UML? <<uml-definition,Answer>>
+- Які основні типи діаграм UML? <<uml-diagram-types,Answer>>
+- Які діаграми відносяться до Поведенкових діаграм? <<uml-diagram-behavioral-diagram-types,Answer>>
+- Які діаграми відносяться до Структурних діаграм? <<uml-diagram-structural-diagram-types,Answer>>
+- Які найпопулярніші типи діаграм UML? <<uml-diagram-most-popular-types,Answer>>
+- Наведіть порівняльну таблицю типів діаграм UML. <<uml-diagram-comparative-table,Answer>>
+- Яка послідовність використання діаграм UML? <<uml-diagram-usage-sequence,Answer>>
+
+.Activity Diagram
+- Що таке UML Activity Diagram?<<uml-activity-diagram-definition,Answer>>
+- Які головні цілі UML Activity Diagram?<<uml-activity-diagram-main-goals,Answer>>
+- Які головні елементи UML Activity Diagram?<<uml-activity-diagram-main-elements,Answer>>
+- Наведіть приклад UML Activity Diagram.<<uml-activity-diagram-example,Answer>>
+
+.Communication Diagram
+- Що таке UML Communication Diagram?<<uml-communication-diagram-definition,Answer>>
+
+.Interaction Overview Diagram
+- Що таке UML Interaction Overview Diagram?<<uml-interaction-overview-diagram-definition,Answer>>
+
+.Sequence Diagram
+- Що таке UML Sequence Diagram?<<uml-sequence-diagram,Answer>>
+- Які головні цілі UML Sequence Diagram?<<uml-sequence-diagram-main-goals,Answer>>
+- Які основні елементи UML Sequence Diagram?<<uml-sequence-diagram-main-elements,Answer>>
+
+.State Machine Diagram
+- Що таке UML State Machine Diagram?<<uml-state-machine-diagram-definition,Answer>>
+- Які головні цілі UML State Machine Diagram?<<uml-state-machine-diagram-main-goals,Answer>>
+- Які головні елементи UML State Machine Diagram?<<uml-state-machine-diagram-main-elements,Answer>>
+
+.Timing Diagram
+- Що таке UML Timing Diagram?<<uml-timing-diagram-definition,Answer>>
+
+.Use Case Diagram
+- Що таке UML Use Case Diagram?<<uml-use-case-diagram-definition,Answer>>
+- Які головні цілі UML Use Case Diagram?<<uml-use-case-diagram-main-goals,Answer>>
+- Які головні елементи UML Use Case Diagram?<<uml-use-case-diagram-main-elements,Answer>>
+- Наведіть приклад UML Use Case Diagram.<<uml-use-case-diagram-example,Answer>>
+
+
+- Що таке Package Diagram? <<uml-package-diagram-definition,Answer>>
+- Що таке UML Deployment Diagram?<<uml-deployment-diagram-definition>>
+- Які головні цілі UML Deployment Diagram?<<uml-deployment-diagram-main-goals>>
+- Які головні елементи UML Deployment Diagram?<<uml-deployment-diagram-main-elements>>
+- Наведіть приклад UML Deployment Diagram.<<uml-deployment-diagram-example>>
+- Що таке UML Use Case Diagram?<<uml-use-case-diagram-definition,Answer>>
+
+
 
 [#devops]
 .DevOps

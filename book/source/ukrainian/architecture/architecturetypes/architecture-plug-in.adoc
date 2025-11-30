@@ -1,0 +1,5 @@
+ifndef::imagesdir[:imagesdir: source/imgs/]
+
+[#architecture-plug-in]
+=== Plug-in Архітектура
+//TODO Plug-in Архітектура

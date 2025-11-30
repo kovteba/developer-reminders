@@ -1,0 +1,8 @@
+ifndef::imagesdir[:imagesdir: ../../../../imgs/]
+
+[#uml-profile-diagram]
+==== UML Profile Diagram
+
+// image::architecture/uml-profile-diagram.jpg[UML Profile Diagram, align="center"]
+
+//TODO[[uml-profile-diagram-definition]]*UML Profile Diagram* (діаграма профілів) використовується для розширення стандартних елементів UML шляхом створення спеціалізованих профілів, які адаптують UML до конкретних доменів або методологій. Вона дозволяє визначати нові стереотипи, обмеження та інші елементи, що допомагає краще моделювати специфічні аспекти системи. Це структурний тип діаграми, який описує розширення UML для конкретних потреб.

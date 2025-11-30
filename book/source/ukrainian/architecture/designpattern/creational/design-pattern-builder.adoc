@@ -1,0 +1,57 @@
+ifndef::imagesdir[:imagesdir: ../../../../imgs/]
+ifndef::builderexampledir[:builderexampledir: ../../../../../../examples/design-patterns/builder/src/main/java/kovteba]
+
+[#design-pattern-builder]
+==== Builder
+
+image::architecture/designpattern/creational/design-patterns-builder.jpg[Builder, align="center"]
+
+[[design-pattern-builder-definition]]*Builder* — це патерн проєктування, який належить до категорії <<design-pattern-creational-patterns,породжувальних патернів>> і дає змогу створювати складні об’єкти крок за кроком, приховуючи логіку ініціалізації та дозволяючи налаштовувати параметри без використання довгих або телескопічних конструкторів. На відміну від інших патернів створення, таких як <<design-patten-factory-method,Factory Method>> або <<design-pattern-abstract-factory,Abstract Factory>>, *Builder* фокусується не на тому, «який саме об’єкт створити», а на *процесі його побудови*.
+
+[[design-pattern-builder-main-idea]]Основна ідея патерна Builder полягає у відокремленні **поступового конструювання об’єкта** від його фінального подання. Це дозволяє створювати різні варіанти одного і того ж складного об’єкта, використовуючи один і той самий процес побудови. Builder також забезпечує чистий, читабельний і зрозумілий спосіб конфігурації складних об’єктів, уникаючи проблеми «телескопічних конструкторів», коли клас має багато параметрів.
+
+[[design-pattern-builder-problem]]Проблема, яку вирішує Builder, добре помітна, коли у класі багато необов’язкових параметрів. Традиційний конструктор із 6–10 аргументами робить код складним для читання, а додаткові конструктори для різних комбінацій параметрів швидко призводять до значного дублювання та погіршення підтримуваності.
+
+[[design-pattern-builder-solution]]Builder пропонує елегантне рішення: замість виклику довгого конструктора, об’єкт будується крок за кроком у стилі Fluent API:
+
+[source,java]
+----
+User user = new User.Builder()
+                    .username("dmytro")
+                    .email("example@gmail.com")
+                    .age(30)
+                    .build();
+----
+
+Цей підхід робить код декларативним, гнучким і зрозумілим навіть для складних об’єктів.
+
+[[design-pattern-builder-usage]]Патерн Builder широко використовується у Java:
+
+* Cтандартній бібліотеці (`StringBuilder`, `Stream.Builder`),
+* Java 11+ (`HttpRequest.newBuilder()`),
+* Популярних фреймворках (Kafka, gRPC, AWS SDK),
+* Анотацію Lombok `@Builder`, яка автоматично генерує всю необхідну логіку.
+
+[[design-pattern-builder-example]]Далі наведемо приклад класичної реалізації Builder для створення об’єкта `User` з кількома необов’язковими параметрами.
+
+Оголошуємо основний клас із приватним конструктором і вкладеним класом Builder:
+[source,java]
+----
+include::{builderexampledir}/entity/User.java[tags=User]
+----
+
+Демонструємо використання Builder у практичному прикладі:
+[source,java]
+----
+include::{builderexampledir}/BuilderDemo.java[tags=BuilderDemo]
+----
+
+[[design-pattern-builder-benefits]]Переваги Builder полягають у тому, що він:
+
+* Забезпечує чистий та гнучкий спосіб побудови складних об’єктів;
+* Дозволяє уникнути неповоротких телескопічних конструкторів;
+* Робить код більш читабельним і зрозумілим;
+* Сприяє створенню незмінюваних (`immutable`) об’єктів;
+* Легко інтегрується з Fluent API та Domain-Specific Languages.
+
+[[design-pattern-builder-summary]]У підсумку, *Builder* — це надзвичайно корисний патерн для ситуацій, коли об’єкти мають багато параметрів або складну логіку створення. Він дає змогу будувати об’єкти поетапно, створюючи чистий, інтуїтивний і безпечний код, що істотно покращує архітектуру системи.

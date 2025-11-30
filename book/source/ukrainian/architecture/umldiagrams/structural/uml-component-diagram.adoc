@@ -1,0 +1,78 @@
+ifndef::imagesdir[:imagesdir: ../../../../imgs/]
+
+[#uml-component-diagram]
+==== UML Component Diagram
+
+image::architecture/umldiagrams/structural/uml-component-diagram.jpg[UML Component Diagram, align="center"]
+
+[[uml-component-diagram-definition]]*UML Component Diagram* ілюструє організацію та залежності між різними компонентами системи. Вона допомагає у плануванні архітектури програмного забезпечення, показуючи, як компоненти взаємодіють один з одним і які інтерфейси вони використовують для цієї взаємодії. Це структурний тип діаграми, який описує компоненти системи та їх взаємозв'язки.
+
+[[uml-component-diagram-main-goals]]
+Головні цілі UML Component Diagram:
+
+* *Показати модулярність системи* — Допомагає розробникам зрозуміти, як система розділена на окремі компоненти;
+* *Проєктування архітектури* — Допомагає розробникам у створенні архітектури програмного забезпечення, визначаючи основні компоненти та їх взаємодії;
+* *Аналіз залежностей* — Дозволяє аналізувати залежності між компонентами, виявляючи потенційні проблеми або області для покращення;
+* *Документування системи* — Служить як документація для розробників, що полегшує розуміння структури системи;
+* *Комунікація* — Сприяє кращому спілкуванню між членами команди, забезпечуючи спільне розуміння архітектури системи;
+* *Планування розгортання* — Допомагає у плануванні розгортання системи, показуючи, як компоненти будуть розміщені на різних вузлах.
+
+[[uml-component-diagram-main-elements]]
+.Головні елементи UML Component Diagram
+|====
+|Элемент|Символ|Назначение
+|Component|Прямоугольник с символом <<component>>|Представляет физический модуль (библиотека, пакет, сервис)
+|Interface (provided)|Полукруглая “розетка” на компоненте|Интерфейс, который компонент предоставляет
+|Interface (required)|“Вилка”|Интерфейс, который компонент требует от других
+|Dependency|Пунктирная стрелка|Зависимость одного компонента от другого
+|Connector|Линия между интерфейсами|Обозначает взаимодействие компонентов
+|Package|Группировка компонентов|Логическая организация системы
+|====
+
+[[uml-component-diagram-example]]
+Наведемо приклад UML Component Diagram:
+
+[plantuml]
+----
+@startuml
+skinparam componentStyle rectangle
+
+' Абстрактный пакет
+package "E-Commerce System" {
+
+  ' Компоненты
+  [Web UI] <<component>>
+  [Order Service] <<component>>
+  [Payment Service] <<component>>
+  [User Service] <<component>>
+  [Database] <<component>>
+  [Notification Service] <<component>>
+
+  ' Интерфейсы предоставляемые
+  [Order Service] - [IOrderAPI] : provides
+  [Payment Service] - [IPaymentAPI] : provides
+  [User Service] - [IUserAPI] : provides
+
+  ' Интерфейсы требуемые
+  [Web UI] ..> [IOrderAPI] : uses
+  [Web UI] ..> [IUserAPI] : uses
+  [Order Service] ..> [IPaymentAPI] : uses
+  [Order Service] --> [Database] : JDBC
+  [User Service] --> [Database] : JDBC
+  [Payment Service] --> [Database] : JDBC
+  [Order Service] --> [Notification Service] : sends Email/SMS
+}
+@enduml
+----
+
+[[uml-component-diagram-example-explanation]]
+.Таблиця з поясненнями елементів діаграми
+|====
+|Элемент|Пример в коде|Описание
+|Component|[Web UI], [User Service]|Логический или физический модуль системы. Каждый компонент реализует какую-то функциональность.
+|Interface (Provided)|[Order Service] - [IOrderAPI]|Интерфейс, который компонент предоставляет другим. Отображается как “розетка”.
+|Interface (Required)|[Web UI] ..> [IOrderAPI]|Интерфейс, который компонент использует (требует). Отображается как “вилка”.
+|Dependency|[User Service] --> [Database]|Стандартная зависимость (например, JDBC, REST).
+|Package|package "E-Commerce System"|Группирует компоненты в логический блок — например, подсистему.
+|Connector|Линии между интерфейсами и компонентами|Связывают компоненты с интерфейсами, показывая, кто кого вызывает.
+|====

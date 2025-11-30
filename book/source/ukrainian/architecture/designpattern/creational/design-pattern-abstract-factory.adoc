@@ -1,0 +1,76 @@
+ifndef::imagesdir[:imagesdir: ../../../../imgs/]
+ifndef::abstractfactoryexampledir[:abstractfactoryexampledir: ../../../../../../examples/design-patterns/abstract-factory/src/main/java/kovteba]
+
+[#design-pattern-abstract-factory]
+==== Abstract Factory
+
+image::architecture/designpattern/creational/design-patterns-abstract-factory.jpg[Abstract Factory, align="center"]
+
+[[design-pattern-abstract-factory-definition]]*Abstract Factory* — це патерн проєктування, який належить до категорії <<design-pattern-creational-patterns,породжувальних патернів>> і надає інтерфейс для створення *сімейства взаємопов’язаних об’єктів* без необхідності вказувати їх конкретні класи. На відміну від <<design-patten-factory-method,Factory Method>>, який створює один продукт, *Abstract Factory* дозволяє створювати групу продуктів, які повинні узгоджено взаємодіяти між собою. [[design-pattern-abstract-factory-main-idea]]Основна ідея полягає в тому, щоб інкапсулювати створення цілих сімейств об’єктів у фабриках, які конкретні платформи, системи або конфігурації можуть перевизначати на свій розсуд.
+
+[[design-pattern-abstract-factory-purpose]]Цей патерн дає змогу забезпечити узгодженість об’єктів у межах однієї сім’ї. Наприклад, якщо програма працює на Windows, усі UI-елементи (кнопки, чекбокси, поля вводу) повинні мати однаковий стиль, і Abstract Factory гарантує, що програма не змішає об’єкти Windows із MacOS чи Linux.
+
+[[design-pattern-abstract-factory-difference-factory-method]]Хоча Abstract Factory часто використовує Factory Method у своїй реалізації, різниця між цими патернами принципова: <<design-pattern-factory-method,Factory Method>> повертає один продукт, а Abstract Factory — *набір* узгоджених продуктів. Наприклад, фабрика `WindowsGUIFactory` створює `WindowsButton` і `WindowsCheckbox`, а `MacGUIFactory` — `MacButton` і `MacCheckbox`. [[design-pattern-abstract-factory-oсp-benefit]]Завдяки цьому Abstract Factory повністю відповідає принципу <<solid-ocp,OCP>>: щоб додати нову платформу або нове сімейство продуктів, достатньо створити нову фабрику, не змінюючи існуючого коду.
+
+[[design-pattern-abstract-factory-usage]]Патерн широко використовується у системах із підтримкою декількох конфігурацій: UI-бібліотеки, ігрові рушії, інтернаціоналізація, вибір драйверів, створення середовищ виконання. У Java приклади можна знайти в Swing (`UIFactory`), у JDBC (вибір певних драйверів БД), у Spring Framework (створення цілих груп бінів на основі `@Profile`).
+
+[[design-pattern-abstract-factory-example]]Прикладом є система GUI-компонентів, де кожна операційна система має свій стиль кнопок і чекбоксів. Абстрактна фабрика визначає інтерфейс для створення цих компонентів, а конкретні фабрики реалізують його для Windows та MacOS. Це дає змогу легко перемикати платформу під час виконання, зберігаючи узгодженість стилю.
+
+Далі наведемо приклад використання патерну Abstract Factory для створення GUI-компонентів для різних операційних систем. Визначаємо інтерфейс "Button", який визначає загальний контракт для всіх кнопок:
+[source,java]
+----
+include::{abstractfactoryexampledir}/ui/Button.java[tags=Button]
+----
+
+Визначаємо інтерфейс "Checkbox", спільний для всіх конкретних реалізацій чекбоксів:
+[source,java]
+----
+include::{abstractfactoryexampledir}/ui/Checkbox.java[tags=Checkbox]
+----
+
+Створюємо конкретні реалізації для MacOS:
+[source,java]
+----
+include::{abstractfactoryexampledir}/ui/impl/mac/MacButton.java[tags=MacButton]
+----
+
+[source,java]
+----
+include::{abstractfactoryexampledir}/ui/impl/mac/MacCheckbox.java[tags=MacCheckbox]
+----
+
+Та для Windows:
+[source,java]
+----
+include::{abstractfactoryexampledir}/ui/impl/win/WindowsButton.java[tags=WindowsButton]
+----
+
+[source,java]
+----
+include::{abstractfactoryexampledir}/ui/impl/win/WindowsCheckbox.java[tags=WindowsCheckbox]
+----
+
+Визначаємо інтерфейс абстрактної фабрики "GUIFactory", який оголошує методи для створення об’єктів Button і Checkbox:
+[source,java]
+----
+include::{abstractfactoryexampledir}/factory/GUIFactory.java[tags=GUIFactory]
+----
+
+Створюємо конкретні фабрики для Windows і MacOS, які реалізують інтерфейс GUIFactory:
+[source,java]
+----
+include::{abstractfactoryexampledir}/factory/impl/WindowsGUIFactory.java[tags=WindowsGUIFactory]
+----
+
+[source,java]
+----
+include::{abstractfactoryexampledir}/factory/impl/MacGUIFactory.java[tags=MacGUIFactory]
+----
+
+Нарешті, створюємо клас "AbstractFactoryDemo", який демонструє використання патерну Abstract Factory для створення GUI-компонентів залежно від обраної платформи:
+[source,java]
+----
+include::{abstractfactoryexampledir}/AbstractFactoryDemo.java[tags=AbstractFactoryDemo]
+----
+
+[[design-pattern-abstract-factory-summary]]*Abstract Factory* забезпечує створення узгоджених сімейств об’єктів і дає змогу легко адаптувати застосунок до різних платформ або контекстів виконання. Він інкапсулює логіку створення залежностей і усуває ризик змішування несумісних елементів, що робить його ключовим інструментом у системах зі змінними середовищами або багатомодульною архітектурою.

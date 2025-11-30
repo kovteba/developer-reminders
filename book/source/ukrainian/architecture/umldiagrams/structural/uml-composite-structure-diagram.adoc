@@ -1,0 +1,9 @@
+ifndef::imagesdir[:imagesdir: ../../../../imgs/]
+
+[#uml-composite-structure-diagram]
+==== UML Structural Composite Diagram
+
+image::architecture/uml-composite-structure-diagram.jpg[UML Composite Structure Diagram, align="center"]
+
+[[uml-composite-structure-diagram-definition]]*UML Composite Structure Diagram* (діаграма складної структури) використовується для моделювання внутрішньої структури класів або компонентів системи, показуючи їхні частини та зв'язки між ними. Вона допомагає візуалізувати, як різні елементи системи взаємодіють один з одним на більш детальному рівні. Це структурний тип діаграми, який описує внутрішню структуру класів або компонентів.
+

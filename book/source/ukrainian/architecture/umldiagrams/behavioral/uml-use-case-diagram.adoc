@@ -1,0 +1,79 @@
+ifndef::imagesdir[:imagesdir: ../../../../imgs/]
+
+[#uml-use-case-diagram]
+==== UML Use Case Diagram
+
+image::architecture/umldiagrams/behavioral/uml-use-case-diagram.jpg[UML Use Case Diagram, align="center"]
+
+[[uml-use-case-diagram-definition]]*UML Use Case Diagram* використовується для моделювання функціональних можливостей системи з точки зору користувачів (акторів) та їх взаємодії з системою. Вона допомагає визначити, які функції система повинна виконувати, і як користувачі будуть взаємодіяти з нею. Це поведінковий тип діаграми, який описує функціональні можливості системи та взаємодії між користувачами (акторами) і системою через випадки використання (use cases).
+
+[[uml-use-case-diagram-main-goals]]
+Головні цілі UML Use Case Diagram:
+
+* *Визначення вимог* — Допомагає у зборі та документуванні функціональних вимог системи з точки зору користувачів;
+* *Комунікація з зацікавленими сторонами* — Сприяє кращому розумінню вимог між розробниками, замовниками та іншими зацікавленими сторонами;
+* *Планування розробки* — Служить основою для планування розробки, тестування та впровадження системи;
+* *Аналіз функціональності* — Дозволяє аналізувати функціональні можливості системи та виявляти потенційні проблеми або області для покращення;
+* *Документування системи* — Служить як документація для розробників, що полегшує розуміння функціональності системи.
+
+[[uml-use-case-diagram-main-elements]]
+.Головні елементи UML Use Case Diagram
+|====
+|Элемент                        |Описание
+|Актор (Actor)                  |Зовнішній користувач системи — людина, організація або інша система
+|Варіант використання (Use Case)|Функція, яку виконує система (дія, яку може виконати користувач)
+|Межі системи (System Boundary) |Прямокутник, що обмежує область системи
+|Зв’язок (Association)          |Лінія між актором і варіантом використання, що позначає взаємодію
+|Include (Включення)            |Один варіант використання завжди включає інший
+|Extend (Розширення)            |Один варіант використання може бути доповнений іншим за певної умови
+|Узагальнення (Generalization)  |Актори або варіанти використання можуть бути узагальнені (успадкування)
+|====
+
+[[uml-use-case-diagram-example]]
+Наведемо приклад UML Use Case Diagram:
+
+[plantuml]
+----
+@startuml
+left to right direction
+
+actor Customer
+actor "Payment Gateway" as Gateway
+actor Admin
+actor Guest
+
+rectangle "E-commerce Website" {
+  (Browse Products)
+  (Register Account)
+  (Login)
+  (Place Order)
+  (Cancel Order)
+  (Process Refund)
+  (Update Product Listings)
+  (Manage User Accounts)
+  (View Reports)
+}
+
+Guest -- (Browse Products)
+Guest -- (Register Account)
+
+Customer -- (Login)
+Customer -- (Browse Products)
+Customer -- (Add to Cart)
+Customer -- (Place Order)
+Customer -- (Cancel Order)
+
+(Place Order) --> (Add to Cart) : <<include>>
+(Place Order) ..> (Process Refund) : <<extend>>
+(Cancel Order) ..> (Process Refund) : <<include>>
+
+Admin -- (Update Product Listings)
+Admin -- (Manage User Accounts)
+Admin -- (View Reports)
+
+Gateway -- (Process Refund)
+
+' Actor generalizations
+Customer <|-- Guest
+@enduml
+----

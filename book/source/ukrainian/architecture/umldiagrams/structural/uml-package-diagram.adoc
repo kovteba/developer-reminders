@@ -1,0 +1,31 @@
+ifndef::imagesdir[:imagesdir: ../../../../imgs/]
+
+[#uml-package-diagram]
+==== UML Package Diagram
+
+image::architecture/umldiagrams/structural/uml-package-diagram.jpg[UML Package Diagram, align="center"]
+
+[[uml-package-diagram-definition]]*UML Package Diagram* (діаграма пакетів) використовується для організації та групування елементів моделі UML у логічні контейнери, відомі як пакети. Вона допомагає структурувати складні системи, показуючи, як різні частини системи пов'язані між собою на високому рівні. Це структурний тип діаграми, який описує організацію елементів моделі у вигляді пакетів.
+
+[plantuml]
+----
+@startuml
+package "UI Layer" {
+class LoginForm
+class RegisterForm
+}
+
+package "Service Layer" {
+class AuthService
+class UserService
+}
+
+package "Data Layer" {
+class UserRepository
+class DbConnector
+}
+
+"UI Layer" ..> "Service Layer" : uses
+"Service Layer" --> "Data Layer" : accesses
+@enduml
+----
