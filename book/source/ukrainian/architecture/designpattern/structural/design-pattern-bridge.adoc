@@ -1,0 +1,110 @@
+ifndef::imagesdir[:imagesdir: ../../../../imgs/]
+ifndef::bridgeexampledir[:bridgeexampledir: ../../../../../../examples/design-patterns/bridge/src/main/java/kovteba]
+
+[#design-pattern-bridge]
+==== Bridge
+
+image::architecture/designpattern/structural/design-patterns-bridge.jpg[Bridge, align="center"]
+
+[[design-pattern-bridge-definition]]*Bridge* — це патерн проєктування, який належить до категорії <<design-pattern-structural-patterns,структурних патернів>> і дає змогу *відокремити абстракцію від її реалізації*, так щоб їх можна було змінювати незалежно одна від одної. Іншими словами, Bridge дозволяє побудувати дві окремі ієрархії класів — **абстракцій** та **реалізацій**, які поєднуються між собою лише через інтерфейс.
+
+[[design-pattern-bridge-main-idea]]Основна ідея полягає у тому, щоб уникнути вибухового росту кількості класів, коли є необхідність комбінувати множину абстракцій з множиною реалізацій. Замість створення десятків підкласів, Bridge дає змогу просто "з’єднати" різні варіанти абстракцій та реалізацій під час виконання.
+
+[[design-pattern-bridge-purpose]]
+Bridge корисний, коли:
+
+* Потрібно розділити стабільні абстракції та мінливі реалізації;
+* Існує кілька варіантів поведінки, які потрібно комбінувати;
+* Система має розростаючу кількість підкласів («класовий вибух»);
+* Необхідно динамічно перемикати реалізацію в рантаймі;
+* Розробка бібліотеки/API потребує чіткого поділу рівнів.
+
+Типовий приклад — UI-компоненти (Button, Checkbox), які повинні рендеритися на різних платформах: Windows, Linux, MacOS. Замість десятків класів типу *WindowsButton*, *LinuxButton*, *MacButton*, Bridge ділить структуру на:
+
+* *Abstraction* — тип компоненту (Button, Dialog);
+* *Implementor* — механізм рендерингу (WinAPI, GTK, Cocoa).
+
+[[design-pattern-bridge-benefits]]
+Bridge дає чіткі переваги:
+
+* Уникає вибуху підкласів завдяки розділенню абстракції й реалізації;
+* Дає можливість розширювати абстракції та реалізації незалежно одна від одної;
+* Дозволяє змінювати реалізацію під час виконання;
+* Покращує модульність та гнучкість системи;
+* Підтримує композицію замість наслідування;
+* Відповідає принципам SOLID.
+
+[[design-pattern-bridge-drawbacks]]
+Недоліки Bridge:
+
+* Робить початкову структуру складнішою;
+* Потребує гарного проєктування абстракцій та рівнів;
+* Не завжди виправданий у маленьких системах.
+
+[[design-pattern-bridge-solid]]
+Bridge чудово співпрацює з SOLID:
+
+* *SRP* — логіка абстракції та реалізації розділена;
+* *OCP* — можна додавати нові абстракції або реалізації незалежно;
+* *LSP* — реалізації коректно підміняються;
+* *DIP* — абстракція залежить від інтерфейсу реалізації, а не від конкретного класу.
+
+Далі наведено приклад реалізації Bridge на Java. Маємо дві ієрархії:
+
+**Абстракції:** Shape → Circle, Square;
+**Реалізації:** Renderer → VectorRenderer, RasterRenderer.
+
+Bridge об’єднує їх. Створюємо першу ієрархію — Renderer.
+[source,java]
+----
+include::{bridgeexampledir}/example1/renderer/Renderer.java[tags=Renderer]
+----
+
+[source,java]
+----
+include::{bridgeexampledir}/example1/renderer/VectorRenderer.java[tags=VectorRenderer]
+----
+
+[source,java]
+----
+include::{bridgeexampledir}/example1/renderer/RasterRenderer.java[tags=RasterRenderer]
+----
+
+Та другу ієрархію — Shape.
+[source,java]
+----
+include::{bridgeexampledir}/example1/shape/Shape.java[tags=Shape]
+----
+
+[source,java]
+----
+include::{bridgeexampledir}/example1/shape/Circle.java[tags=Circle]
+----
+
+[source,java]
+----
+include::{bridgeexampledir}/example1/shape/Square.java[tags=Square]
+----
+
+[source,java]
+----
+include::{bridgeexampledir}/example1/BridgeDemo.java[tags=BridgeDemo]
+----
+
+У цьому прикладі:
+
+1. Абстракція (`Shape`) містить посилання на реалізацію (`Renderer`).
+2. Конкретна фігура (Circle, Square) делегує рендеринг реалізатору.
+3. Можна легко підмінити реалізацію: Vector → Raster → GPU → ASCII.
+4. Дві ієрархії ніяк не змішуються між собою.
+
+[[design-pattern-bridge-java-usage]]
+Bridge широко застосовується в Java:
+
+* *JDBC* — драйвери БД через інтерфейс Driver (реалізатори);
+* *AWT Graphics / Swing* — абстракція компонентів + реалізація платформи;
+* *SLF4J* — абстракція логера + реалізація Logback/Log4j;
+* *Java NIO Channels* — абстракція каналів + реалізація провайдерів (Selector Provider).
+
+[[design-pattern-bridge-summary]]
+*Bridge* — це фундаментальний структурний патерн, який дозволяє будувати систему з незалежними ієрархіями абстракцій і реалізацій, роблячи її гнучкою, модульною та відкритою до розширення. Його варто використовувати тоді, коли необхідно уникнути надмірного наслідування, підтримувати різні платформи або розширювати систему без зміни існуючого коду.
