@@ -96,6 +96,17 @@
 - Наведіть приклад реалізації класового адаптера. <<design-pattern-adapter-class-example,Answer>>
 - Де можна знайти використання патерна Adapter у Java? <<design-pattern-adapter-java-usage,Answer>>
 
+[#architecture-design-patterns-bridge]
+.Bridge Questions
+- Що таке патерн Bridge? <<design-pattern-bridge-definition,Answer>>
+- Яка основна ідея патерну Bridge? <<design-pattern-bridge-main-idea,Answer>>
+- В яких випадках варто використовувати Bridge? <<design-pattern-bridge-purpose,Answer>>
+- Які переваги дає використання Bridge? <<design-pattern-bridge-benefits,Answer>>
+- Які недоліки має патерн Bridge? <<design-pattern-bridge-drawbacks,Answer>>
+- Як Bridge співпрацює з принципами SOLID? <<design-pattern-bridge-solid,Answer>>
+- Наведіть приклад реалізації Bridge на Java. <<design-pattern-bridge-definition,Answer>>
+- Де у Java можна знайти приклади використання Bridge? <<design-pattern-bridge-java-usage,Answer>>
+
 [#architecture-service-discovery-questions]
 .Service Discovery Questions
 - Що таке Service Discovery і чому він важливий у розподілених системах? <<service-discovery-definition,Answer>>
