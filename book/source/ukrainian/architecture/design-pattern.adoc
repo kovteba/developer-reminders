@@ -61,3 +61,5 @@ include::./designpattern/creational/design-pattern-singelton.adoc[]
 include::./designpattern/structural/design-pattern-adapter.adoc[]
 
 include::./designpattern/structural/design-pattern-bridge.adoc[]
+
+include::./designpattern/structural/design-pattern-composite.adoc[]

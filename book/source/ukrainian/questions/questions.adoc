@@ -107,6 +107,18 @@
 - Наведіть приклад реалізації Bridge на Java. <<design-pattern-bridge-definition,Answer>>
 - Де у Java можна знайти приклади використання Bridge? <<design-pattern-bridge-java-usage,Answer>>
 
+[#architecture-design-patterns-composite]
+.Composite Questions
+- Що таке патерн Composite і до якої категорії він належить? <<design-pattern-composite-definition,Answer>>
+- Яка основна ідея патерну Composite? <<design-pattern-composite-main-idea,Answer>>
+- У яких випадках слід застосовувати Composite? <<design-pattern-composite-purpose,Answer>>
+- Які переваги надає використання патерну Composite? <<design-pattern-composite-benefits,Answer>>
+- Які недоліки можуть виникнути при використанні Composite? <<design-pattern-composite-drawbacks,Answer>>
+- Як патерн Composite відповідає принципам SOLID? <<design-pattern-composite-solid,Answer>>
+- Наведіть приклад реалізації патерну Composite. <<design-pattern-composite-exmple,Answer>>
+- Як патерн Composite використовується в Java? <<design-pattern-composite-java-usage,Answer>>
+- Які основні висновки можна зробити про патерн Composite? <<design-pattern-composite-summary,Answer>>
+
 [#architecture-service-discovery-questions]
 .Service Discovery Questions
 - Що таке Service Discovery і чому він важливий у розподілених системах? <<service-discovery-definition,Answer>>

@@ -1,0 +1,85 @@
+ifndef::imagesdir[:imagesdir: ../../../../imgs/]
+ifndef::compositeexampledir[:compositeexampledir: ../../../../../../examples/design-patterns/composite/src/main/java/kovteba]
+
+[#design-pattern-composite]
+==== Composite
+
+image::architecture/designpattern/structural/design-patterns-composite.jpg[Composite, align="center"]
+
+[[design-pattern-composite-definition]]*Composite* — це патерн проєктування, який належить до категорії <<design-pattern-structural-patterns,структурних патернів>> і дозволяє працювати з *окремими об’єктами* та *групами об’єктів* однаково. Його суть — створення деревоподібної структури, де клієнт взаємодіє з листям і контейнерами через один спільний інтерфейс *Component*.
+
+[[design-pattern-composite-main-idea]]Основна ідея полягає в наданні універсального інтерфейсу, який реалізують і «листя» (прості об’єкти), і «композити» (контейнери). Таким чином клієнтський код не відрізняє, працює він з одиничним об’єктом чи з групою.
+
+[[design-pattern-composite-purpose]]
+Composite застосовується, коли потрібно:
+
+* Побудувати структуру «ціле–частина»;
+* Однаково працювати з елементами й контейнерами;
+* Уникнути складних перевірок `instanceof` чи `if (isContainer)`;
+* Організувати вкладені структури (меню, файлові системи, UI-компоненти);
+* Легко додавати/видаляти об’єкти під час роботи програми.
+
+Типові приклади: DOM, структура UI-компонентів, організаційні дерева, файлові системи.
+
+[[design-pattern-composite-benefits]]
+Переваги Composite:
+
+* Єдиний інтерфейс для всіх компонентів;
+* Спрощення клієнтського коду — він працює з деревом однаково;
+* Легке розширення: можна додавати нові типи компонентів;
+* Рекурсивність дозволяє красиво представляти дерева;
+* Добре поєднується з шаблонами Iterator, Visitor.
+
+[[design-pattern-composite-drawbacks]]
+Недоліки:
+
+* Може ускладнити структуру маленьких систем;
+* Важко контролювати, які операції доступні листю та контейнерам;
+* Можлива надмірна гнучкість (лист може мати методи, які йому не потрібні).
+
+[[design-pattern-composite-solid]]
+Composite добре відповідає принципам SOLID:
+
+* *SRP* — лист і композит виконують різні ролі;
+* *OCP* — можна додавати нові види компонентів без змін у старому коді;
+* *LSP* — лист і композит взаємозамінні з точки зору клієнта;
+* *DIP* — клієнт працює з абстракцією Component.
+
+[[design-pattern-composite-exmple]]
+Наведемо приклад реалізації патерну Composite. Створимо структуру файлів і папок.
+
+Спільний інтерфейс Component:
+[source,java]
+----
+include::{compositeexampledir}/example1/Component.java[tags=Component]
+----
+
+Листовий елемент — файл:
+[source,java]
+----
+include::{compositeexampledir}/example1/FileComponent.java[tags=FileComponent]
+----
+
+Композит — папка, що містить інші елементи:
+[source,java]
+----
+include::{compositeexampledir}/example1/DirectoryComponent.java[tags=DirectoryComponent]
+----
+
+Демонстрація роботи Composite:
+[source,java]
+----
+include::{compositeexampledir}/example1/CompositeDemo.java[tags=CompositeDemo]
+----
+
+[[design-pattern-composite-java-usage]]
+Composite активно використовується в Java:
+
+* *java.awt.Container / Component* — структура UI-компонентів Swing;
+* *javax.faces.component.UIComponent* — дерево компонентів у JSF;
+* *XML / JSON API* — парсинг деревоподібних структур;
+* *File / Directory* у багатьох фреймворках;
+* *Scene Graph* у JavaFX.
+
+[[design-pattern-composite-summary]]
+*Composite* — універсальний патерн для побудови деревоподібних структур, який дозволяє клієнту працювати з окремими об’єктами й групами абсолютно однаково. Дає чисту, гнучку архітектуру, спрощує код і усуває потребу в складних перевірках типів.
