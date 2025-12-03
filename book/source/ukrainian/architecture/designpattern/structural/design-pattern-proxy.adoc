@@ -1,0 +1,87 @@
+ifndef::imagesdir[:imagesdir: ../../../../imgs/]
+ifndef::proxyexampledir[:proxyexampledir: ../../../../../../examples/design-patterns/proxy/src/main/java/kovteba]
+
+[#design-pattern-proxy]
+==== Proxy
+
+image::architecture/designpattern/structural/design-patterns-proxy.jpg[Proxy, align="center"]
+
+[[design-pattern-proxy-definition]]*Proxy* — це патерн проєктування, який належить до категорії <<design-pattern-structural-patterns,структурних патернів>> та забезпечує **заміщення реального об’єкта іншим об’єктом**, який контролює доступ до нього. Proxy виступає як «посередник», перехоплюючи виклики та виконуючи додаткову логіку: кешування, ліниве завантаження, контроль доступу, логування, мережеву взаємодію тощо.
+
+[[design-pattern-proxy-main-idea]]Основна ідея полягає в тому, щоб надати інший об’єкт, який повторює інтерфейс оригіналу, але додає додаткову поведінку до або після виклику справжнього об’єкта.
+
+[[design-pattern-proxy-purpose]]
+Proxy застосовується, коли:
+
+* Потрібен контроль доступу до об’єкта (security);
+* Деякі об’єкти дорогі у створенні — потрібне *ліниве завантаження* (lazy initialization);
+* Потрібно кешувати результати важких обчислень;
+* Робота з віддаленими ресурсами (remote proxy, API proxy);
+* Необхідно виконати логування або трейсинг;
+* Реальний об’єкт має працювати під захистом (firewall/protection proxy).
+
+Типові приклади: кеш для сервісів, віддалені об’єкти (RMI), інтернет-провайдери, ORM-проxi, Spring AOP-проксі.
+
+[[design-pattern-proxy-benefits]]
+Переваги Proxy:
+
+* Контроль доступу до реальних об’єктів;
+* Можливість прозорого додавання логування, кешування, throttle;
+* Lazy loading — економія ресурсів;
+* Зменшення навантаження на мережу/сервер;
+* Стабільний API із додатковими можливостями.
+
+[[design-pattern-proxy-drawbacks]]
+Недоліки:
+
+* Ускладнює архітектуру;
+* Проксі інколи приховує справжню вартість операцій;
+* Неправильне кешування може створити баги;
+* Додаткова логіка може сповільнювати систему.
+
+[[design-pattern-proxy-solid]]
+Proxy відповідає SOLID:
+
+* *SRP* — проксі додає лише одну відповідальність (кеш, контроль доступу тощо);
+* *OCP* — можна додавати нові типи проксі без зміни реального об’єкта;
+* *DIP* — клієнт працює через інтерфейс, не знаючи про реальний об’єкт.
+
+[[design-pattern-proxy-example]]
+Розглянемо приклад сервісу, який завантажує дані, але через Proxy ми додаємо кешування результатів.
+
+Інтерфейс сервісу:
+[source,java]
+----
+include::{proxyexampledir}/example1/DataService.java[tags=DataService]
+----
+
+Реальний об’єкт:
+[source,java]
+----
+include::{proxyexampledir}/example1/RealDataService.java[tags=RealDataService]
+----
+
+Proxy з кешуванням:
+[source,java]
+----
+include::{proxyexampledir}/example1/DataServiceProxy.java[tags=DataServiceProxy]
+----
+
+Демонстрація використання:
+[source,java]
+----
+include::{proxyexampledir}/example1/ProxyDemo.java[tags=ProxyDemo]
+----
+
+[[design-pattern-proxy-java-usage]]
+Proxy широко використовується в Java:
+
+* *Java RMI* — Remote Proxy;
+* *Hibernate / JPA* — lazy-loading проксі для entity;
+* *Spring AOP* — динамічні проксі для логування, сек’юріті, транзакцій;
+* *java.lang.reflect.Proxy* — створення динамічних proxy під час виконання;
+* *HTTP-клієнти* — API Gateway/Proxy;
+* *Security proxy* — контроль дозволів.
+
+[[design-pattern-proxy-summary]]
+*Proxy* — це патерн, який дозволяє контролювати доступ до об’єкта, додавати кешування, логування, ліниве завантаження та іншу поведінку без зміни коду реального класу. Це гнучкий і універсальний механізм, що широко застосовується у фреймворках, мережевих системах і великих корпоративних застосунках.

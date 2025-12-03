@@ -143,7 +143,7 @@
 - Як патерн Facade використовується в Java? <<design-pattern-facade-java-usage,Answer>>
 - Підсумуйте основні ідеї патерну Facade. <<design-pattern-facade-summary,Answer>>
 
-[#architecture-design-patterns-аlyweight]
+[#architecture-design-patterns-flyweight]
 .Flyweight Questions
 - Що таке патерн Flyweight і до якої категорії він належить? <<design-pattern-flyweight-definition,Answer>>
 - Яка основна ідея патерну Flyweight? <<design-pattern-flyweight-main-idea,Answer>>
@@ -155,6 +155,16 @@
 - Де в Java можна знайти застосування патерну Flyweight? <<design-pattern-flyweight-java-usage,Answer>>
 - Які основні концепції слід враховувати при реалізації Flyweight? <<design-pattern-flyweight-summary,Answer>>
 
+[#architecture-design-patterns-proxy]
+.Proxy Questions
+- Що таке патерн проєктування Proxy і до якої категорії він належить? <<design-pattern-proxy-definition,Answer>>
+- Яка основна ідея патерну Proxy? <<design-pattern-proxy-main-idea,Answer>>
+- В яких випадках варто використовувати патерн Proxy? <<design-pattern-proxy-purpose,Answer>>
+- Які переваги надає використання патерну Proxy? <<design-pattern-proxy-benefits,Answer>>
+- Які недоліки має патерн Proxy? <<design-pattern-proxy-drawbacks,Answer>>
+- Як патерн Proxy відповідає принципам SOLID? <<design-pattern-proxy-solid,Answer>>
+- Наведіть приклад використання патерну Proxy з кешуванням. <<design-pattern-proxy-example,Answer>>
+- Як патерн Proxy використовується в Java? <<design-pattern-proxy-java-usage,Answer>>
 
 [#architecture-service-discovery-questions]
 .Service Discovery Questions
