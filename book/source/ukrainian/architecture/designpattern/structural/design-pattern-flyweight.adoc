@@ -1,0 +1,83 @@
+ifndef::imagesdir[:imagesdir: ../../../../imgs/]
+ifndef::flyweightexampledir[:flyweightexampledir: ../../../../../../examples/design-patterns/flyweight/src/main/java/kovteba]
+
+[#design-pattern-flyweight]
+==== Flyweight
+
+image::architecture/designpattern/structural/design-patterns-flyweight.jpg[Flyweight, align="center"]
+
+[[design-pattern-flyweight-definition]]*Flyweight* — це патерн проєктування, який належить до категорії <<design-pattern-structural-patterns,структурних патернів>> та дозволяє *економно використовувати пам’ять* шляхом спільного використання (reuse) об’єктів, що мають однаковий внутрішній стан. Flyweight мінімізує кількість створюваних об’єктів, переміщуючи змінні параметри у зовнішній стан (extrinsic), а незмінні — у внутрішній (intrinsic).
+
+[[design-pattern-flyweight-main-idea]]Основна ідея полягає в тому, щоб створювати не новий об’єкт щоразу, коли він потрібен, а використовувати вже існуючий екземпляр зі схожим станом. У результаті зменшується споживання пам’яті та прискорюється робота системи.
+
+[[design-pattern-flyweight-purpose]]
+Flyweight застосовується, коли:
+
+* Система створює дуже багато однотипних об’єктів;
+* Об’єкти мають спільний внутрішній стан, який можна кешувати;
+* Пам’ять обмежена, або потрібно швидко створювати багато елементів;
+* Є логічне розділення на внутрішній (shared) і зовнішній (унікальний) стани.
+
+Типові приклади: текстові редактори (кожна буква — flyweight), ігрові об’єкти, графічні елементи, кеши, particle systems.
+
+[[design-pattern-flyweight-benefits]]
+Переваги Flyweight:
+
+* Значно зменшує споживання пам’яті;
+* Дозволяє масштабувати систему на тисячі й мільйони об’єктів;
+* Покращує продуктивність за рахунок reuse об’єктів;
+* Внутрішній стан завжди спільний — економія ресурсів.
+
+[[design-pattern-flyweight-drawbacks]]
+Недоліки:
+
+* Стає складно працювати з external state;
+* Потрібно чітко визначати, що intrinsic, а що extrinsic;
+* Ускладнюється архітектура системи;
+* Деколи важко зрозуміти логіку розподілу станів.
+
+[[design-pattern-flyweight-solid]]
+Flyweight відповідає SOLID:
+
+* *SRP* — об’єкт відповідає лише за intrinsic state;
+* *OCP* — можна додавати нові типи flyweight-елементів через фабрику;
+* *DIP* — клієнт працює через фабрику FlyweightFactory.
+
+[[design-pattern-flyweight-example]]
+Розглянемо приклад текстового редактора, де кожен символ представлений flyweight-об’єктом.
+
+Літера з внутрішнім станом (символ):
+[source,java]
+----
+include::{flyweightexampledir}/example1/Glyph.java[tags=Glyph]
+----
+
+Конкретний Flyweight:
+[source,java]
+----
+include::{flyweightexampledir}/example1/CharacterGlyph.java[tags=CharacterGlyph]
+----
+
+Фабрика Flyweight, що зберігає кеш:
+[source,java]
+----
+include::{flyweightexampledir}/example1/GlyphFactory.java[tags=GlyphFactory]
+----
+
+Демонстрація використання:
+[source,java]
+----
+include::{flyweightexampledir}/example1/FlyweightDemo.java[tags=FlyweightDemo]
+----
+
+[[design-pattern-flyweight-java-usage]]
+Flyweight активно використовується в Java:
+
+* *String Pool* — `"text"` literals кешуються JVM;
+* *Integer.valueOf()* — кеш чисел від -128 до 127;
+* *java.nio.CharBuffer* — shared buffers;
+* *AWT/Swing* — рендеринг графічних елементів;
+* *Cache-патерни*, які зберігають об’єкти для reuse.
+
+[[design-pattern-flyweight-summary]]
+*Flyweight* — це патерн, який дозволяє значно економити ресурси, використовуючи спільні об’єкти з однаковим внутрішнім станом замість створення нових. Він ідеальний для систем з великою кількістю повторюваних елементів і є фундаментальним для ефективних структур даних, кешування та графічних систем.

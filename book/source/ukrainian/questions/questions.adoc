@@ -143,6 +143,19 @@
 - Як патерн Facade використовується в Java? <<design-pattern-facade-java-usage,Answer>>
 - Підсумуйте основні ідеї патерну Facade. <<design-pattern-facade-summary,Answer>>
 
+[#architecture-design-patterns-аlyweight]
+.Flyweight Questions
+- Що таке патерн Flyweight і до якої категорії він належить? <<design-pattern-flyweight-definition,Answer>>
+- Яка основна ідея патерну Flyweight? <<design-pattern-flyweight-main-idea,Answer>>
+- В яких випадках слід застосовувати Flyweight? <<design-pattern-flyweight-purpose,Answer>>
+- Які переваги використання Flyweight? <<design-pattern-flyweight-benefits,Answer>>
+- Які недоліки має патерн Flyweight? <<design-pattern-flyweight-drawbacks,Answer>>
+- Як патерн Flyweight відповідає принципам SOLID? <<design-pattern-flyweight-solid,Answer>>
+- Наведіть приклад використання патерну Flyweight у Java. <<design-pattern-flyweight-example,Answer>>
+- Де в Java можна знайти застосування патерну Flyweight? <<design-pattern-flyweight-java-usage,Answer>>
+- Які основні концепції слід враховувати при реалізації Flyweight? <<design-pattern-flyweight-summary,Answer>>
+
+
 [#architecture-service-discovery-questions]
 .Service Discovery Questions
 - Що таке Service Discovery і чому він важливий у розподілених системах? <<service-discovery-definition,Answer>>
