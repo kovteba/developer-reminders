@@ -63,3 +63,8 @@ include::./designpattern/structural/design-pattern-adapter.adoc[]
 include::./designpattern/structural/design-pattern-bridge.adoc[]
 
 include::./designpattern/structural/design-pattern-composite.adoc[]
+
+include::./designpattern/structural/design-pattern-decorator.adoc[]
+
+
+// Decorator и Proxy мають схожу структуру, але різні цілі використання. Decorator додає поведінку об'єкту динамічно, тоді як Proxy контролює доступ до об'єкту.

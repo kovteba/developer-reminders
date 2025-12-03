@@ -1,0 +1,97 @@
+ifndef::imagesdir[:imagesdir: ../../../../imgs/]
+ifndef::decoratorexampledir[:decoratorexampledir: ../../../../../../examples/design-patterns/decorator/src/main/java/kovteba]
+
+[#design-pattern-decorator]
+==== Decorator
+
+image::architecture/designpattern/structural/design-patterns-decorator.jpg[Decorator, align="center"]
+
+[[design-pattern-decorator-definition]]*Decorator* — це патерн проєктування, який належить до категорії <<design-pattern-structural-patterns,структурних патернів>> і дозволяє *динамічно додавати нову поведінку об’єктам*, не змінюючи їхнього класу. Decorator загортає базовий об’єкт у спеціальний «декоратор», який реалізує той самий інтерфейс і делегує виклики оригінальному об’єкту, додаючи свою логіку до або після виконання основної операції.
+
+[[design-pattern-decorator-main-idea]]Основна ідея полягає в тому, щоб замінити громіздкі ієрархії підкласів (наприклад `BufferedInputStream`, `DataInputStream`, `LineInputStream`) на гнучку систему обгорток, які можна комбінувати довільним чином.
+
+Decorator дотримується принципу *composition over inheritance*: замість створення сотень підкласів ми комбінуємо поведінку шляхом композиції.
+
+[[design-pattern-decorator-purpose]]
+Decorator застосовується, коли:
+
+* Потрібно додавати нову поведінку *без зміни коду класу*;
+* Є багато варіантів розширення — краще накладати декоратори, ніж створювати десятки підкласів;
+* Потрібно обгорнути об’єкт додатковою логікою під час виконання;
+* Патерн використовується в потоках даних (I/O), UI-компонентах, логуванні, кешуванні.
+
+Типовий приклад — оформлення тексту: базовий текст → жирний → курсив → underline → комбіновано.
+
+[[design-pattern-decorator-benefits]]
+Переваги Decorator:
+
+* Декоратори можна комбінувати — гнучка модульна архітектура;
+* Дозволяє додавати поведінку без зміни класу компонента;
+* Уникає класового вибуху;
+* Дотримується принципу ОСР — можна додавати нові декоратори без зміни існуючого коду;
+* Підходить для створення складних pipeline-ів обробки.
+
+[[design-pattern-decorator-drawbacks]]
+Недоліки:
+
+* Багато дрібних об’єктів, важче дебажити;
+* Порядок обгорток має значення, що може ускладнити читання;
+* Іноді клієнт повинен знати про декоратори, щоб правильно їх комбінувати.
+
+[[design-pattern-decorator-solid]]
+Decorator відповідає SOLID:
+
+* *SRP* — декоратор має лише одну відповідальність: додати поведінку;
+* *OCP* — можна додавати нові декоратори без змін у базовому класі;
+* *LSP* — декоратор повинен коректно заміняти базовий компонент;
+* *DIP* — код працює через інтерфейс Component.
+
+[[design-pattern-decorator-example]]
+Зробімо систему повідомлень, яка може надсилати текст і додатково шифрувати, форматувати або логувати повідомлення.
+
+Базовий компонент:
+[source,java]
+----
+include::{decoratorexampledir}/example1/Message.java[tags=Message]
+----
+
+Конкретна реалізація:
+[source,java]
+----
+include::{decoratorexampledir}/example1/SimpleMessage.java[tags=SimpleMessage]
+----
+
+Базовий декоратор:
+[source,java]
+----
+include::{decoratorexampledir}/example1/MessageDecorator.java[tags=MessageDecorator]
+----
+
+Конкретні декоратори (наприклад, шифрування та логування):
+[source,java]
+----
+include::{decoratorexampledir}/example1/EncryptDecorator.java[tags=EncryptDecorator]
+----
+
+[source,java]
+----
+include::{decoratorexampledir}/example1/LogDecorator.java[tags=LogDecorator]
+----
+
+Демонстрація:
+[source,java]
+----
+include::{decoratorexampledir}/example1/DecoratorDemo.java[tags=DecoratorDemo]
+----
+
+[[design-pattern-decorator-java-usage]]
+Decorator активно застосовується в Java:
+
+* *Java I/O* — `BufferedInputStream`, `DataInputStream`, `PushbackInputStream` — чистий Decorator;
+* *Servlet API* — `HttpServletRequestWrapper`, `HttpServletResponseWrapper`;
+* *Spring* — AOP-проксі (динамічні декоратори через проксі);
+* *Java Streams API* — послідовні обгортки обробки даних;
+* *SLF4J MDC* — логування з додатковим контекстом.
+
+[[design-pattern-decorator-summary]]
+*Decorator* — один з найпотужніших і найгнучкіших структурних патернів. Він дозволяє динамічно розширювати поведінку об’єктів, уникаючи нестабільних ієрархій наслідування та зберігаючи чисту архітектуру. Його варто використовувати, коли поведінку потрібно **нарощувати шар за шаром**, не змінюючи базовий клас.

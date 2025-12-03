@@ -119,6 +119,18 @@
 - Як патерн Composite використовується в Java? <<design-pattern-composite-java-usage,Answer>>
 - Які основні висновки можна зробити про патерн Composite? <<design-pattern-composite-summary,Answer>>
 
+[#architecture-design-patterns-decorator]
+.Decorator Questions
+- Що таке патерн Decorator і до якої категорії він належить? <<design-pattern-decorator-definition,Answer>>
+- Яка основна ідея патерну Decorator? <<design-pattern-decorator-main-idea,Answer>>
+- В яких випадках слід застосовувати патерн Decorator? <<design-pattern-decorator-purpose,Answer>>
+- Які переваги надає використання патерну Decorator? <<design-pattern-decorator-benefits,Answer>>
+- Які недоліки має патерн Decorator? <<design-pattern-decorator-drawbacks,Answer>>
+- Як патерн Decorator відповідає принципам SOLID? <<design-pattern-decorator-solid,Answer>>
+- Наведіть приклад використання патерну Decorator на Java. <<design-pattern-decorator-example,Answer>>
+- Де в Java часто застосовується патерн Decorator? <<design-pattern-decorator-java-usage,Answer>>
+- Які основні висновки можна зробити про патерн Decorator? <<design-pattern-decorator-summary,Answer>>
+
 [#architecture-service-discovery-questions]
 .Service Discovery Questions
 - Що таке Service Discovery і чому він важливий у розподілених системах? <<service-discovery-definition,Answer>>
