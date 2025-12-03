@@ -1,0 +1,90 @@
+ifndef::imagesdir[:imagesdir: ../../../../imgs/]
+ifndef::facadeexampledir[:facadeexampledir: ../../../../../../examples/design-patterns/facade/src/main/java/kovteba]
+
+[#design-pattern-facade]
+==== Facade
+
+image::architecture/designpattern/structural/design-patterns-facade.jpg[Facade, align="center"]
+
+[[design-pattern-facade-definition]]*Facade* — це патерн проєктування, який належить до категорії <<design-pattern-structural-patterns,структурних патернів>> і надає *спрощений, високорівневий інтерфейс* для взаємодії зі складною підсистемою. Facade приховує внутрішню логіку й об’єднує кілька операцій у прості методи, зменшуючи кількість залежностей між частинами системи.
+
+[[design-pattern-facade-main-idea]]Основна ідея полягає в тому, щоб інкапсулювати складну або багатокомпонентну логіку за єдиним публічним API. Клієнту не потрібно знати, як взаємодіють внутрішні класи — достатньо викликати методи фасаду.
+
+[[design-pattern-facade-purpose]]
+Facade застосовується, коли:
+
+* Потрібно спростити складний API;
+* Необхідно приховати внутрішні деталі реалізації;
+* Є багато взаємопов’язаних компонентів, які клієнт не повинен бачити;
+* Потрібен стабільний інтерфейс над мінливою підсистемою;
+* Хочеться зменшити зв’язність між модулями.
+
+Типові приклади — системи мультимедіа, HTTP-клієнти, складні модулі з багатьма кроками ініціалізації.
+
+[[design-pattern-facade-benefits]]
+Переваги Facade:
+
+* Спрощує використання складних систем;
+* Зменшує кількість залежностей між модулями;
+* Приховує деталі реалізації;
+* Дає змогу змінювати внутрішні компоненти без впливу на клієнта;
+* Зроблений інтерфейс легкий для розуміння.
+
+[[design-pattern-facade-drawbacks]]
+Недоліки:
+
+* Може стати God Object, якщо містить занадто багато логіки;
+* Може приховувати важливу функціональність підсистеми;
+* Клієнт іноді може втратити гнучкість низькорівневого доступу.
+
+[[design-pattern-facade-solid]]
+Facade відповідає SOLID:
+
+* *SRP* — фасад має одну відповідальність: надати спрощений інтерфейс;
+* *OCP* — підсистему можна змінювати, не модифікуючи фасадний API;
+* *DIP* — клієнт залежить від фасаду, а не від конкретних класів підсистеми.
+
+[[design-pattern-facade-example]]
+Розглянемо приклад системи домашнього кінотеатру. Маємо кілька підсистем, які потрібно узгоджено запускати.
+
+Підсистема 1 — телевізор:
+[source,java]
+----
+include::{facadeexampledir}/example1/TV.java[tags=TV]
+----
+
+Підсистема 2 — аудіосистема:
+[source,java]
+----
+include::{facadeexampledir}/example1/SoundSystem.java[tags=SoundSystem]
+----
+
+Підсистема 3 — потоковий сервіс:
+[source,java]
+----
+include::{facadeexampledir}/example1/StreamingService.java[tags=StreamingService]
+----
+
+Фасад, що інкапсулює всю логіку:
+[source,java]
+----
+include::{facadeexampledir}/example1/HomeTheaterFacade.java[tags=HomeTheaterFacade]
+----
+
+Демонстрація використання:
+[source,java]
+----
+include::{facadeexampledir}/example1/FacadeDemo.java[tags=FacadeDemo]
+----
+
+[[design-pattern-facade-java-usage]]
+Facade активно використовується в Java:
+
+* *Spring Boot* — `SpringApplication.run()` ховає складну логіку запуску;
+* *JPA/Hibernate* — `EntityManager` виступає фасадом до складного ORM-ядра;
+* *java.util.Collections* — набір статичних методів-обгорток;
+* *Servlet API* — `FacesContext`, `RequestDispatcher`;
+* Будь-які бібліотеки, що надають «simple API» поверх складних модулів.
+
+[[design-pattern-facade-summary]]
+*Facade* — це патерн, який дозволяє створити чистий, зрозумілий та стабільний API над складною внутрішньою системою. Він спрощує використання, зменшує зв’язність, приховує внутрішню логіку та підвищує модульність архітектури. Facade варто застосовувати, коли потрібно зробити складні речі простими та заховати деталі реалізації від клієнтського коду.
