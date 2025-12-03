@@ -131,6 +131,18 @@
 - Де в Java часто застосовується патерн Decorator? <<design-pattern-decorator-java-usage,Answer>>
 - Які основні висновки можна зробити про патерн Decorator? <<design-pattern-decorator-summary,Answer>>
 
+[#architecture-design-patterns-facade]
+.Facade Questions
+- Що таке патерн Facade і які проблеми він вирішує? <<design-pattern-facade-definition,Answer>>
+- Яка основна ідея патерну Facade? <<design-pattern-facade-main-idea,Answer>>
+- В яких випадках слід використовувати Facade? <<design-pattern-facade-purpose,Answer>>
+- Які переваги дає використання Facade? <<design-pattern-facade-benefits,Answer>>
+- Які недоліки має патерн Facade? <<design-pattern-facade-drawbacks,Answer>>
+- Як патерн Facade відповідає принципам SOLID? <<design-pattern-facade-solid,Answer>>
+- Наведіть приклад реалізації патерну Facade. <<design-pattern-facade-example,Answer>>
+- Як патерн Facade використовується в Java? <<design-pattern-facade-java-usage,Answer>>
+- Підсумуйте основні ідеї патерну Facade. <<design-pattern-facade-summary,Answer>>
+
 [#architecture-service-discovery-questions]
 .Service Discovery Questions
 - Що таке Service Discovery і чому він важливий у розподілених системах? <<service-discovery-definition,Answer>>
