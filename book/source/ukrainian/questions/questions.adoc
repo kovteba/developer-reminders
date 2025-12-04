@@ -166,6 +166,17 @@
 - Наведіть приклад використання патерну Proxy з кешуванням. <<design-pattern-proxy-example,Answer>>
 - Як патерн Proxy використовується в Java? <<design-pattern-proxy-java-usage,Answer>>
 
+[#architecture-design-patterns-chain-of-responsibility]
+.Chain Of Responsibility Questions
+- Що таке патерн Chain of Responsibility? <<design-pattern-chain-of-responsibility-definition,Answer>>
+- Яка основна ідея патерну Chain of Responsibility? <<design-pattern-chain-of-responsibility-main-idea,Answer>>
+- Коли слід використовувати патерн Chain of Responsibility? <<design-pattern-chain-of-responsibility-purpose,Answer>>
+- Які переваги патерну Chain of Responsibility? <<design-pattern-chain-of-responsibility-benefits,Answer>>
+- Які недоліки патерну Chain of Responsibility? <<design-pattern-chain-of-responsibility-drawbacks,Answer>>
+- Як патерн Chain of Responsibility відповідає принципам SOLID? <<design-pattern-chain-of-responsibility-solid,Answer>>
+- Наведіть приклад реалізації патерну Chain of Responsibility на Java. <<design-pattern-chain-of-responsibility-example,Answer>>
+- Де в Java часто використовується патерн Chain of Responsibility? <<design-pattern-chain-of-responsibility-java-usage,Answer>>
+
 [#architecture-service-discovery-questions]
 .Service Discovery Questions
 - Що таке Service Discovery і чому він важливий у розподілених системах? <<service-discovery-definition,Answer>>

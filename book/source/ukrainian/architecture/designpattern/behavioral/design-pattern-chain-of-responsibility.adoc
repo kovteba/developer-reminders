@@ -1,0 +1,86 @@
+ifndef::imagesdir[:imagesdir: ../../../../imgs/]
+ifndef::chainexampledir[:chainexampledir: ../../../../../../examples/design-patterns/chain-of-responsibility/src/main/java/kovteba]
+
+[#design-pattern-chain-of-responsibility]
+==== Chain Of Responsibility
+
+image::architecture/designpattern/behavioral/design-patterns-chain-of-responsibility.jpg[Chain Of Responsibility, align="center"]
+
+[[design-pattern-chain-of-responsibility-definition]]*Chain of Responsibility* — це поведінковий патерн проєктування, який дозволяє *передавати запит по ланцюгу обробників*, доки один із них не зможе його обробити.
+
+[[design-pattern-chain-of-responsibility-main-idea]]Основна ідея полягає в тому, щоб *розв’язати сильну прив’язку між відправником і отримувачем запиту*. Відправник не знає, хто саме його обробить — один або кілька обробників у ланцюгу.
+
+[[design-pattern-chain-of-responsibility-purpose]]
+Chain of Responsibility застосовується, коли:
+
+* Потрібно створити послідовність обробників з різними правилами;
+* Необхідно уникнути великих `if-else` або `switch-case`;
+* Важливо мати можливість легко додавати або прибирати обробників;
+* Декілька обробників можуть реагувати на один і той самий запит.
+
+[[design-pattern-chain-of-responsibility-benefits]]
+Переваги Chain of Responsibility:
+
+* Прибирає складні умовні конструкції;
+* Дає можливість легко конфігурувати порядок обробників;
+* Підтримує гнучке розширення (додавання нових обробників);
+* Зменшує зв’язність між компонентами.
+
+[[design-pattern-chain-of-responsibility-drawbacks]]
+Недоліки:
+
+* Запит може залишитися необробленим;
+* Важко дебажити ланцюги зі складною структурою;
+* Надмірна кількість обробників може уповільнювати виконання.
+
+[[design-pattern-chain-of-responsibility-solid]]
+Chain of Responsibility відповідає SOLID:
+
+* *SRP* — кожен обробник виконує одну окрему відповідальність;
+* *OCP* — нові обробники можна додавати без модифікації існуючих;
+* *DIP* — клієнт працює через абстракцію Handler.
+
+[[design-pattern-chain-of-responsibility-example]]
+Розглянемо приклад системи валідації запиту. Кожен обробник перевіряє певну умову.
+
+Базовий обробник:
+[source,java]
+----
+include::{chainexampledir}/example1/Handler.java[tags=Handler]
+----
+
+Конкретний обробник 1 — перевірка автентифікації:
+[source,java]
+----
+include::{chainexampledir}/example1/AuthHandler.java[tags=AuthHandler]
+----
+
+Конкретний обробник 2 — перевірка авторизації:
+[source,java]
+----
+include::{chainexampledir}/example1/PermissionHandler.java[tags=PermissionHandler]
+----
+
+Конкретний обробник 3 — перевірка цілісності даних:
+[source,java]
+----
+include::{chainexampledir}/example1/DataValidationHandler.java[tags=DataValidationHandler]
+----
+
+Демонстрація роботи ланцюга:
+[source,java]
+----
+include::{chainexampledir}/example1/ChainDemo.java[tags=ChainDemo]
+----
+
+[[design-pattern-chain-of-responsibility-java-usage]]
+Chain of Responsibility широко використовується:
+
+* *Servlet Filters* — обробка HTTP-запитів у ланцюзі;
+* *Spring Security* — фільтри безпеки;
+* *UI Event Propagation* — передача подій по дереву компонентів;
+* *Pipes & Filters architecture*;
+* *Logging frameworks* — каскадні логгер-обробники.
+
+[[design-pattern-chain-of-responsibility-summary]]
+*Chain of Responsibility* — це патерн, який дозволяє направляти запит через динамічний ланцюг обробників, роблячи систему гнучкою, модульною і такою, що легко розширюється. Він зменшує зв’язність, усуває складні умовні конструкції та дозволяє просто змінювати логіку обробки.
