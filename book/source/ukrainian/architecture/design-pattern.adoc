@@ -72,5 +72,7 @@ include::./designpattern/structural/design-pattern-flyweight.adoc[]
 
 include::./designpattern/structural/design-pattern-proxy.adoc[]
 
+include::./designpattern/behavioral/design-pattern-chain-of-responsibility.adoc[]
+
 
 // Decorator и Proxy мають схожу структуру, але різні цілі використання. Decorator додає поведінку об'єкту динамічно, тоді як Proxy контролює доступ до об'єкту.
