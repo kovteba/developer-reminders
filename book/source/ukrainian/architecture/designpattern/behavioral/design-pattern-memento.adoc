@@ -1,0 +1,88 @@
+ifndef::imagesdir[:imagesdir: ../../../../imgs/]
+ifndef::mementoexampledir[:mementoexampledir: ../../../../../../examples/design-patterns/memento/src/main/java/kovteba]
+
+[#design-pattern-memento]
+==== Memento
+
+image::architecture/designpattern/behavioral/design-patterns-memento.jpg[Memento, align="center"]
+
+[[design-pattern-memento-definition]]*Memento* — це поведінковий патерн проєктування, який дозволяє *зберігати та відновлювати попередній стан об’єкта*, не порушуючи інкапсуляцію. Об’єкт створює спеціальний контейнер — *memento*, який містить його внутрішній стан.
+
+[[design-pattern-memento-main-idea]]
+Основна ідея полягає в тому, щоб винести збереження стану за межі самого об’єкта, але при цьому **клієнт не має доступу до внутрішніх полів** — тільки сам originator може створювати та відновлювати запис стану.
+
+[[design-pattern-memento-purpose]]
+Memento застосовується, коли:
+
+* Потрібно реалізувати *undo/redo*;
+* Важливо зберегти історію станів;
+* Не можна відкривати внутрішні поля об’єкта (інкапсуляція);
+* Стан повинен бути відновлений точно таким, як був.
+
+Приклади: текстові редактори, графічні редактори, ігрові сейви, транзакційні системи.
+
+[[design-pattern-memento-benefits]]
+Переваги Memento:
+
+* Дозволяє легко реалізувати undo/redo;
+* Не порушує інкапсуляцію;
+* Дає можливість зберігати складні стани;
+* Просте розширення: можна додати історію або стек станів.
+
+[[design-pattern-memento-drawbacks]]
+Недоліки:
+
+* Може сильно збільшити споживання памʼяті, якщо стан великий;
+* Часті збереження станів знижують продуктивність;
+* Caretaker може стати занадто великим (зберігає багато mementos).
+
+[[design-pattern-memento-solid]]
+Memento відповідає SOLID:
+
+* *SRP* — Originator зберігає стан, Memento переносить його, Caretaker керує історією;
+* *OCP* — можна додавати нові типи станів без зміни клієнтського коду;
+* *DIP* — клієнт працює з абстракцією Memento, не знаючи внутрішніх полів.
+
+[[design-pattern-memento-example]]
+Розглянемо приклад текстового редактора з функцією скасування дій.
+
+Originator (об’єкт, який має стан):
+[source,java]
+----
+include::{mementoexampledir}/example1/Editor.java[tags=Editor]
+----
+
+Memento — контейнер стану:
+[source,java]
+----
+include::{mementoexampledir}/example1/EditorMemento.java[tags=EditorMemento]
+----
+
+Caretaker — менеджер історії:
+[source,java]
+----
+include::{mementoexampledir}/example1/History.java[tags=History]
+----
+
+Використання:
+[source,java]
+----
+include::{mementoexampledir}/example1/MementoDemo.java[tags=MementoDemo]
+----
+
+Результат виконання:
+[source,console]
+----
+include::{mementoexampledir}/example1/MementoDemo.java[tags=MementoDemoResult]
+----
+
+[[design-pattern-memento-java-usage]]
+Memento широко використовується:
+
+* *Undo/Redo* в редакторах тексту та графіки;
+* *Система станів у іграх* (сейви, checkpoints);
+* *Транзакційні системи*;
+* *Серіалізація об’єктів* (спрощені варіанти).
+
+[[design-pattern-memento-summary]]
+*Memento* — це патерн, що дозволяє створювати знімки стану об’єкта та відновлювати їх без порушення інкапсуляції. Він робить можливими undo/redo, гнучкі історії змін і безпечне збереження проміжних станів складних об’єктів.
