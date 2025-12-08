@@ -188,6 +188,17 @@
 - Де в Java часто використовується патерн Command? <<design-pattern-command-java-usage,Answer>>
 - Підсумуйте основні ідеї патерну Command. <<design-pattern-command-summary,Answer>>
 
+[#architecture-design-patterns-iterator]
+.Iterator Questions
+- Що таке патерн Iterator? <<design-pattern-iterator-definition,Answer>>
+- Яка основна ідея патерну Iterator? <<design-pattern-iterator-main-idea,Answer>>
+- Які переваги використання патерну Iterator? <<design-pattern-iterator-benefits,Answer>>
+- Які недоліки має патерн Iterator? <<design-pattern-iterator-drawbacks,Answer>>
+- Як патерн Iterator відповідає принципам SOLID? <<design-pattern-iterator-solid,Answer>>
+- Наведіть приклад реалізації патерну Iterator. <<design-pattern-iterator-example,Answer>>
+- Як патерн Iterator використовується в Java? <<design-pattern-iterator-java-usage,Answer>>
+- Яка основна мета патерну Iterator? <<design-pattern-iterator-summary,Answer>>
+
 [#architecture-service-discovery-questions]
 .Service Discovery Questions
 - Що таке Service Discovery і чому він важливий у розподілених системах? <<service-discovery-definition,Answer>>
