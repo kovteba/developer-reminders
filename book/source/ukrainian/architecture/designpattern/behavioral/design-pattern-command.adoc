@@ -1,0 +1,92 @@
+ifndef::imagesdir[:imagesdir: ../../../../imgs/]
+ifndef::commandexampledir[:commandexampledir: ../../../../../../examples/design-patterns/command/src/main/java/kovteba]
+
+[#design-pattern-command]
+==== Command
+
+image::architecture/designpattern/behavioral/design-patterns-command.jpg[Command, align="center"]
+
+[[design-pattern-command-definition]]*Command* — це поведінковий патерн проєктування, який перетворює запити на об’єкти, дозволяючи *параметризувати виклики*, ставити їх у чергу, логувати, відміняти, а також виконувати повторно.
+
+[[design-pattern-command-main-idea]]Основна ідея полягає в тому, щоб інкапсулювати дію та її параметри всередині окремого об’єкта — *команди*. Клієнт відправляє команду, але не знає деталей її виконання.
+
+[[design-pattern-command-benefits]]
+Переваги Command:
+
+* Повна декомпозиція виклику та його виконання;
+* Підтримка undo/redo (Memento + Command);
+* Легко додавати нові команди;
+* Команди можна комбінувати в макрокоманди;
+* Простота логування та відкладеного виконання.
+
+[[design-pattern-command-drawbacks]]
+Недоліки:
+
+* Зростає кількість класів;
+* Стає важче читати код, якщо команд багато;
+* Необхідно керувати станами для undo.
+
+[[design-pattern-command-solid]]
+Command відповідає SOLID:
+
+* *SRP* — кожна команда виконує одну дію;
+* *OCP* — можна додати нову команду без зміни існуючих класів;
+* *LSP* — усі команди замінні, бо реалізують єдиний інтерфейс;
+* *DIP* — клієнт працює з абстракцією Command, а не з конкретними операціями.
+
+[[design-pattern-command-example]]
+Розглянемо приклад системи керування світлом за допомогою команд.
+
+Інтерфейс команди:
+[source,java]
+----
+include::{commandexampledir}/example1/Command.java[tags=Command]
+----
+
+Конкретна команда — увімкнути світло:
+[source,java]
+----
+include::{commandexampledir}/example1/LightOnCommand.java[tags=LightOnCommand]
+----
+
+Конкретна команда — вимкнути світло:
+[source,java]
+----
+include::{commandexampledir}/example1/LightOffCommand.java[tags=LightOffCommand]
+----
+
+Отримувач (Receiver) — лампа:
+[source,java]
+----
+include::{commandexampledir}/example1/Light.java[tags=Light]
+----
+
+Інвокер, що зберігає команду:
+[source,java]
+----
+include::{commandexampledir}/example1/RemoteControl.java[tags=RemoteControl]
+----
+
+Демонстрація роботи:
+[source,java]
+----
+include::{commandexampledir}/example1/CommandDemo.java[tags=CommandDemo]
+----
+
+Результат виконання:
+[source,console]
+----
+include::{commandexampledir}/example1/CommandDemo.java[tags=CommandDemoResult]
+----
+
+[[design-pattern-command-java-usage]]
+Command широко використовується:
+
+* *Swing / JavaFX / Android* — обробники дій кнопок;
+* *Task Scheduler / ExecutorService* — запуск відкладених операцій;
+* *Macro Recording* — запис дій користувача у вигляді команд;
+* *Undo/Redo Systems* — текстові редактори, графічні редактори;
+* *Messaging systems* — асинхронні команди у чергах.
+
+[[design-pattern-command-summary]]
+*Command* — це патерн, який дозволяє інкапсулювати дію як об’єкт, роблячи систему модульною, розширюваною та здатною підтримувати логування, undo/redo, макрокоманди та відкладене виконання. Це фундаментальний інструмент для побудови гнучких UI та управління складними наборами операцій.
