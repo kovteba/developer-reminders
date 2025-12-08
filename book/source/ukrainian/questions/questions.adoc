@@ -223,6 +223,17 @@
 - В яких сферах застосовується патерн Memento? <<design-pattern-memento-java-usage,Answer>>
 - Підсумуйте основні ідеї патерну Memento. <<design-pattern-memento-summary,Answer>>
 
+[#architecture-design-patterns-observer]
+.Observer Questions
+- Що таке патерн Observer? <<design-pattern-observer-definition,Answer>>
+- Яка основна ідея патерну Observer? <<design-pattern-observer-main-idea,Answer>>
+- В яких випадках варто використовувати патерн Observer? <<design-pattern-observer-purpose,Answer>>
+- Які переваги патерну Observer? <<design-pattern-observer-benefits,Answer>>
+- Які недоліки патерну Observer? <<design-pattern-observer-drawbacks,Answer>>
+- Як патерн Observer відповідає принципам SOLID? <<design-pattern-observer-solid,Answer>>
+- Наведіть приклад реалізації патерну Observer на Java. <<design-pattern-observer-example,Answer>>
+- Де в Java можна зустріти використання патерну Observer? <<design-pattern-observer-java-usage,Answer>>
+
 [#architecture-service-discovery-questions]
 .Service Discovery Questions
 - Що таке Service Discovery і чому він важливий у розподілених системах? <<service-discovery-definition,Answer>>

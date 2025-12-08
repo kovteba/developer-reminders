@@ -1,0 +1,91 @@
+ifndef::imagesdir[:imagesdir: ../../../../imgs/]
+ifndef::observerexampledir[:observerexampledir: ../../../../../../examples/design-patterns/observer/src/main/java/kovteba]
+
+[#design-pattern-observer]
+==== Observer
+
+image::architecture/designpattern/behavioral/design-patterns-observer.jpg[Observer, align="center"]
+
+[[design-pattern-observer-definition]]*Observer* — це поведінковий патерн проєктування, який створює механізм *підписки* для передачі повідомлень між об’єктами. Коли стан одного об’єкта (**Subject**) змінюється, всі його **Observers** автоматично сповіщаються та оновлюються.
+
+[[design-pattern-observer-main-idea]]Основна ідея полягає в тому, щоб забезпечити *слабку зв’язність* і можливість автоматичної реакції підписників на зміну стану видавця.
+
+[[design-pattern-observer-purpose]]
+Observer застосовується, коли:
+
+* Один об’єкт повинен інформувати інші про зміну стану;
+* Потрібно уникнути сильного зв’язку між об’єктами;
+* Важливо мати механізм підписки/відписки;
+* Дані мають автоматично оновлюватися в усіх залежних компонентах.
+
+[[design-pattern-observer-benefits]]
+Переваги Observer:
+
+* Слабка зв’язність між об’єктами;
+* Автоматичне оновлення всіх залежних елементів;
+* Гнучке додавання та видалення підписників;
+* Добре масштабується для складних систем.
+
+[[design-pattern-observer-drawbacks]]
+Недоліки:
+
+* Можлива важка діагностика через ланцюгові оновлення;
+* Підписники можуть отримувати забагато або замало інформації;
+* Є ризик появи "циклів повідомлень".
+
+[[design-pattern-observer-solid]]
+Observer відповідає SOLID:
+
+* *SRP* — Subject відповідає за стан, Observers — за реакцію;
+* *OCP* — можна додавати нових спостерігачів без зміни Subject;
+* *DIP* — Subject і Observers працюють через абстракції.
+
+[[design-pattern-observer-example]]
+Розглянемо приклад: видавець (Subject) сповіщає кількох слухачів (Observers) про зміну стану.
+
+Інтерфейс спостерігача:
+[source,java]
+----
+include::{observerexampledir}/example1/Observer.java[tags=Observer]
+----
+
+Інтерфейс видавця:
+[source,java]
+----
+include::{observerexampledir}/example1/Subject.java[tags=Subject]
+----
+
+Конкретний видавець:
+[source,java]
+----
+include::{observerexampledir}/example1/WeatherStation.java[tags=WeatherStation]
+----
+
+Конкретні спостерігачі:
+[source,java]
+----
+include::{observerexampledir}/example1/PhoneDisplay.java[tags=PhoneDisplay]
+----
+
+[source,java]
+----
+include::{observerexampledir}/example1/WindowDisplay.java[tags=WindowDisplay]
+----
+
+Демонстрація роботи:
+[source,java]
+----
+include::{observerexampledir}/example1/ObserverDemo.java[tags=ObserverDemo]
+----
+
+[[design-pattern-observer-java-usage]]
+Observer широко використовується в Java:
+
+* *Swing / JavaFX events* — слухачі подій;
+* *PropertyChangeListener* — автоматичні оновлення моделей;
+* *Reactive Streams / Flow API*;
+* *Message brokers* — pub/sub системи;
+* *JPA EntityListeners* — реакція на зміни сутностей.
+
+[[design-pattern-observer-summary]]
+*Observer* — це патерн, який дозволяє об’єктам реагувати на зміни інших об’єктів автоматично і без прямої залежності. Це ключовий механізм для побудови реактивних та подієвих систем.
