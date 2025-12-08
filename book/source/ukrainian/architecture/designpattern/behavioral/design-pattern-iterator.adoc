@@ -1,0 +1,80 @@
+ifndef::imagesdir[:imagesdir: ../../../../imgs/]
+ifndef::iteratorexampledir[:iteratorexampledir: ../../../../../../examples/design-patterns/iterator/src/main/java/kovteba]
+
+[#design-pattern-iterator]
+==== Iterator
+
+image::architecture/designpattern/behavioral/design-patterns-iterator.jpg[Command, align="center"]
+
+[[design-pattern-iterator-definition]]*Iterator* — це поведінковий патерн проєктування, який надає уніфікований спосіб *послідовного доступу до елементів колекції*, не розкриваючи її внутрішню реалізацію.
+
+[[design-pattern-iterator-main-idea]]Основна ідея полягає в тому, щоб інкапсулювати логіку обходу колекції у спеціальному об’єкті — *ітераторі*, тоді як сама колекція може мати будь-яку внутрішню структуру.
+
+[[design-pattern-iterator-benefits]]
+Переваги Iterator:
+
+* Єдиний спосіб обходу незалежно від типу колекції;
+* Приховує внутрішню структуру даних;
+* Просте підключення нових типів колекцій та ітераторів;
+* Можна реалізувати кілька стратегій проходження.
+
+[[design-pattern-iterator-drawbacks]]
+Недоліки:
+
+* Більше класів — по одному ітератору для кожної колекції;
+* Необхідно враховувати модифікації колекції під час ітерації;
+* Може ускладнювати підтримку для змінних структур.
+
+[[design-pattern-iterator-solid]]
+Iterator відповідає SOLID:
+
+* *SRP* — окремий клас відповідає тільки за обхід;
+* *OCP* — можна додати новий тип ітератора без зміни колекції;
+* *DIP* — клієнт працює через абстракцію Iterator.
+
+[[design-pattern-iterator-example]]
+Розглянемо приклад колекції з власним ітератором.
+
+Інтерфейс ітератора:
+[source,java]
+----
+include::{iteratorexampledir}/example1/Iterator.java[tags=Iterator]
+----
+
+Інтерфейс колекції:
+[source,java]
+----
+include::{iteratorexampledir}/example1/Aggregate.java[tags=Aggregate]
+----
+
+Конкретна колекція:
+[source,java]
+----
+include::{iteratorexampledir}/example1/NameCollection.java[tags=NameCollection]
+----
+
+Конкретний ітератор:
+[source,java]
+----
+include::{iteratorexampledir}/example1/NameIterator.java[tags=NameIterator]
+----
+
+Використання:
+[source,java]
+----
+include::{iteratorexampledir}/example1/IteratorDemo.java[tags=IteratorDemo]
+----
+
+[[design-pattern-iterator-java-usage]]
+Iterator широко використовується в Java:
+
+* *Collections Framework* — `Iterator`, `ListIterator`;
+* *Streams API* — внутрішні ітератори;
+* *Scanner* — перебір токенів;
+* *ResultSet* — ітерація по рядках БД;
+* *Spliterator* — паралельні обходи.
+
+[[design-pattern-iterator-summary]]
+*Iterator* — це патерн, який надає стандартизований спосіб обходу колекцій, роблячи використання структур даних простим, гнучким і незалежним від деталей реалізації.
+
+

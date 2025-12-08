@@ -27,6 +27,7 @@
         <module>proxy</module>
         <module>chain-of-responsibility</module>
         <module>command</module>
+        <module>iterator</module>
     </modules>
 
 </project>
