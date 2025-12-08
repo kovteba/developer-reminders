@@ -211,6 +211,18 @@
 - Коли не слід використовувати патерн Mediator? <<design-pattern-mediator-drawbacks,Answer>>
 - Як реалізувати патерн Mediator у Java? <<design-pattern-mediator-example,Answer>>
 
+[#architecture-design-patterns-memento]
+.Memento Questions
+- Що таке патерн Memento? <<design-pattern-memento-definition,Answer>>
+- Яка основна ідея патерну Memento? <<design-pattern-memento-main-idea,Answer>>
+- В яких випадках варто використовувати Memento? <<design-pattern-memento-purpose,Answer>>
+- Які переваги дає використання Memento? <<design-pattern-memento-benefits,Answer>>
+- Які недоліки має патерн Memento? <<design-pattern-memento-drawbacks,Answer>>
+- Як Memento відповідає принципам SOLID? <<design-pattern-memento-solid,Answer>>
+- Наведіть приклад реалізації патерну Memento на Java. <<design-pattern-memento-example,Answer>>
+- В яких сферах застосовується патерн Memento? <<design-pattern-memento-java-usage,Answer>>
+- Підсумуйте основні ідеї патерну Memento. <<design-pattern-memento-summary,Answer>>
+
 [#architecture-service-discovery-questions]
 .Service Discovery Questions
 - Що таке Service Discovery і чому він важливий у розподілених системах? <<service-discovery-definition,Answer>>
