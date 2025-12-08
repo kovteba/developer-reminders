@@ -84,5 +84,7 @@ include::./designpattern/behavioral/design-pattern-memento.adoc[]
 
 include::./designpattern/behavioral/design-pattern-observer.adoc[]
 
+include::./designpattern/behavioral/design-pattern-state.adoc[]
+
 
 // Decorator и Proxy мають схожу структуру, але різні цілі використання. Decorator додає поведінку об'єкту динамічно, тоді як Proxy контролює доступ до об'єкту.

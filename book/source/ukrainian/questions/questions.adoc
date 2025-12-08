@@ -234,6 +234,18 @@
 - Наведіть приклад реалізації патерну Observer на Java. <<design-pattern-observer-example,Answer>>
 - Де в Java можна зустріти використання патерну Observer? <<design-pattern-observer-java-usage,Answer>>
 
+[#architecture-design-patterns-state]
+.State Questions
+- Що таке патерн State? <<design-pattern-state-definition,Answer>>
+- Яка основна ідея патерну State? <<design-pattern-state-main-idea,Answer>>
+- В яких випадках варто застосовувати патерн State? <<design-pattern-state-purpose,Answer>>
+- Які переваги дає використання патерну State? <<design-pattern-state-benefits,Answer>>
+- Які недоліки має патерн State? <<design-pattern-state-drawbacks,Answer>>
+- Як патерн State відповідає принципам SOLID? <<design-pattern-state-solid,Answer>>
+- Наведіть приклад реалізації патерну State. <<design-pattern-state-example,Answer>>
+- Як патерн State використовується в Java? <<design-pattern-state-java-usage,Answer>>
+- Підсумуйте основну ідею патерну State. <<design-pattern-state-summary,Answer>>
+
 [#architecture-service-discovery-questions]
 .Service Discovery Questions
 - Що таке Service Discovery і чому він важливий у розподілених системах? <<service-discovery-definition,Answer>>
