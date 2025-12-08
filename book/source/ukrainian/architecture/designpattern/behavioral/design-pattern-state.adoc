@@ -1,0 +1,95 @@
+ifndef::imagesdir[:imagesdir: ../../../../imgs/]
+ifndef::stateexampledir[:stateexampledir: ../../../../../../examples/design-patterns/state/src/main/java/kovteba]
+
+[#design-pattern-state]
+==== State
+
+image::architecture/designpattern/behavioral/design-patterns-state.jpg[State, align="center"]
+
+[[design-pattern-state-definition]]*State* — це поведінковий патерн проєктування, який дозволяє об’єкту *змінювати свою поведінку залежно від внутрішнього стану*. Зовні це виглядає так, ніби об’єкт змінює свій клас під час виконання.
+
+[[design-pattern-state-main-idea]]Основна ідея полягає в тому, щоб винести різні варіанти поведінки в окремі класи станів, а контекст (об’єкт) делегує виконання поточному стану.
+
+[[design-pattern-state-purpose]]
+State застосовується, коли:
+
+* Об’єкт має кілька станів і поводиться по-різному в кожному;
+* Великий `switch` або купа `if-else` у поведінкових методах;
+* Потрібно додавати або змінювати стани без переписування контексту;
+* Поведінка повинна змінюватися динамічно під час виконання.
+
+Типові приклади: банкомати, медіаплеєри, документи у workflow, ігрові персонажі.
+
+[[design-pattern-state-benefits]]
+Переваги State:
+
+* Позбавляє масивних умовних конструкцій;
+* Дозволяє легко додавати нові стани;
+* Кожен стан ізольований і має свою поведінку;
+* Чиста та масштабована архітектура.
+
+[[design-pattern-state-drawbacks]]
+Недоліки:
+
+* Збільшується кількість класів;
+* Контекст повинен знати, коли змінювати стан;
+* Можлива надмірна фрагментація логіки.
+
+[[design-pattern-state-solid]]
+State відповідає SOLID:
+
+* *SRP* — кожен стан відповідає за свою поведінку;
+* *OCP* — додавання нового стану не змінює контекст;
+* *LSP* — усі стани замінні, бо реалізують один інтерфейс;
+* *DIP* — контекст працює з абстракцією стану.
+
+[[design-pattern-state-example]]
+Розглянемо приклад медіаплеєра, який залежно від стану (Play/Pause/Stop) поводиться по-різному.
+
+Інтерфейс стану:
+[source,java]
+----
+include::{stateexampledir}/example1/State.java[tags=State]
+----
+
+Стан "Play":
+[source,java]
+----
+include::{stateexampledir}/example1/PlayState.java[tags=PlayState]
+----
+
+Стан "Pause":
+[source,java]
+----
+include::{stateexampledir}/example1/PauseState.java[tags=PauseState]
+----
+
+Стан "Stop":
+[source,java]
+----
+include::{stateexampledir}/example1/StopState.java[tags=StopState]
+----
+
+Контекст — медіаплеєр:
+[source,java]
+----
+include::{stateexampledir}/example1/MediaPlayer.java[tags=MediaPlayer]
+----
+
+Демонстрація роботи:
+[source,java]
+----
+include::{stateexampledir}/example1/StateDemo.java[tags=StateDemo]
+----
+
+[[design-pattern-state-java-usage]]
+State широко використовується в Java:
+
+* *Thread states* (`NEW`, `RUNNABLE`, `BLOCKED`, `WAITING`, …);
+* *Parser FSM* — finite-state machines;
+* *Document lifecycle* — чернетка → на рев’ю → опубліковано;
+* *Game development* — стани персонажа або рівня;
+* *UI state machines*.
+
+[[design-pattern-state-summary]]
+*State* — це патерн, який модульно організовує поведінку об’єкта залежно від його стану. Він усуває складні умовні конструкції, робить код гнучким та дозволяє додавати нові стани без змін у контексті.
