@@ -199,6 +199,18 @@
 - Як патерн Iterator використовується в Java? <<design-pattern-iterator-java-usage,Answer>>
 - Яка основна мета патерну Iterator? <<design-pattern-iterator-summary,Answer>>
 
+[#architecture-design-patterns-mediator]
+.Mediator Questions
+- Що таке патерн Mediator? <<design-pattern-mediator-definition,Answer>>
+- Яка основна ідея патерну Mediator? <<design-pattern-mediator-main-idea,Answer>>
+- Які переваги використання патерну Mediator? <<design-pattern-mediator-benefits,Answer>>
+- Які недоліки патерну Mediator? <<design-pattern-mediator-drawbacks,Answer>>
+- Як патерн Mediator відповідає принципам SOLID? <<design-pattern-mediator-solid,Answer>>
+- Наведіть приклад використання патерну Mediator. <<design-pattern-mediator-example,Answer>>
+- В яких випадках варто використовувати патерн Mediator? <<design-pattern-mediator-java-usage,Answer>>
+- Коли не слід використовувати патерн Mediator? <<design-pattern-mediator-drawbacks,Answer>>
+- Як реалізувати патерн Mediator у Java? <<design-pattern-mediator-example,Answer>>
+
 [#architecture-service-discovery-questions]
 .Service Discovery Questions
 - Що таке Service Discovery і чому він важливий у розподілених системах? <<service-discovery-definition,Answer>>
