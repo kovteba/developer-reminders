@@ -4,7 +4,7 @@ ifndef::iteratorexampledir[:iteratorexampledir: ../../../../../../examples/desig
 [#design-pattern-iterator]
 ==== Iterator
 
-image::architecture/designpattern/behavioral/design-patterns-iterator.jpg[Command, align="center"]
+image::architecture/designpattern/behavioral/design-patterns-iterator.jpg[Iterator, align="center"]
 
 [[design-pattern-iterator-definition]]*Iterator* — це поведінковий патерн проєктування, який надає уніфікований спосіб *послідовного доступу до елементів колекції*, не розкриваючи її внутрішню реалізацію.
 

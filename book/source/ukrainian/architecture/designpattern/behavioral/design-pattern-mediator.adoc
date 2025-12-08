@@ -1,0 +1,85 @@
+ifndef::imagesdir[:imagesdir: ../../../../imgs/]
+ifndef::mediatorexampledir[:mediatorexampledir: ../../../../../../examples/design-patterns/mediator/src/main/java/kovteba]
+
+[#design-pattern-mediator]
+==== Mediator
+
+image::architecture/designpattern/behavioral/design-patterns-mediator.jpg[Mediator, align="center"]
+
+[[design-pattern-mediator-definition]]*Mediator* — це поведінковий патерн проєктування, який інкапсулює *логіку взаємодії між об’єктами* в окремому посереднику. Замість того, щоб об’єкти напряму викликали один одного, вони спілкуються через медіатор.
+
+[[design-pattern-mediator-main-idea]]Основна ідея полягає в тому, щоб прибрати «чистилище залежностей», коли кожен об’єкт знає про всіх інших. Mediator концентрує взаємодію в одному місці, зменшуючи зв’язність системи.
+
+[[design-pattern-mediator-benefits]]
+Переваги Mediator:
+
+* Зменшує кількість прямих залежностей між класами;
+* Логіка взаємодії зосереджена в одному місці;
+* Спрощує підтримку та розширення системи;
+* Полегшує повторне використання окремих компонентів (colleagues);
+* Легко змінювати сценарії взаємодії, модифікуючи лише медіатор.
+
+[[design-pattern-mediator-drawbacks]]
+Недоліки:
+
+* Медіатор може перетворитися на God Object;
+* При складних сценаріях логіка посередника стає важкою для розуміння;
+* Потрібне акуратне проектування, щоб не перенести всю бізнес-логіку в один клас.
+
+[[design-pattern-mediator-solid]]
+Mediator відповідає SOLID:
+
+* *SRP* — колеги відповідають за свій стан і поведінку, медіатор — лише за координацію;
+* *OCP* — можна додавати нові типи колег або нові сценарії взаємодії через розширення медіатора;
+* *DIP* — колеги залежать від абстракції медіатора, а не один від одного.
+
+[[design-pattern-mediator-example]]
+Розглянемо приклад чат-кімнати, де користувачі надсилають повідомлення один одному через медіатор, а не напряму.
+
+Інтерфейс медіатора:
+[source,java]
+----
+include::{mediatorexampledir}/example1/ChatMediator.java[tags=ChatMediator]
+----
+
+Конкретний медіатор:
+[source,java]
+----
+include::{mediatorexampledir}/example1/ChatRoomMediator.java[tags=ChatRoomMediator]
+----
+
+Абстракція колеги (учасника чату):
+[source,java]
+----
+include::{mediatorexampledir}/example1/Participant.java[tags=Participant]
+----
+
+Конкретні колеги:
+[source,java]
+----
+include::{mediatorexampledir}/example1/UserParticipant.java[tags=UserParticipant]
+----
+
+Демонстрація роботи:
+[source,java]
+----
+include::{mediatorexampledir}/example1/MediatorDemo.java[tags=MediatorDemo]
+----
+
+Результат виконання:
+[source,console]
+----
+include::{mediatorexampledir}/example1/MediatorDemo.java[tags=MediatorDemoResult]
+----
+
+[[design-pattern-mediator-java-usage]]
+Mediator часто використовується в Java:
+
+* *GUI-фреймворки* — форми та вікна координують взаємодію віджетів;
+* *MVC / MVVM* — контролери/в’ю-моделі діють як медіатори між моделлю та в’ю;
+* *Чат-системи та message brokers*;
+* *Модульні системи* — центральний модуль координує плагіни;
+* *Event bus / mediator libraries* (наприклад, MediatR-подібні концепції).
+
+[[design-pattern-mediator-summary]]
+*Mediator* — це патерн, який допомагає боротися з «павутиною залежностей» між об’єктами, виносячи їхню взаємодію в окремий посередник. Він робить систему більш модульною, спрощує підтримку та дозволяє легко змінювати сценарії комунікації між компонентами без зміни самих компонентів.
