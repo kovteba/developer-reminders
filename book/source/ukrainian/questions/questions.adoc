@@ -270,6 +270,18 @@
 - Як патерн Template Method використовується в Java? <<design-pattern-template-method-java-usage,Answer>>
 - Підсумуйте основні ідеї патерну Template Method. <<design-pattern-template-method-summary,Answer>>
 
+[#architecture-design-visitor]
+.Visitor Questions
+- Що таке патерн Visitor? <<design-pattern-visitor-definition,Answer>>
+- Яка основна ідея патерну Visitor? <<design-pattern-visitor-main-idea,Answer>>
+- Коли слід використовувати патерн Visitor? <<design-pattern-visitor-purpose,Answer>>
+- Які переваги патерну Visitor? <<design-pattern-visitor-benefits,Answer>>
+- Які недоліки патерну Visitor? <<design-pattern-visitor-drawbacks,Answer>>
+- Як патерн Visitor відповідає принципам SOLID? <<design-pattern-visitor-solid,Answer>>
+- Чи можна навести приклад використання патерну Visitor? <<design-pattern-visitor-example,Answer>>
+- Де в Java використовується патерн Visitor? <<design-pattern-visitor-java-usage,Answer>>
+- Яке резюме патерну Visitor? <<design-pattern-visitor-summary,Answer>>
+
 [#architecture-service-discovery-questions]
 .Service Discovery Questions
 - Що таке Service Discovery і чому він важливий у розподілених системах? <<service-discovery-definition,Answer>>
