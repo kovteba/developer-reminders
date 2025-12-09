@@ -1,0 +1,87 @@
+ifndef::imagesdir[:imagesdir: ../../../../imgs/]
+ifndef::strategyexampledir[:strategyexampledir: ../../../../../../examples/design-patterns/strategy/src/main/java/kovteba]
+
+[#design-pattern-strategy]
+==== Strategy
+
+image::architecture/designpattern/behavioral/design-patterns-strategy.jpg[Strategy, align="center"]
+
+[[design-pattern-strategy-definition]]*Strategy* — це поведінковий патерн проєктування, який дозволяє *визначати сімейство алгоритмів*, інкапсулювати їх та робити взаємозамінними. Об’єкт-контекст делегує виконання алгоритму одному зі стратегічних об’єктів.
+
+[[design-pattern-strategy-main-idea]]Основна ідея полягає в тому, щоб винести змінні алгоритми в окремі класи, дозволяючи легко перемикати їх *під час виконання*.
+
+[[design-pattern-strategy-purpose]]
+Strategy застосовується, коли:
+
+* Необхідно мати декілька взаємозамінних алгоритмів;
+* Хочеться позбутися великого `if-else` або `switch`;
+* Алгоритми часто змінюються або розширюються;
+* Потрібно динамічно змінювати поведінку об’єкта.
+
+[[design-pattern-strategy-benefits]]
+Переваги Strategy:
+
+* Уникнення складних умовних конструкцій;
+* Нові алгоритми додаються без змін у контексті;
+* Можна змінювати алгоритм під час виконання;
+* Кожна стратегія ізольована у власному класі.
+
+[[design-pattern-strategy-drawbacks]]
+Недоліки:
+
+* Зростає кількість класів;
+* Контекст повинен знати, яку стратегію вибрати;
+* Логіка вибору може винестися у фабрики або DI-контейнер.
+
+[[design-pattern-strategy-solid]]
+Strategy відповідає SOLID:
+
+* *SRP* — кожна стратегія виконує один чіткий алгоритм;
+* *OCP* — можна додавати нові стратегії незалежно від контексту;
+* *LSP* — усі стратегії взаємозамінні;
+* *DIP* — контекст працює через абстракцію Strategy.
+
+[[design-pattern-strategy-example]]
+Розглянемо приклад вибору способу оплати.
+
+Інтерфейс стратегії:
+[source,java]
+----
+include::{strategyexampledir}/example1/PaymentStrategy.java[tags=PaymentStrategy]
+----
+
+Конкретна стратегія — оплата карткою:
+[source,java]
+----
+include::{strategyexampledir}/example1/CreditCardPayment.java[tags=CreditCardPayment]
+----
+
+Конкретна стратегія — оплата PayPal:
+[source,java]
+----
+include::{strategyexampledir}/example1/PaypalPayment.java[tags=PaypalPayment]
+----
+
+Контекст:
+[source,java]
+----
+include::{strategyexampledir}/example1/PaymentContext.java[tags=PaymentContext]
+----
+
+Демонстрація:
+[source,java]
+----
+include::{strategyexampledir}/example1/StrategyDemo.java[tags=StrategyDemo]
+----
+
+[[design-pattern-strategy-java-usage]]
+Strategy широко використовується в Java:
+
+* *Comparator* у Collections API;
+* *Spring* — політики кешування, стратегічні компоненти;
+* *JUnit* — різні тестові раннери;
+* *File compression* — zip/gzip/bzip стратегії;
+* *Routing algorithms* — різні стратегії пошуку шляху.
+
+[[design-pattern-strategy-summary]]
+*Strategy* — це патерн, який дозволяє інкапсулювати алгоритми в окремі класи та динамічно вибирати підходящий під час виконання. Це забезпечує гнучкість, чистоту коду та легке розширення поведінки.
