@@ -1,0 +1,92 @@
+ifndef::imagesdir[:imagesdir: ../../../../imgs/]
+ifndef::visitorexampledir[:visitorexampledir: ../../../../../../examples/design-patterns/visitor/src/main/java/kovteba]
+
+[#design-pattern-visitor]
+==== Visitor
+
+image::architecture/designpattern/behavioral/design-patterns-visitor.jpg[Visitor, align="center"]
+
+[[design-pattern-visitor-definition]]*Visitor* — це поведінковий патерн проєктування, який дозволяє *додавати нові операції до об’єктів*, не змінюючи їхні класи. Він відокремлює структуру елементів від поведінки, переміщуючи логіку операцій у спеціальні об’єкти — _відвідувачі_.
+
+[[design-pattern-visitor-main-idea]]Основна ідея полягає в тому, що кожен елемент структури має метод `accept(visitor)`, який передає себе відвідувачу для виконання потрібної операції.
+
+[[design-pattern-visitor-purpose]]
+Visitor застосовується, коли:
+* Потрібно часто додавати нові операції до стабільної структури об’єктів;
+* Важливо відокремити поведінку від структури даних;
+* Об’єкти утворюють складну ієрархію (дерева, графи, композити);
+* Не хочеться «засмічувати» класи логікою експорту, перевірок, логування тощо.
+
+[[design-pattern-visitor-benefits]]
+Переваги Visitor:
+* Легке додавання нових операцій без зміни класів елементів;
+* Логіка операцій зібрана в одному місці;
+* Добре підходить для обходу складних структур;
+* Покращує підтримуваність та читабельність.
+
+[[design-pattern-visitor-drawbacks]]
+Недоліки:
+* Додавання нового типу елементів потребує змін у всіх Visitor;
+* Може порушувати інкапсуляцію, якщо Visitor потребує доступ до внутрішнього стану елементів;
+* Велика кількість методів `visitXxx()` ускладнює підтримку.
+
+[[design-pattern-visitor-solid]]
+Visitor відповідає SOLID:
+* *SRP* — елементи відповідають за структуру, відвідувачі — за поведінку;
+* *OCP* — нові операції додаються через нових Visitor;
+* *LSP* — усі відвідувачі реалізують єдиний контракт;
+* *DIP* — клієнт працює через абстракції Visitor та Element.
+
+[[design-pattern-visitor-example]]
+Розглянемо приклад файлової системи, де Visitor рахує розмір усіх елементів.
+
+Інтерфейс елемента:
+[source,java]
+----
+include::{visitorexampledir}/example1/FileSystemElement.java[tags=FileSystemElement]
+----
+
+Конкретні елементи:
+[source,java]
+----
+include::{visitorexampledir}/example1/FileElement.java[tags=FileElement]
+----
+[source,java]
+----
+include::{visitorexampledir}/example1/DirectoryElement.java[tags=DirectoryElement]
+----
+
+Інтерфейс Visitor:
+[source,java]
+----
+include::{visitorexampledir}/example1/FileSystemVisitor.java[tags=FileSystemVisitor]
+----
+
+Конкретний Visitor — підрахунок розміру:
+[source,java]
+----
+include::{visitorexampledir}/example1/SizeCalculatorVisitor.java[tags=SizeCalculatorVisitor]
+----
+
+Демонстрація:
+[source,java]
+----
+include::{visitorexampledir}/example1/VisitorDemo.java[tags=VisitorDemo]
+----
+
+Результат:
+[source,console]
+----
+include::{visitorexampledir}/example1/VisitorDemo.java[tags=VisitorDemoResult]
+----
+
+[[design-pattern-visitor-java-usage]]
+Visitor використовується в Java:
+* AST-парсери та компілятори;
+* XML/JSON DOM-обхід;
+* Побудова звітів у складних структурах;
+* Лінтери та статичний аналіз коду;
+* Огляд та обробка файлових систем.
+
+[[design-pattern-visitor-summary]]
+*Visitor* — це патерн, який відокремлює структуру від поведінки та дозволяє легко додавати нові операції, не змінюючи класи елементів. Ідеальний для деревоподібних структур, аналізу даних та побудови складних процесів обробки.
