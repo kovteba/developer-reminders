@@ -1,0 +1,86 @@
+ifndef::imagesdir[:imagesdir: ../../../../imgs/]
+ifndef::templatemethodexampledir[:templatemethodexampledir: ../../../../../../examples/design-patterns/template-method/src/main/java/kovteba]
+
+[#design-pattern-template-method]
+==== Template Method
+
+image::architecture/designpattern/behavioral/design-patterns-template-method.jpg[Template Method, align="center"]
+
+[[design-pattern-template-method-definition]]*Template Method* — це поведінковий патерн проєктування, який визначає *каркас алгоритму* у базовому класі, делегуючи реалізацію окремих кроків підкласам. Завдяки цьому алгоритм залишається однаковим, а його частини можуть змінюватися.
+
+[[design-pattern-template-method-main-idea]]Основна ідея полягає в тому, щоб виділити загальні кроки алгоритму в шаблонний метод, а змінні частини — у методи, які можуть бути перевизначені.
+
+[[design-pattern-template-method-purpose]]
+Template Method застосовується, коли:
+
+* Є кілька реалізацій алгоритму з однаковою структурою, але різними деталями;
+* Хочеться уникнути дублювання коду в підкласах;
+* Алгоритм повинен бути незмінним, а його кроки — варіативними;
+* Необхідно чітко контролювати порядок виконання операцій.
+
+[[design-pattern-template-method-benefits]]
+Переваги Template Method:
+
+* Усуває дублювання коду;
+* Гарантує однакову послідовність виконання;
+* Захищає незмінну частину алгоритму від переписування;
+* Дозволяє підкласам перевизначати лише потрібні кроки.
+
+[[design-pattern-template-method-drawbacks]]
+Недоліки:
+
+* Створює зв’язність між базовим класом і підкласами;
+* Кількість підкласів може збільшуватися;
+* Порушення LSP можливе, якщо підклас неправильно змінює поведінку.
+
+[[design-pattern-template-method-solid]]
+Template Method відповідає SOLID:
+
+* *SRP* — шаблон визначає структуру алгоритму, підкласи — варіативні частини;
+* *OCP* — поведінку можна розширювати через перевизначення методів;
+* *LSP* — підкласи мають відповідати структурі шаблону;
+* *DIP* — високорівневий алгоритм залежить від абстрактних кроків.
+
+[[design-pattern-template-method-example]]
+Розглянемо приклад: процес приготування напою (чай або кава).
+
+Абстрактний клас із шаблонним методом:
+[source,java]
+----
+include::{templatemethodexampledir}/example1/Beverage.java[tags=Beverage]
+----
+
+Конкретна реалізація — чай:
+[source,java]
+----
+include::{templatemethodexampledir}/example1/Tea.java[tags=Tea]
+----
+
+Конкретна реалізація — кава:
+[source,java]
+----
+include::{templatemethodexampledir}/example1/Coffee.java[tags=Coffee]
+----
+
+Демонстрація роботи:
+[source,java]
+----
+include::{templatemethodexampledir}/example1/TemplateMethodDemo.java[tags=TemplateMethodDemo]
+----
+
+Результат виконання:
+[source,console]
+----
+include::{templatemethodexampledir}/example1/TemplateMethodDemo.java[tags=TemplateMethodDemoResult]
+----
+
+[[design-pattern-template-method-java-usage]]
+Template Method широко використовується в Java:
+
+* *Java IO* (`InputStream`, `Reader`) — шаблонні методи `read()`;
+* *Servlet API* — `service()`, який викликає `doGet()`, `doPost()`;
+* *JUnit* — `setUp()`, `tearDown()` у тестових фреймворках;
+* *Algorithms framework* — визначення структури алгоритму з окремими кроками.
+
+[[design-pattern-template-method-summary]]
+*Template Method* — це патерн, який визначає структуру алгоритму в базовому класі та дозволяє підкласам змінювати його окремі частини без переписування самого алгоритму. Це зменшує дублювання, робить код чистим і підтримуваним.
