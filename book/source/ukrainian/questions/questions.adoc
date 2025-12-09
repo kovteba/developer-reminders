@@ -258,6 +258,18 @@
 - Як патерн State використовується в Java? <<design-pattern-state-java-usage,Answer>>
 - Підсумуйте основну ідею патерну State. <<design-pattern-state-summary,Answer>>
 
+[#architecture-design-template-method]
+.Template Method Questions
+- Що таке патерн Template Method? <<design-pattern-template-method-definition,Answer>>
+- Яка основна ідея патерну Template Method? <<design-pattern-template-method-main-idea,Answer>>
+- Коли слід використовувати патерн Template Method? <<design-pattern-template-method-purpose,Answer>>
+- Які переваги дає використання патерну Template Method? <<design-pattern-template-method-benefits,Answer>>
+- Які недоліки має патерн Template Method? <<design-pattern-template-method-drawbacks,Answer>>
+- Як патерн Template Method відповідає принципам SOLID? <<design-pattern-template-method-solid,Answer>>
+- Наведіть приклад використання патерну Template Method. <<design-pattern-template-method-example,Answer>>
+- Як патерн Template Method використовується в Java? <<design-pattern-template-method-java-usage,Answer>>
+- Підсумуйте основні ідеї патерну Template Method. <<design-pattern-template-method-summary,Answer>>
+
 [#architecture-service-discovery-questions]
 .Service Discovery Questions
 - Що таке Service Discovery і чому він важливий у розподілених системах? <<service-discovery-definition,Answer>>
