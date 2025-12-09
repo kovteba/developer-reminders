@@ -234,6 +234,18 @@
 - Наведіть приклад реалізації патерну Observer на Java. <<design-pattern-observer-example,Answer>>
 - Де в Java можна зустріти використання патерну Observer? <<design-pattern-observer-java-usage,Answer>>
 
+[#architecture-design-patterns-strategy]
+.Strategy Questions
+- Що таке патерн проєктування Strategy? <<design-pattern-strategy-definition,Answer>>
+- Яка основна ідея патерну Strategy? <<design-pattern-strategy-main-idea,Answer>>
+- В яких випадках слід використовувати патерн Strategy? <<design-pattern-strategy-purpose,Answer>>
+- Які переваги надає використання патерну Strategy? <<design-pattern-strategy-benefits,Answer>>
+- Які недоліки має патерн Strategy? <<design-pattern-strategy-drawbacks,Answer>>
+- Як патерн Strategy відповідає принципам SOLID? <<design-pattern-strategy-solid,Answer>>
+- Наведіть приклад використання патерну Strategy на Java. <<design-pattern-strategy-example,Answer>>
+- Де в Java можна знайти приклади використання патерну Strategy? <<design-pattern-strategy-java-usage,Answer>>
+- Підсумуйте основні ідеї патерну Strategy. <<design-pattern-strategy-summary,Answer>>
+
 [#architecture-design-patterns-state]
 .State Questions
 - Що таке патерн State? <<design-pattern-state-definition,Answer>>
