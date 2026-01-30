@@ -1,0 +1,129 @@
+ifndef::imagesdir[:imagesdir: ../../../imgs/]
+ifndef::sealedclassdir[:sealedclassdir: ../../../../../examples/java/src/main/java/kovteba/java17/sealedclass]
+ifndef::sealedclasstestdir[:sealedclasstestdir: ../../../../../examples/java/src/test/java/kovteba/java17/sealedclass]
+
+[#java-sealed-class]
+==== Sealed Class
+[[java-sealed-class-definition]]*Sealed classes* (запечатані або ізольовані класи) стали повноцінною частиною мови у версії Java 17 LTS (вересень 2021 року). До цього вони були доступні як прев'ю-функції у Java 15 та 16. Це оновлення принесло в Java можливість створювати <<algebraic-data-types,алгебраїчні типи даних>>, що робить код більш передбачуваним та безпечним.
+
+[[java-sealed-class-main-goals]]Основная цель sealed классов — ограничить и контролировать иерархию наследования. С помощью sealed классов разработчики могут явно указывать, какие классы или интерфейсы могут наследоваться от данного класса. Это позволяет создавать более безопасные и предсказуемые архитектуры приложений.
+
+[[java-sealed-class-main-properties]]Основная цель sealed классов — дать разработчику возможность ограничить иерархию наследования.
+
+Ключевые свойства:
+
+* Ограничение круга наследников: Вы явно указываете, каким классам разрешено расширять ваш класс;
+* Исчерпываемость (Exhaustiveness): Компилятор «знает» всех наследников на этапе сборки. Это критически важно для оператора switch;
+* Безопасность дизайна: Вы предотвращаете создание нежелательных подклассов в сторонних библиотеках или других пакетах вашего проекта.
+
+Для роботи використовуються ключові слова sealed та permits.
+[source,java]
+----
+include::{sealedclassdir}/sealedclass1/Transport.java[tags=Transport]
+----
+
+.Вимоги до спадкоємців:
+Кожен дозволений клас (наприклад, Car) мусить мати один із трьох модифікаторів:
+
+* final: Подальше успадкування заборонено;
+* sealed: Клас сам обмежує своїх наступних спадкоємців;
+* non-sealed: Клас стає відкритим для будь-якого успадкування (повернення до класичної поведінки).
+
+.Способи застосування з прикладами
+
+Моделювання станів (State Management) — це найчастіший сценарій у сучасній розробці (особливо в Android або backend-системах).
+[source,java]
+----
+include::{sealedclassdir}/sealedclass2/SealedClass2Demo.java[tags=SealedClass2Demo]
+----
+Тепер ми впевнені, що ніхто не додасть "Division" без нашого відома
+
+Математичні вирази та дерева. Запечатані класи ідеально підходять для рекурсивних структур даних.
+[source,java]
+----
+include::{sealedclassdir}/sealedclass4/BankAccount.java[tags=BankAccount]
+----
+
+.Деталі та нюанси
+* Records та Sealed: Рекорди (Records) — ідеальні партнери для запечатаних класів, оскільки вони автоматично є final;
+* Implicit Permits: Якщо запечатаний клас і його спадкоємці описані в одному файлі, ключове слово permits можна не писати — Java знайде їх сама;
+* Reflection API: У класі Class з'явилися нові методи:
+** isSealed() — чи є клас запечатаним;
+** getPermittedSubclasses() — масив дозволених класів.
+
+.Enum чи Sealed Class?
+* Використовуйте Enum, якщо вам потрібен список конкретних значень (наприклад, RED, GREEN, BLUE);
+* Використовуйте Sealed Class, якщо кожен елемент списку — це повноцінний клас, який може мати власні поля, методи та декілька екземплярів (наприклад, різні помилки з різними текстами).
+
+.Переваги використання Sealed Classes
+Раніше, коли ми працювали з ієрархіями, нам доводилося писати довгі ланцюжки if-else з використанням instanceof. Це було небезпечно, тому що ми могли забути про якийсь тип, і компілятор нам про це не підказував.
+
+Ось як виглядає еволюція коду:
+
+"Старий" підхід (до Java 17). Тут ми використовуємо звичайний інтерфейс
+[source,java]
+----
+include::{sealedclassdir}/sealedclass5/beforejava17/Payment.java[tags=Payment]
+----
+та два його реалізації:
+[source,java]
+----
+include::{sealedclassdir}/sealedclass5/beforejava17/Card.java[tags=Card]
+----
+та
+[source,java]
+----
+include::{sealedclassdir}/sealedclass5/beforejava17/Cash.java[tags=Cash]
+----
+та перевірки вручну.
+[source,java]
+----
+include::{sealedclassdir}/sealedclass5/beforejava17/BeforeJava17Demo.java[tags=BeforeJava17Demo]
+----
+Якщо ми додамо новий тип (наприклад, DigitalGiftCard), цей код просто "проковтне" його або видасть помилку лише під час виконання програми.
+
+"Новий" підхід (Sealed Classes + Pattern Matching). Завдяки запечатаним класам, Java тепер "розуміє" структуру вашого коду. Оголошуємо запечатану ієрархію:
+[source,java]
+----
+include::{sealedclassdir}/sealedclass5/afterjava17/Payment.java[tags=Payment]
+----
+Використанни:
+[source,java]
+----
+include::{sealedclassdir}/sealedclass5/afterjava17/AfterJava17Demo.java[tags=AfterJava17Demo]
+----
+
+Але якщо ми додамо ще один тип, наприклад, Crypto:
+[source,java]
+----
+include::{sealedclassdir}/sealedclass5/afterjava17error1/Payment.java[tags=Payment]
+----
+та не додамо його в permits, компілятор одразу ж повідомить нам про це з помилкою: "'Crypto' is not allowed in the sealed hierarchy."
+
+Але навіть якщо ми не забудемо вказати новий тип у permits:
+[source,java]
+----
+include::{sealedclassdir}/sealedclass5/afterjava17error2/Payment.java[tags=Payment]
+----
+компілятор все одно підкаже нам помилку:
+[source,java]
+----
+include::{sealedclassdir}/sealedclass5/afterjava17error2/AfterJava17Demo.java[tags=AfterJava17Demo]
+----
+"The switch expression does not cover all possible input values" і код не скомпілюється, поки ми не додамо обробку нового типу,
+
+
+
+
+
+.Чому новий код кращий? (Деталі)
+* Smart Casting: У рядку case Card(String n) Java автоматично "розпаковує" номер карти. Вам не треба писати (Card) p;
+* Безпека при розширенні: Уявіть, що через рік ви додали Crypto до списку permits. Старий код з if-else промовчить, і ви отримаєте баг. Новий код відмовиться компілюватися, поки ви не допишете логіку для Crypto у кожному switch;
+* Читабельність: Код виглядає як таблиця або список правил, а не як "макарони" з дужок.
+
+
+
+Основні властивості в деталях:
+Exhaustiveness (Вичерпність): Це головна фішка. Компілятор гарантує, що ви обробили всі можливі варіанти.
+
+Алгебраїчні типи: Поєднання sealed interfaces (це наше "АБО" — тип може бути або Cash, або Card) та records (це наше "І" — карта має номер І термін дії) дозволяє будувати дуже точні моделі даних.
