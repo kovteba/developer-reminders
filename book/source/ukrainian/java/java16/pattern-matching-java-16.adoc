@@ -1,0 +1,21 @@
+ifndef::imagesdir[:imagesdir: ../../../imgs/]
+ifndef::patternmatchingjava16dir[:patternmatchingjava16dir: ../../../../../examples/java/src/main/java/kovteba/java16/patternmatching]
+ifndef::patternmatchingjava16testdir[:patternmatchingjava16testdir: ../../../../../examples/java/src/test/java/kovteba/patternmatching]
+
+[#java-pattern-matching-java-16]
+==== Pattern Matching in Java 16
+.instanceof
+Pattern Matching для `instanceof` був представлений у Java 16 і дозволяє спростити перевірку типів та приведення типів в одному виразі. Це робить код більш читабельним і зменшує кількість шаблонного коду.
+
+Раніше ми писали три рядки там, де зараз потрібен один.
+
+Старий підхід:
+[source,java]
+----
+include::{patternmatchingjava16dir}/PatternMatching1.java[tags=PatternMatching1Old]
+----
+
+Новий підхід:
+----
+include::{patternmatchingjava16dir}/PatternMatching1.java[tags=PatternMatching1New]
+----

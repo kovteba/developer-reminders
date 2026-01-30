@@ -1,0 +1,71 @@
+ifndef::imagesdir[:imagesdir: ../../../imgs/]
+ifndef::patternmatchingjava21dir[:patternmatchingjava21dir: ../../../../../examples/java/src/main/java/kovteba/java21/patternmatching]
+ifndef::patternmatchingjava21testdir[:patternmatchingtestdir: ../../../../../examples/java/src/test/java/kovteba/patternmatchings]
+
+[#java-pattern-matching-java-21]
+==== Pattern Matching in Java 21
+.switch
+Pattern Matching для `switch` був введений у Java 21 і розширює можливості оператора `switch`, дозволяючи використовувати шаблони для перевірки типів та деструктуризації об'єктів без необхідності явного приведення типів. Це робить код більш виразним і зменшує кількість шаблонного коду.
+
+Cтарий підхід:
+[source,java]
+----
+include::{patternmatchingjava21dir}/PatternMatching1.java[tags=PatternMatching1Old]
+----
+
+Новий підхід:
+[source,java]
+----
+include::{patternmatchingjava21dir}/PatternMatching1.java[tags=PatternMatching1New]
+----
+
+.Record Patterns (Деструктуризація)
+Якщо у вас є record, Java може автоматично "дістати" з нього дані.
+[source,java]
+----
+include::{patternmatchingjava21dir}/PatternMatching2.java[tags=PatternMatching2]
+----
+
+.Sealed Classes (Зіставлення з sealed класами)
+Це ідеально працює в парі з sealed інтерфейсами. Компілятор змусить вас обробити всі варіанти.
+[source,java]
+----
+include::{patternmatchingjava21dir}/PatternMatching3.java[tags=PatternMatching3]
+----
+
+.Guards(Охороняючі умови) (Умови `when`)
+Ви можете додати додаткову логіку прямо в `case` за допомогою ключового слова when.
+
+.Дрібні нюанси, які важливо знати:
+
+* Scope (Область видимості). В Java область видимості змінної паттерна визначається flow scoping. Змінна s існує лише там, де компілятор на 100% впевнений, що об'єкт пройшов перевірку типу. Приклад із раннім виходом (Guard Clause). Це найпопулярніший сценарій, який робить код чистішим:
+[source,java]
+----
+include::{patternmatchingjava21dir}/PatternMatching5.java[tags=PatternMatching5Exit]
+----
+
+Приклад із логічним "І" (&&):
+[source,java]
+----
+include::{patternmatchingjava21dir}/PatternMatching5.java[tags=PatternMatching5And]
+----
+
+* Null-safety у switch. До версії Java 21 виклик switch(obj), де obj == null, завжди призводив до NullPointerException. Тепер ви можете обробляти null як окремий випадок.
+[source,java]
+----
+include::{patternmatchingjava21dir}/PatternMatching6.java[tags=PatternMatching6]
+----
+
+IMPORTANT: Важливо: Якщо ви не додали case null, і передасте null у switch, ви все одно отримаєте NullPointerException (для зворотної сумісності).
+
+* Dominance(Домінування типів). Компілятор Java тепер став "розумнішим" і стежить, щоб ви не створювали "мертвий" код. Більш загальний тип не може стояти вище за більш конкретний. Приклад помилки (Dominance Violation):
+[source,java]
+----
+include::{patternmatchingjava21dir}/PatternMatching7.java[tags=PatternMatching7Error]
+----
+Як правильно:
+Потрібно рухатися від специфічного до загального (як у блоках try-catch з винятками):
+[source,java]
+----
+include::{patternmatchingjava21dir}/PatternMatching7.java[tags=PatternMatching7Fixed]
+----
