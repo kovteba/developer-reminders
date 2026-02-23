@@ -1,0 +1,42 @@
+ifndef::imagesdir[:imagesdir: ../../../imgs/]
+ifndef::unnamedvariablesdir[:unnamedvariablesdir: ../../../../../examples/java/src/main/java/kovteba/java22/unnamedvariables]
+ifndef::unnamedvariablestestdir[:unnamedvariablestestdir: ../../../../../examples/java/src/test/java/kovteba/unnamedvariabless]
+
+[#java-unnamed-variables]
+==== Unnamed Variables
+У Java використання символу підкреслення _ замість імені змінної називається Unnamed Variables (безіменні змінні). Ця фіча стала офіційною (Standard Feature) у Java 22 (JEP 456), після того, як пройшла етап прев'ю в Java 21.
+
+[[java-unnamed-variables-main-goal]]Основна ідея — візуально та логічно позначити, що змінна не використовується. Це розв'язувати проблему "сміттєвих" імен, коли синтаксис вимагає оголосити змінну, але для логіки програми вона вам не потрібна.
+
+[[java-unnamed-variables-main-properties]]Ключові властивості:
+
+* Зменшення шуму: Код стає чистішим, бо _ одразу каже читачеві: "Не зважай на це значення";
+* Запобігання помилкам: Ви не зможете випадково звернутися до _ (це викличе помилку компіляції), отже, ви не використаєте не те значення
+* Підтримка в Pattern Matching: Ідеально працює разом із Record Patterns для ігнорування частин структури.
+
+.Приклади використання
+Приклад застосування у Pattern Matching (Record Patterns). Якщо вам потрібен лише один компонент рекорду, інші можна замінити на `_`:
+[source,java]
+----
+include::{unnamedvariablesdir}/UnnamedVariables1.java[tags=UnnamedVariables1]
+----
+
+Використання у циклах `for-each`. Коли вам потрібно виконати дію певну кількість разів або для кожного елемента, але сам елемент не важливий:
+[source,java]
+----
+include::{unnamedvariablesdir}/UnnamedVariables2.java[tags=UnnamedVariables2]
+----
+
+Використання при обробці виключень (Exceptions). Часто в блоці catch нам не потрібен об'єкт помилки, ми просто хочемо виконати логіку відновлення:
+[source,java]
+----
+include::{unnamedvariablesdir}/UnnamedVariables3.java[tags=UnnamedVariables3]
+----
+
+Або при роботі з Map, де нам потрібен лише ключ:
+[source,java]
+----
+include::{unnamedvariablesdir}/UnnamedVariables4.java[tags=UnnamedVariables4]
+----
+
+IMPORTANT: Не плутайте це з використанням _ як імені змінної в старих версіях Java (до Java 8 це було дозволено). Тепер _ — це зарезервоване ключове слово для позначення "нічого".
