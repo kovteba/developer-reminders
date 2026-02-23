@@ -1,0 +1,84 @@
+ifndef::imagesdir[:imagesdir: ../../../imgs/]
+ifndef::recorddir[:recorddir: ../../../../../examples/java/src/main/java/kovteba/java16/record]
+ifndef::recordtestdir[:recordtestdir: ../../../../../examples/java/src/test/java/kovteba/java16/record]
+
+[#java-records]
+==== Record
+[[java-record-definition]]Java Records — це одне з найважливіших оновлень мови за останні роки. Вони були представлені як прев'ю в Java 14, а офіційно стали стабільною можливістю (GA) у Java 16. По суті, це компактний спосіб створення класів, які служать простими контейнерами для даних.
+
+[[java-record-main-goals]]До появи рекордів для створення простого класу-носія даних (DTO) доводилося писати (або генерувати) величезну кількість «шаблонного коду» (boilerplate): конструктори, геттери, equals(), hashCode() та toString(). Record говорить компілятору: «Цей клас призначений тільки для зберігання даних». Компілятор сам створює все необхідне.
+
+[[java-record-main-properties]]
+.Основні властивості:
+
+* Незмінність (Immutability): Усі поля рекорду за замовчуванням final;
+* Лаконічність: Оголошення займає лише один рядок;
+* Заборона на успадкування: Рекорди не можуть успадковуватися від інших класів і самі є final;
+* Автоматична генерація: Геттери (називаються так само, як поля, без префікса get), конструктор, equals, hashCode та toString створюються автоматично.
+
+Замість 50 рядків коду тепер достатньо одного:
+[source,java]
+----
+include::{recorddir}/record1/User.java[tags=User]
+----
+
+Використання:
+[source,java]
+----
+include::{recorddir}/record1/Record1Demo.java[tags=Record1Demo]
+----
+
+Рекорди дозволяють валідувати дані перед створенням об'єкта використовуючи кастомні конструктори. Компактний конструктор не потребує переліку параметрів.
+[source,java]
+----
+include::{recorddir}/record2/Product.java[tags=Product]
+----
+
+Використання:
+[source,java]
+----
+include::{recorddir}/record2/Record2Demo.java[tags=Record2Demo]
+----
+
+Хоча рекорди не можуть успадковуватися від класів, вони можуть реалізовувати інтерфейси і містити статичні поля або звичайні методи.
+[source,java]
+----
+include::{recorddir}/record3/Point.java[tags=Point]
+----
+
+Використання:
+[source,java]
+----
+include::{recorddir}/record3/Record3Demo.java[tags=Record3Demo]
+----
+
+Рекорди ідеально поєднуються зі співставленням зі зразком, дозволяючи буквально «розпаковувати» об'єкт прямо у switch або if.
+[source,java]
+----
+include::{recorddir}/record4/Record4Demo.java[tags=Record4Demo]
+----
+
+.Порівняння Record і звичайного класу (POJO):
+|===
+|Особливість    |Звичайний клас (POJO)      |Record
+|Поля           |Можуть бути mutable        |Завжди final
+|Успадкування   |Дозволено                  |Заборонено (завжди final)
+|Геттери        |Потрібно писати/генерувати |Генеруються автоматично (field())
+|Boilerplate    |Багато                     |Мінімум
+|Основна роль   |Поведінка + Дані           |Тільки Дані
+|===
+
+[[java-record-when-not-to-use]]Коли НЕ варто використовувати Records?
+
+* Якщо потрібно змінювати стан об'єкта: Рекорди незмінні. Якщо вам потрібні сеттери — використовуйте звичайний клас;
+* Якщо потрібне складне успадкування: Рекорди не можуть розширювати інші класи (вони вже неявно успадковуються від java.lang.Record);
+* Hibernate/JPA: Будьте обережні. JPA вимагає порожній конструктор і проксіювання, що конфліктує з природою рекордів. Проте для проекцій (DTO у запитах) вони підходять ідеально.
+
+
+
+[[java-record-questions]]
+- Призначення: Навіщо вони потрібні? <<java-record-main-goals,Answer>>
+- Які основні властивості? <<java-record-main-properties,Answer>>
+- Коли НЕ варто використовувати Records? <<java-record-when-not-to-use,Answer>>
+
+
