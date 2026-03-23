@@ -1,0 +1,40 @@
+ifndef::imagesdir[:imagesdir: ../../../../../../../imgs]
+// ifndef::treesetexampledir[:treesetexampledir: ../../../../../../../../../examples/java/src/main/java/kovteba/collectionframework/iterableinterface/collectioninterface/interfaceset/interfacesortedset/interfacenavigableset/classtreeset]
+
+[#java-collection-framework-linkedhashset]
+====== LinkedHashSet class
+`LinkedHashSet` - розширює клас `HashSet`, не додаючи жодних нових методів. Він використовує `HashMap` для зберігання елементів. Він зберігає порядок вставки елементів, що дозволяє вам ітерувати набір в порядку вставки. LinkedHashSet не дозволяє дублювання елементів. LinkedHashSet дозволяє `null` значення. LinkedHashSet є найшвидшим набором для доступу до елементів.
+
+[#java-collection-framework-linked-hash-set-constructors]
+.Конструктори:
+* `LinkedHashSet()`: створює порожній набір;
+* `LinkedHashSet(Collection<? extends E> c)`: створює набір, що містить всі елементи колекції `c`;
+* `LinkedHashSet(int initialCapacity)`: створює порожній набір з початковою ємністю `initialCapacity`;
+* `LinkedHashSet(int initialCapacity, float loadFactor)`: створює порожній набір з початковою ємністю `initialCapacity` і коефіцієнтом завантаження `loadFactor`.
+
+[#java-collection-framework-linked-hash-set-methods]
+.Методи:
+* `boolean add(E e)`: додає елемент `e` в набір;
+* `void clear()`: видаляє всі елементи з набору;
+* `Object clone()`: створює копію набору;
+* `boolean contains(Object o)`: повертає `true`, якщо набір містить елемент `o`;
+* `boolean isEmpty()`: повертає `true`, якщо набір порожній;
+* `Iterator<E> iterator()`: повертає ітератор для набору;
+* `boolean remove(Object o)`: видаляє елемент `o` з набору;
+* `boolean removeAll(Collection<?> c)`: видаляє всі елементи колекції `c` з набору;
+* `boolean retainAll(Collection<?> c)`: видаляє всі елементи, крім тих, що містяться в колекції `c`;
+* `boolean removeIf(Predicate<? super E> filter)`: видаляє всі елементи, які відповідають умові `filter`;
+* `int size()`: повертає кількість елементів в наборі.
+
+[#java-collection-framework-linked-hash-set-big-o-natation]
+.BigO notation для методів `LinkedHashSet`:
+* `add(E e)`: O(1);
+* `clear()`: O(n);
+* `contains(Object o)`: O(1);
+* `isEmpty()`: O(1);
+* `iterator()`: O(1);
+* `remove(Object o)`: O(1);
+* `removeAll(Collection<?> c)`: O(n);
+* `retainAll(Collection<?> c)`: O(n);
+* `removeIf(Predicate<? super E> filter)`: O(n);
+* `size()`: O(1).

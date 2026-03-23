@@ -1,0 +1,83 @@
+ifndef::imagesdir[:imagesdir: ../../../../../../../imgs/]
+ifndef::arraylistdir[:arraylistdir: ../../../../../../../../../examples/java/src/main/java/kovteba/collectionframework/iterable/collection/list]
+ifndef::arraylisttestdir[:arraylisttestdir: ../../../../../../../../../examples/java/src/main/java/kovteba/collectionframework/iterable/collection/list]
+
+[#java-collection-framework-arraylist]
+====== Arraylist Class
+`ArrayList` це список, реалізований на базі динамічного масиву. Дозволяє зберігати довільні об'єкти, включаючи `null`. За замовчанням розмір списку дорівнює 10. При необхідності розмір списку можна збільшити за допомогою методу `ensureCapacity()` на `(oldCapacity * 3) / 2 + 1` при додаванні нового елементу. [[java-collection-framework-arraylist-class-delete-element-capacity-change]]Але автоматичного зменшення місткісті не передбачено тобто параметер capacity не змінюється при видаленні елементу. Якщо ви хочете зменшити розмір списку, вам слід використовувати метод `trimToSize()`.
+
+Оскільки `ArrayList` реалізує інтерфейс `Iterable`, то ми можемо пробігтися по списку в циклі `for-each: for(String person : people)`.
+
+Цю колекцію слід використовувати, якщо в процесі роботи з колекцією передбачається часте звернення до елементів за індексом. Якщо необхідні часті видалення або додавання елементів в середину колекції, то краще використовувати `LinkedList`.
+
+[#java-collection-framework-arraylist-class-constructors]
+.Конструктори:
+* `ArrayList()` — створює порожній список;
+* `ArrayList(Collection <? extends E> col)` — створює список, в який додаються всі елементи колекції col;
+* `ArrayList (int capacity)` — створює список, який має початкову ємність capacity.
+
+[#java-collection-framework-arraylist-class-methods]
+.Методи:
+* `add(E e)` — додає елемент в кінець списку;
+* `add(int index, E e)` — додає елемент в позицію index;
+* `addAll(Collection <? extends E> col)` — додає всі елементи колекції col в кінець списку;
+* `addAll(int index, Collection <? extends E> col)` — додає всі елементи колекції col в позицію index;
+* `clear()` — видаляє всі елементи зі списку;
+* `contains(Object obj)` — повертає `true`, якщо список містить об'єкт obj;
+* `get(int index)` — повертає елемент за індексом index;
+* `indexOf(Object obj)` — повертає індекс першого входження об'єкта obj;
+* `isEmpty()` — повертає `true`, якщо список порожній;
+* `remove(int index)` — видаляє елемент за індексом index;
+* `remove(Object obj)` — видаляє перше входження об'єкта obj;
+* `removeAll(Collection <?> col)` — видаляє всі елементи, які є в колекції col;
+* `retainAll(Collection <?> col)` — видаляє всі елементи, які не є в колекції col;
+* `subList(int start, int end)` — повертає список, який містить всі елементи від start до end;
+* `toArray()` — повертає масив, який містить всі елементи списку;
+* `toArray(T[] array)` — повертає масив, який містить всі елементи списку, в якому відбувається збереження елементів списку;
+* `trimToSize()` — зменшує розмір списку до кількості елементів у ньому;
+* `iterator()` — повертає ітератор для перебору елементів списку;
+* `listIterator()` — повертає ітератор для перебору елементів списку;
+* `listIterator(int index)` — повертає ітератор для перебору елементів списку, починаючи з позиції index;
+* `removeIf(Predicate <? super E> filter)` — видаляє всі елементи, які задовольняють умову filter, з'явився з Java 8;
+* `replaceAll(UnaryOperator <E> operator)` — замінює всі елементи списку на результат виклику operator;
+* `sort(Comparator <? super E> comparator)` — сортує всі елементи списку за допомогою компаратора comparator;
+* `spliterator()` — повертає сплітератор для перебору елементів списку;
+* `set(int index, E e)` — замінює елемент за індексом index на e;
+* `size()` — повертає кількість елементів у списку.
+
+[#java-collection-framework-arraylist-class-big-o-notation]
+.BigO notation для ArrayList:
+* `get(int index)` — O(1);
+* `add(E e)` — O(1);
+* `add(int index, E e)` — O(n);
+* `remove(int index)` — O(n);
+* `remove(Object obj)` — O(n);
+* `removeIf(Predicate <? super E> filter)` — O(n);
+* `contains(Object obj)` — O(n);
+* `size()` — O(1);
+* `clear()` — O(n);
+* `addAll(Collection <? extends E> col)` — O(n);
+* `toArray()` — O(n);
+* `iterator()` — O(1);
+* `listIterator()` — O(1);
+* `listIterator(int index)` — O(1);
+* `subList(int start, int end)` — O(n);
+* `removeAll(Collection <?> col)` — O(n);
+* `retainAll(Collection <?> col)` — O(n);
+* `replaceAll(UnaryOperator <E> operator)` — O(n);
+* `sort(Comparator <? super E> comparator)` — O(n * log(n)).
+
+Вище були наведені часові складності найбільш часто використовуваних методів. [[java-collection-framework-arraylist-class-add-big-o]]Але бувають випадки, наприклад коли вставка в `ArrayList` може займати лінійний час O(n) замість константного. Відбувається це, тому що значення зберігаються у масиві який має початковий розмір n(capacity) і коли місце в цьому масиві закінчується відбувається процес збільшення масиву. Тобто створюється новий масив розміром _(n * 3) / 2 + 1_, в який переміщюються усі елементи зі старого плюс новий елемент. Саме тому при додаванні елементу у випадку коли необхідно створювати новий масив середній час додавання буде більше.
+
+[[java-collection-framework-arraylist-class-remove-big-o]]Видалення елементу відбувається також за лінійний час O(n), оскільки всі елементи після видаленого елементу зсуваються на одну позицію вліво. Крім того, при видаленні елементів розмір масиву не зменшується до явного виклику методу `trimToSize()`.
+
+[[java-collection-framework-arraylist-class-delete-multiple-elements-algorithm]] Так як видаленя одного елементи відбувається із зсувом усіх елементів які розташовані справа від нього, то видалення декількох елементів можна організувати зсувом одразу на два елементи.
+
+.Підсумки:
+* Швидкий доступ до елементів за індексом за час O(1);
+* Доступ до елементів за значенням за лінійний час O(n);
+* Повільний при вставці та видаленні елементів із "середини" списку;
+* Дозволяє зберігати будь-які значення, включно з null;
+* Не синхронізований.
+
+// https://habr.com/ru/articles/128269/

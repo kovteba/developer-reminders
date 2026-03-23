@@ -1,0 +1,41 @@
+ifndef::imagesdir[:imagesdir: ../../../../../../imgs/]
+ifndef::listdir[:listdir: ../../../../../../../../examples/java/src/main/java/kovteba/collectionframework/iterable/collection/list]
+ifndef::listtestdir[:listtestdir: ../../../../../../../../examples/java/src/main/java/kovteba/collectionframework/iterable/collection/list]
+
+[#java-collection-framework-list]
+===== List interface
+Розширяє `Collection` і визначає методи для роботи зі списками.
+
+// [source,subs="normal"]
+// ----
+[I] <<java-collection-framework-list-interface,List<E>>>
+└── [A] AbstractList<E>
+    ├── [A] AbstractSequentialList<E>
+    │   └── [C] <<java-collection-framework-linkedlist,LinkedList<E>>>
+    ├── [C] <<java-collection-framework-arraylist,ArrayList<E>>>
+    ├── [L] <<java-collection-framework-vector,Vector<E>>>
+    │   └── [L] <<java-collection-framework-stack,Stack<E>>>
+    └── [CC] CopyOnWriteArrayList<E>
+// ----
+
+Список - це колекція, в якій дозволено дублювання значень.
+_Max capacity_ - це максимальна кількість елементів, яку може містити список. Він залежить від типу списку. Наприклад, для `ArrayList` він дорівнює `Integer.MAX_VALUE - 8`, де Де `- 8` — це резервування для заголовка масиву (array header / object header), який займає певний простір у heap.
+
+Найбільш використовувані методи інтерфейсу `List`:
+
+* `void add(int index, E obj)` — додає в список по індексу `index` об'єкт `obj`;
+* `boolean addAll(int index, Collection<? extends E> col)` — додає в список по індексу `index` всі елементи колекції `col`. Якщо в результаті додавання список був змінений, то повертається `true`, інакше повертається `false`;
+* `E get(int index)` — повертає об'єкт зі списку по індексу `index`;
+* `int indexOf(Object obj)` — повертає індекс першого входження об'єкта `obj` в список. Якщо об'єкт не знайдений, то повертається `-1`;
+* `int lastIndexOf(Object obj)` — повертає індекс останнього входження об'єкта `obj` в список. Якщо об'єкт не знайдений, то повертається `-1`;
+* `ListIterator<E> listIterator()` — повертає об'єкт `ListIterator` для обходу елементів списку;
+* `static <E> List<E> of(елементи)` — створює з набору елементів об'єкт `List`;
+* `E remove(int index)` — видаляє об'єкт зі списку по індексу `index`, повертаючи при цьому видалений об'єкт;
+* `E set(int index, E obj)` — присвоює значення об'єкта `obj` елементу, який знаходиться по індексу `index`;
+* `void sort(Comparator<? super E> comp)` — сортує список за допомогою компаратора `comp`;
+* `List<E> subList(int start, int end)` — отримує набір елементів, які знаходяться в списку між індексами `start` і `end`.
+
+include::arraylist/collection-framework-class-arraylist.adoc[]
+include::linkedlist/collection-framework-class-linkedlist.adoc[]
+include::stack/collection-framework-class-stack.adoc[]
+include::vector/collection-framework-class-vector.adoc[]

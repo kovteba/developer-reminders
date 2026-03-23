@@ -1,0 +1,67 @@
+ifndef::imagesdir[:imagesdir: ../../../../../../../../../imgs/]
+ifndef::treesetdir[:treesetdir: ../../../../../../../../../../../examples/java/src/main/java/kovteba/collectionframework/iterable/collection/set/sortedset/navigableset/treeset]
+ifndef::treesettestdir[:treesettestdir: ../../../../../../../../../../../examples/java/src/main/java/kovteba/collectionframework/iterable/collection/set/sortedset/navigableset/treeset]
+
+[#java-collection-framework-treeset]
+====== TreeSet
+`TreeSet` - це реалізація інтерфейсу `NavigableSet`. TreeSet - це впорядкована колекція, яка не допускає дублікатів. TreeSet зберігає елементи в відсортованому порядку у natural ordering або за допомогою об'єкта `Comparator`, який можна передати в конструктор TreeSet. TreeSet не є потокобезпечним. TreeSet є найкращим вибором, коли потрібно зберігати велику кількість даних і вони повинні бути впорядковані. TreeSet оснований на красно-чорному дереві. Тому навіть якщо додавати елементи в TreeSet в порядку зростання, TreeSet все одно буде впорядкованим тому що красно-червоне вміє само себе балансувати. Тому TreeSet завжди буде впорядкованим.
+
+BigO notation для TreeSet:
+
+- `add() / offer()`: O(log(n));
+- `remove() / poll()`: O(log(n));
+- `contains() / containsAll()`: O(log(n));
+- `size()`: O(1);
+- `iterator()`: O(1);
+- `toArray()`: O(n);
+- `descendingIterator()`: O(1);
+- `first() / last()`: O(1);
+- `ceiling() / floor()`: O(log(n));
+- `higher() / lower()`: O(log(n));
+- `pollFirst() / pollLast()`: O(log(n));
+- `subSet() / headSet() / tailSet()`: O(log(n) + m), де m - кількість елементів в підмножині.
+
+[#java-collection-framework-tree-set-constructors]
+.Конструктори:
+- `TreeSet()`: створює порожнє дерево;
+- `TreeSet(Collection<? extends E> col)`: створює дерево, в яке додає всі елементи колекції col;
+- `TreeSet(SortedSet <E> set)`: створює дерево, в яке додає всі елементи відсортованого набору set;
+- `TreeSet(Comparator<? super E> comparator)`: створює порожнє дерево, в яке всі додані елементи в подальшому будуть відсортовані компаратором.
+
+[#java-collection-framework-tree-set-methods]
+.Методи:
+
+- `boolean add(E e)`: додає елемент e в TreeSet;
+- `boolean addAll(Collection<? extends E> col)`: додає всі елементи колекції col в TreeSet;
+- `void clear()`: видаляє всі елементи з TreeSet;
+- `Object clone()`: створює копію TreeSet;
+- `boolean contains(Object obj)`: повертає true, якщо TreeSet містить об'єкт obj;
+- `boolean isEmpty()`: повертає true, якщо TreeSet порожній;
+- `Iterator iterator()`: повертає ітератор для TreeSet;
+- `boolean remove(Object obj)`: видаляє об'єкт obj з TreeSet;
+- `int size()`: повертає кількість елементів в TreeSet;
+- `NavigableSet<E> descendingSet()`: повертає TreeSet в оберненому порядку;
+- `E ceiling(E e)`: повертає найменший елемент, який більше або рівний e;
+- `E floor(E e)`: повертає найбільший елемент, який менше або рівний e;
+- `E higher(E e)`: повертає найменший елемент, який більше e;
+- `E lower(E e)`: повертає найбільший елемент, який менше e;
+- `E pollFirst()`: видаляє і повертає перший елемент TreeSet;
+- `E pollLast()`: видаляє і повертає останній елемент TreeSet;
+- `NavigableSet<E> subSet(E fromElement, boolean fromInclusive, E toElement, boolean toInclusive)`: повертає TreeSet, який містить всі елементи від fromElement до toElement;
+- `NavigableSet<E> headSet(E toElement, boolean inclusive)`: повертає TreeSet, який містить всі елементи менше toElement;
+- `NavigableSet<E> tailSet(E fromElement, boolean inclusive)`: повертає TreeSet, який містить всі елементи більше fromElement;
+- `E first()`: повертає перший елемент TreeSet;
+- `E last()`: повертає останній елемент TreeSet.
+
+Далі преведемо приклади використання класу `TreeSet`.
+
+[source,java]
+----
+include::{treesetdir}/TreeSetExample1.java[tag=TreeSetExample1]
+----
+
+Результат виконання програми:
+
+----
+include::{treesetdir}/TreeSetExample1.java[tag=TreeSetExample1Result]
+----

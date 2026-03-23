@@ -1,0 +1,152 @@
+ifndef::imagesdir[:imagesdir: ../../../../../../../imgs/]
+ifndef::linkedlistdir[:linkedlistdir: ../../../../../../../../../examples/java/src/main/java/kovteba/collectionframework/iterable/collection/list/linkedlist]
+ifndef::linkedlisttestdir[:linkedlisttestdir: ../../../../../../../../../examples/java/src/main/java/kovteba/collectionframework/iterable/collection/list/linkedlist]
+
+[#java-collection-framework-linkedlist]
+====== LinkedList Class
+`LinkedList` — це класичний двоспрямований список, заснований на об'єктах з посиланнями між ними. Кожен елемент має посилання на попередній і наступний елементи. Це дозволяє швидко вставляти і видаляти елементи з середини списку.
+
+[#java-collection-framework-linkedlist-class-constructors]
+.Конструктори:
+* `LinkedList()` — створює порожній список;
+* `LinkedList(Collection<? extends E> col)` — створює список, в який додає всі   елементи колекції col.
+
+[#java-collection-framework-linkedlist-class-methods]
+.Методи:
+* `addFirst() / offerFirst()` — додає елемент в початок списку;
+* `addLast() / offerLast()` — додає елемент в кінець списку;
+* `removeFirst() / pollFirst()` — видаляє перший елемент з початку списку;
+* `removeLast() / pollLast()` — видаляє останній елемент з кінця списку;
+* `getFirst() / peekFirst()` — отримує перший елемент;
+* `getLast() / peekLast()` — отримує останній елемент.
+
+[#java-collection-framework-linkedlist-class-big-o-notation]
+.BigO notation для LinkedList:
+* `addFirst() / offerFirst()` — O(1);
+* `addLast() / offerLast()` — O(1);
+* `removeFirst() / pollFirst()` — O(1);
+* `removeLast() / pollLast()` — O(1);
+* `getFirst() / peekFirst()` — O(1);
+* `getLast() / peekLast()` — O(1);
+* `remove(value)` — O(n).
+
+Після створення об'єкта класу `LinkedList` він містить властивості `header` і `size`. `header` — псевдо-елемент списку. Його значення завжди дорівнює `null`, а властивості `next` і `prev` завжди вказують на перший і останній елементи списку відповідно. Оскільки на даний момент список ще порожній, властивості `next` і `prev` вказують самі на себе (тобто на елемент `header`). Ці данні зберігаються у статичному `static inner class Node<E>`. Розмір списку `size = 0`. Метод `remove(value)` переглядає всі елементи списку в пошуках потрібного. Видалений буде лише перший знайдений елемент.
+
+Далі преведемо приклади використання класу `LinkedList`.
+
+Додамо елементи в список, виведемо їх на екран, видалимо перший елемент і виведемо список на екран знову.
+
+[source,java]
+----
+include::{linkedlistdir}/LinkedListRemoveFirstExample1.java[tag=LinkedListRemoveFirstExample1]
+----
+
+Після виконання коду на екрані буде виведено:
+
+----
+include::{linkedlistdir}/LinkedListRemoveFirstExample1.java[tag=LinkedListRemoveFirstExample1Result]
+----
+
+Як бачимо, перший елемент був видалений зі списку.
+
+Приклад видалення елемента з середини списку:
+
+[source,java]
+----
+include::{linkedlistdir}/LinkedListRemoveExample1.java[tag=LinkedListRemoveExample1]
+----
+
+Після виконання коду на екрані буде виведено:
+
+----
+include::{linkedlistdir}/LinkedListRemoveExample1.java[tag=LinkedListRemoveExample1Result]
+----
+
+Як бачимо, елемент "Second" був видалений зі списку.
+
+Приклад видалення останнього елемента зі списку:
+
+[source,java]
+----
+include::{linkedlistdir}/LinkedListRemoveLastExample1.java[tag=LinkedListRemoveLastExample1]
+----
+
+Після виконання коду на екрані буде виведено:
+
+----
+include::{linkedlistdir}/LinkedListRemoveLastExample1.java[tag=LinkedListRemoveLastExample1Result]
+----
+
+Як бачимо, останній елемент "Third" був видалений зі списку.
+
+Приклад видалення елемента за індексом:
+
+[source,java]
+----
+include::{linkedlistdir}/LinkedListRemoveExample2.java[tag=LinkedListRemoveExample2]
+----
+
+Після виконання коду на екрані буде виведено:
+
+----
+include::{linkedlistdir}/LinkedListRemoveExample2.java[tag=LinkedListRemoveExample2Result]
+----
+
+Як бачимо, елемент за індексом 1, тобто "Second", був видалений зі списку.
+
+// TODO Приклад пошуку елемента за значенням:
+
+Приклад пошуку елемента за індексом:
+
+[source,java]
+----
+include::{linkedlistdir}/LinkedListGetExample1.java[tag=LinkedListGetExample1]
+----
+
+Після виконання коду на екрані буде виведено:
+
+----
+include::{linkedlistdir}/LinkedListGetExample1.java[tag=LinkedListGetExample1Result]
+----
+
+Як бачимо, елемент за індексом 1, тобто "Second", був виведений на екран.
+
+Приклад видалення всіх елементів зі списку за допомогою методу `clear()`:
+
+[source,java]
+----
+include::{linkedlistdir}/LinkedListClearExample1.java[tag=LinkedListClearExample1]
+----
+
+Після виконання коду на екрані буде виведено:
+
+----
+include::{linkedlistdir}/LinkedListClearExample1.java[tag=LinkedListClearExample1Result]
+----
+
+Як бачимо, всі елементи були видалені зі списку.
+
+Приклад видалення всіх елементів зі списку за допомогою методу `removeAll()`:
+
+[source,java]
+----
+include::{linkedlistdir}/LinkedListRemoveAllExample1.java[tag=LinkedListRemoveAllExample1]
+----
+
+Після виконання коду на екрані буде виведено:
+
+----
+include::{linkedlistdir}/LinkedListRemoveAllExample1.java[tag=LinkedListRemoveAllExample1Result]
+----
+
+Як бачимо, всі елементи були видалені зі списку.
+
+.Підсумки:
+* Доступ до елементів за значенням за лінійний час O(n);
+* Швидка вставка та видалення в "середині" списку за O(1), якщо є посилання на вузол (не потрібно зсувати елементи);
+* Додавання на початок — O(1); додавання в кінець — O(1) за наявності tail-посилання;
+* Більше накладних витрат по пам'яті — кожен вузол зберігає посилання на наступний (а в двонаправленому — ще й на попередній);
+* Дозволяє зберігати будь-які значення, включно з null;
+* Не синхронізований.
+
+// https://habr.com/ru/articles/127864/

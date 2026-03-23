@@ -1,0 +1,107 @@
+ifndef::imagesdir[:imagesdir: ../../../../../../../imgs/]
+ifndef::stackdir[:stackdir: ../../../../../../../../../examples/java/src/main/java/kovteba/collectionframework/iterable/collection/list/stack]
+ifndef::stacktestdir[:stacktestdir: ../../../../../../../../../examples/java/src/main/java/kovteba/collectionframework/iterable/collection/list/stack]
+
+[#java-collection-framework-stack]
+====== Stack Class
+Колекція Stack є реалізацією стека LIFO (last-in-first-out). Вона наслідує клас Vector, який в свою чергу реалізує List. Stack клас був доданий в Java 1.0. Він є частково синхронізованим. Це означає, що він може бути використаний в багатопоточних програмах без будь-яких додаткових зусиль з вашого боку. Однак ви можете також використовувати клас ArrayDeque, який був доданий в Java 1.6.
+
+[#java-collection-framework-stack-class-constructors]
+.Конструктори класу Stack:
+* `Stack()` - створює порожній стек;
+* `Stack(Collection c)` - створює стек, який містить всі елементи колекції c.
+
+[#java-collection-framework-stack-class-methods]
+.Методи класу Stack:
+* `boolean empty()` - перевіряє, чи стек порожній;
+* `E peek()` - повертає верхній елемент стека без видалення;
+* `E pop()` - видаляє і повертає верхній елемент стека;
+* `E push(E item)` - додає елемент у верхню частину стека;
+* `int search(Object o)` - повертає позицію елемента в стеці, якщо він присутній, інакше повертає -1.
+
+[#java-collection-framework-stack-class-big-o-notation]
+.BigO notation для Stack:
+* `push()` - O(1);
+* `pop()` - O(1);
+* `peek()` - O(1);
+* `search()` - O(n).
+
+Далі преведемо приклади використання класу `Stack`.
+
+Додамо елементи до стека, використовуючи метод `push()`:
+
+[source,java]
+----
+include::{stackdir}/StackPushExample1.java[tag=StackPushExample1]
+----
+
+Вище наведений код виведе наступне:
+
+----
+include::{stackdir}/StackPushExample1.java[tag=StackPushExample1Result]
+----
+
+Отримаємо верхній елемент стека, використовуючи метод `peek()`:
+
+[source,java]
+----
+include::{stackdir}/StackPeekExample1.java[tag=StackPeekExample1]
+----
+
+Вище наведений код виведе наступне:
+
+----
+include::{stackdir}/StackPeekExample1.java[tag=StackPeekExample1Result]
+----
+
+Видалимо верхній елемент стека, використовуючи метод `pop()`:
+
+[source,java]
+----
+include::{stackdir}/StackPopExample1.java[tag=StackPopExample1]
+----
+
+Вище наведений код виведе наступне:
+
+----
+include::{stackdir}/StackPopExample1.java[tag=StackPopExample1Result]
+----
+
+Перевіримо, чи стек порожній, використовуючи метод `empty()`:
+
+[source,java]
+----
+include::{stackdir}/StackEmptyExample1.java[tag=StackEmptyExample1]
+----
+
+Вище наведений код виведе наступне:
+
+----
+include::{stackdir}/StackEmptyExample1.java[tag=StackEmptyExample1Result]
+----
+
+Пошук елемента в стеці, використовуючи метод `search()`:
+
+[source,java]
+----
+include::{stackdir}/StackSearchExample1.java[tag=StackSearchExample1]
+----
+
+Вище наведений код виведе наступне:
+
+----
+include::{stackdir}/StackSearchExample1.java[tag=StackSearchExample1Result]
+----
+
+Якщо елемент не знайдено, метод `search()` поверне -1:
+
+[source,java]
+----
+include::{stackdir}/StackSearchExample2.java[tag=StackSearchExample2]
+----
+
+Вище наведений код виведе наступне:
+
+----
+include::{stackdir}/StackSearchExample2.java[tag=StackSearchExample2Result]
+----

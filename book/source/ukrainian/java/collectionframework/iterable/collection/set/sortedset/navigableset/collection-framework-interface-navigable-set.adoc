@@ -1,0 +1,24 @@
+ifndef::imagesdir[:imagesdir: ../../../../../../../../imgs/]
+ifndef::navigablesetdir[:navigablesetdir: ../../../../../../../../../../examples/java/src/main/java/kovteba/collectionframework/iterable/collection/set/sortedset/navigableset]
+ifndef::navigablesettestdir[:navigablesettestdir: ../../../../../../../../../../examples/java/src/main/java/kovteba/collectionframework/iterable/collection/set/sortedset/navigableset]
+
+[#java-collection-framework-navigableset]
+====== NavigableSet
+Інтерфейс NavigableSet розширює інтерфейс SortedSet і дозволяє витягувати елементи на основі їх значень.
+
+[#java-collection-framework-navigableset-interface-methods]
+.Методы класса NavigableSet
+Интерфейс NavigableSet определяет наступні методи:
+
+- `E ceiling(E obj)`: шукає в наборі найменший елемент e, який більше obj (e >=obj). Якщо такий елемент знайдений, то він повертається в якості результату. Інакше повертається null;
+- `E floor(E obj)`: шукає в наборі найбільший елемент e, який менше елемента obj (e <=obj). Якщо такий елемент знайдений, то він повертається в якості результату. Інакше повертається null;
+- `E higher(E obj)`: шукає в наборі найменший елемент e, який більше елемента obj (e >obj). Якщо такий елемент знайдений, то він повертається в якості результату. Інакше повертається null;
+- `E lower(E obj)`: шукає в наборі найбільший елемент e, який менше елемента obj (e <obj). Якщо такий елемент знайдений, то він повертається в якості результату. Інакше повертається null;
+- `E pollFirst()`: повертає перший елемент і видаляє його з набору;
+- `E pollLast()`: повертає останній елемент і видаляє його з набору;
+- `NavigableSet<E> descendingSet()`: повертає об'єкт NavigableSet, який містить всі елементи первинного набору NavigableSet в зворотному порядку;
+- `NavigableSet<E> headSet(E upperBound, boolean incl)`: повертає об'єкт NavigableSet, який містить всі елементи первинного набору NavigableSet до upperBound. Параметр incl при значенні true дозволяє включити в вихідний набір елемент upperBound;
+- `NavigableSet<E> tailSet(E lowerBound, boolean incl)`: повертає об'єкт NavigableSet, який містить всі елементи первинного набору NavigableSet, починаючи з lowerBound. Параметр incl при значенні true дозволяє включити в вихідний набір елемент lowerBound;
+- `NavigableSet<E> subSet(E lowerBound, boolean lowerIncl, E upperBound, boolean highIncl)`: повертає об'єкт NavigableSet, який містить всі елементи первинного набору NavigableSet від lowerBound до upperBound.
+
+include::treeset/collection-framework-interface-class-treeset.adoc[]
