@@ -1,0 +1,10 @@
+/home/runner/work/developer-reminders/developer-reminders/examples/design-patterns/abstract-factory/src/main/java/kovteba/AbstractFactoryDemo.java
+/home/runner/work/developer-reminders/developer-reminders/examples/design-patterns/abstract-factory/src/main/java/kovteba/factory/GUIFactory.java
+/home/runner/work/developer-reminders/developer-reminders/examples/design-patterns/abstract-factory/src/main/java/kovteba/factory/impl/MacGUIFactory.java
+/home/runner/work/developer-reminders/developer-reminders/examples/design-patterns/abstract-factory/src/main/java/kovteba/factory/impl/WindowsGUIFactory.java
+/home/runner/work/developer-reminders/developer-reminders/examples/design-patterns/abstract-factory/src/main/java/kovteba/ui/Button.java
+/home/runner/work/developer-reminders/developer-reminders/examples/design-patterns/abstract-factory/src/main/java/kovteba/ui/Checkbox.java
+/home/runner/work/developer-reminders/developer-reminders/examples/design-patterns/abstract-factory/src/main/java/kovteba/ui/impl/mac/MacButton.java
+/home/runner/work/developer-reminders/developer-reminders/examples/design-patterns/abstract-factory/src/main/java/kovteba/ui/impl/mac/MacCheckbox.java
+/home/runner/work/developer-reminders/developer-reminders/examples/design-patterns/abstract-factory/src/main/java/kovteba/ui/impl/win/WindowsButton.java
+/home/runner/work/developer-reminders/developer-reminders/examples/design-patterns/abstract-factory/src/main/java/kovteba/ui/impl/win/WindowsCheckbox.java

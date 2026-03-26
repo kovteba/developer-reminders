@@ -1,0 +1,6 @@
+/home/runner/work/developer-reminders/developer-reminders/examples/design-patterns/visitor/src/main/java/kovteba/example1/DirectoryElement.java
+/home/runner/work/developer-reminders/developer-reminders/examples/design-patterns/visitor/src/main/java/kovteba/example1/FileElement.java
+/home/runner/work/developer-reminders/developer-reminders/examples/design-patterns/visitor/src/main/java/kovteba/example1/FileSystemElement.java
+/home/runner/work/developer-reminders/developer-reminders/examples/design-patterns/visitor/src/main/java/kovteba/example1/FileSystemVisitor.java
+/home/runner/work/developer-reminders/developer-reminders/examples/design-patterns/visitor/src/main/java/kovteba/example1/SizeCalculatorVisitor.java
+/home/runner/work/developer-reminders/developer-reminders/examples/design-patterns/visitor/src/main/java/kovteba/example1/VisitorDemo.java

@@ -1,0 +1,6 @@
+/home/runner/work/developer-reminders/developer-reminders/examples/design-patterns/decorator/src/main/java/kovteba/example1/DecoratorDemo.java
+/home/runner/work/developer-reminders/developer-reminders/examples/design-patterns/decorator/src/main/java/kovteba/example1/EncryptDecorator.java
+/home/runner/work/developer-reminders/developer-reminders/examples/design-patterns/decorator/src/main/java/kovteba/example1/LogDecorator.java
+/home/runner/work/developer-reminders/developer-reminders/examples/design-patterns/decorator/src/main/java/kovteba/example1/Message.java
+/home/runner/work/developer-reminders/developer-reminders/examples/design-patterns/decorator/src/main/java/kovteba/example1/MessageDecorator.java
+/home/runner/work/developer-reminders/developer-reminders/examples/design-patterns/decorator/src/main/java/kovteba/example1/SimpleMessage.java

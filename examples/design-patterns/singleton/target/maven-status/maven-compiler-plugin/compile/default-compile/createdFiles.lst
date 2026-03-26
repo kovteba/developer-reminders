@@ -1,0 +1,5 @@
+kovteba/Singleton.class
+kovteba/SingletonDemo.class
+kovteba/Singleton$Holder.class
+kovteba/LazySingleton.class
+kovteba/ThreadSafeSingleton.class

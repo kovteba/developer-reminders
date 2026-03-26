@@ -1,0 +1,8 @@
+/home/runner/work/developer-reminders/developer-reminders/examples/design-patterns/adapter/src/main/java/kovteba/classadapter/ClassAdapterDemo.java
+/home/runner/work/developer-reminders/developer-reminders/examples/design-patterns/adapter/src/main/java/kovteba/classadapter/ClassPrinterAdapter.java
+/home/runner/work/developer-reminders/developer-reminders/examples/design-patterns/adapter/src/main/java/kovteba/classadapter/LegacyPrinter.java
+/home/runner/work/developer-reminders/developer-reminders/examples/design-patterns/adapter/src/main/java/kovteba/classadapter/Printer.java
+/home/runner/work/developer-reminders/developer-reminders/examples/design-patterns/adapter/src/main/java/kovteba/objectadapter/LegacyPrinter.java
+/home/runner/work/developer-reminders/developer-reminders/examples/design-patterns/adapter/src/main/java/kovteba/objectadapter/ObjectAdapterDemo.java
+/home/runner/work/developer-reminders/developer-reminders/examples/design-patterns/adapter/src/main/java/kovteba/objectadapter/Printer.java
+/home/runner/work/developer-reminders/developer-reminders/examples/design-patterns/adapter/src/main/java/kovteba/objectadapter/PrinterAdapter.java
