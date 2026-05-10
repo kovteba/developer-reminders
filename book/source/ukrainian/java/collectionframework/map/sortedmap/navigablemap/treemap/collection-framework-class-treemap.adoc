@@ -1,0 +1,439 @@
+ifndef::imagesdir[:imagesdir: ../../../../../imgs/]
+
+[#java-collection-framework-treemap]
+==== TreeMap class
+`TreeMap` — це реалізація `NavigableMap`, заснована на *червоно-чорному дереві* (Red-Black Tree). Зберігає ключі у відсортованому порядку — за натуральним порядком (якщо ключі реалізують `Comparable`) або за переданим `Comparator`. Не є потокобезпечним. Не допускає `null`-ключ (без кастомного `Comparator`), але дозволяє `null`-значення.
+
+.Ієрархія наслідування
+[source,subs="normal"]
+----
+Object
+  └── AbstractMap<K,V>
+        └── <<java-collection-framework-treemap,TreeMap<K,V>>>
+----
+
+Реалізовані інтерфейси:
+
+* `NavigableMap<K,V>` — розширені навігаційні методи
+* `SortedMap<K,V>` — гарантований порядок ключів
+* `Map<K,V>` — базовий контракт мапи
+* `Cloneable` — підтримка поверхневого клонування
+* `Serializable` — підтримка серіалізації
+
+WARNING: `TreeMap` *не є потокобезпечним*. Для сортованої потокобезпечної мапи використовуй `ConcurrentSkipListMap` з пакету `java.util.concurrent`.
+
+WARNING: Без кастомного `Comparator` — `TreeMap` *не допускає `null`-ключ*. При спробі додати `null` кидає `NullPointerException` (або `ClassCastException` при порівнянні). `null`-значення дозволені.
+
+[#java-collection-framework-treemap-constructors]
+.Конструктори класу `TreeMap`
+
+.TreeMap()
+[source,java]
+----
+TreeMap<Integer, String> map = new TreeMap<>();
+----
+
+*Що робить:* створює порожню `TreeMap` з натуральним порядком ключів. Ключі мають реалізовувати `Comparable`.
+
+*Коли використовувати:* коли потрібна сортована за ключем Map з елементами що природно впорядковуються (`Integer`, `String`, тощо).
+
+.TreeMap(Comparator<? super K> comparator)
+[source,java]
+----
+TreeMap<String, Integer> map = new TreeMap<>(Comparator.reverseOrder());
+// або:
+TreeMap<Person, Data> map = new TreeMap<>(
+    Comparator.comparing(Person::getLastName).thenComparing(Person::getFirstName)
+);
+----
+
+*Що робить:* створює `TreeMap` з кастомним порядком сортування.
+
+*Коли використовувати:* коли потрібний нестандартний порядок або ключі не реалізують `Comparable`.
+
+NOTE: Якщо передати `Comparator` що допускає `null` ключі (наприклад, `Comparator.nullsFirst(...)`) — `TreeMap` теж буде допускати `null`-ключі.
+
+.TreeMap(Map<? extends K, ? extends V> m)
+[source,java]
+----
+Map<String, Integer> source = Map.of("b", 2, "a", 1, "c", 3);
+TreeMap<String, Integer> map = new TreeMap<>(source);
+// map: {a=1, b=2, c=3} — автоматично відсортовано
+----
+
+*Що робить:* копіює всі записи з переданої мапи і будує збалансоване червоно-чорне дерево. Ключі сортуються за натуральним порядком.
+
+.TreeMap(SortedMap<K, ? extends V> m)
+[source,java]
+----
+SortedMap<String, Integer> sorted = new TreeMap<>(Map.of("b", 2, "a", 1));
+TreeMap<String, Integer> copy = new TreeMap<>(sorted);
+----
+
+*Що робить:* копіює записи з `SortedMap`, успадковуючи її `Comparator`.
+
+[#java-collection-framework-treemap-methods]
+.Методи `TreeMap`
+Успадковує всі методи `Map`, `SortedMap` та `NavigableMap`. Найважливіші специфічні:
+
+* `V put(K key, V value)` — вставляє запис, зберігаючи порядок дерева. O(log n);
+* `V get(Object key)` — пошук за ключем. O(log n);
+* `V remove(Object key)` — видалення за ключем. O(log n);
+* `K firstKey()` / `K lastKey()` — перший/останній ключ. O(log n);
+* `Map.Entry<K,V> firstEntry()` / `Map.Entry<K,V> lastEntry()` — перший/останній запис. O(log n);
+* `Map.Entry<K,V> pollFirstEntry()` / `Map.Entry<K,V> pollLastEntry()` — видалення першого/останнього. O(log n);
+* `K ceilingKey(K key)` / `K floorKey(K key)` / `K higherKey(K key)` / `K lowerKey(K key)` — навігаційний пошук. O(log n);
+* `NavigableMap<K,V> descendingMap()` — зворотній порядок. O(1) — повертає view;
+* `SortedMap<K,V> headMap(K toKey)` / `tailMap(K fromKey)` / `subMap(K from, K to)` — діапазонні view. O(log n).
+
+[#java-collection-framework-treemap-big-o-notation]
+.BigO notation для `TreeMap`
+[cols="2,1,4", options="header"]
+|===
+|`get(Object key)`                  |O(log n)       |Обхід дерева від кореня до листа
+|`remove(Object key)`               |O(log n)       |Пошук + видалення + можлива ротація
+|`containsKey(Object key)`          |O(log n)       |Як `get`
+|===
+|`containsValue(Object value)`      |O(n)           |Лінійний обхід всього дерева (in-order traversal)
+|===
+|`firstKey()` / `lastKey()`         |O(log n)       |Обхід до крайнього лівого/правого листа
+|===
+|`firstEntry()` / `lastEntry()`     |O(log n)       |Як вище
+|===
+|`pollFirstEntry()` / `pollLastEntry()` |O(log n)   |Пошук + видалення + балансування
+|===
+|`ceilingKey()` / `floorKey()`      |O(log n)       |Обхід дерева з відстеженням найближчого
+|===
+|`higherKey()` / `lowerKey()`       |O(log n)       |Як вище
+|===
+|`descendingMap()`                  |O(1)           |Повертає live view (не копію)
+|===
+|`headMap()` / `tailMap()` / `subMap()` |O(log n)   |Пошук меж + повертає live view
+|===
+|`size()`                           |O(1)           |Поле `size`
+|===
+|`clear()`                          |O(n)           |Обнуляє всі посилання вузлів, потім GC збирає дерево
+|===
+|`putAll(Map m)`                    |O(m log(n+m)) |Кожен `put` — O(log n)
+|===
+|===
+|===
+
+[[java-collection-framework-treemap-rb-invariants]]
+.5 інваріантів Red-Black Tree у TreeMap
+(1) Кожен вузол — червоний або чорний. (2) Корінь завжди чорний. (3) Всі null-листи вважаються чорними. (4) Якщо вузол червоний — обидва його нащадки чорні (немає двох consecutive червоних). (5) Від кожного вузла до будь-якого листа (null) однакова кількість чорних вузлів (black-height). Ці інваріанти гарантують максимальну висоту ≤ 2*log₂(n+1).
+
+[[java-collection-framework-treemap-height]]
+.Максимальна висота Red-Black Tree
+Завдяки інваріантам висота ≤ `2 * log₂(n+1)`. Найгірший випадок: чергування червоних і чорних вузлів. Мінімальна висота (лише чорні вузли): `log₂(n+1)`. Тому O(log n) для всіх операцій. При 1 мільярді вузлів: висота ≤ 60 рівнів.
+
+[[java-collection-framework-treemap-rotations]]
+.Left Rotation та Right Rotation у Red-Black Tree
+Left Rotation навколо вузла P: правий нащадок R стає батьком; P стає лівим нащадком R; лівий нащадок R стає правим нащадком P. Зберігає BST властивість (in-order порядок не змінюється). Right Rotation — дзеркально. Ротації є O(1) — лише перевішування посилань. При одній вставці — максимум 2 ротації; при видаленні — максимум 3.
+
+[[java-collection-framework-treemap-fix-insertion]]
+.fixAfterInsertion() — балансування після вставки
+`fixAfterInsertion(Entry x)` викликається після вставки нового червоного вузла. Розглядає 3 випадки відносно uncle вузла (sibling батька): Case 1 (uncle червоний): перефарбування батька, uncle і дідуся. Case 2 (uncle чорний, вузол — "inner child"): одна ротація на батьку. Case 3 (uncle чорний, вузол — "outer child"): одна ротація на дідусі + перефарбування. Завжди завершується за O(log n).
+
+[[java-collection-framework-treemap-fix-deletion]]
+.fixAfterDeletion() та successor — видалення вузла
+При видаленні вузла з двома нащадками: знаходимо successor (наступний вузол in-order = leftmost вузол правого піддерева). Копіюємо key/value successor у видалений вузол, видаляємо successor. Successor завжди має ≤ 1 нащадка. `fixAfterDeletion()` має 4 cases: sibling чорний з червоним нащадком "far" або "near", sibling чорний з обома чорними нащадками, sibling червоний. `successor(t)` знаходить наступний вузол: якщо є правий нащадок → leftmost; інакше підіймається до батька поки не знайде вузол що є лівим нащадком.
+
+[[java-collection-framework-treemap-navigation]]
+.TreeMap навігаційні операції — firstEntry, lastEntry, floorEntry, ceilingEntry
+`firstEntry()` = leftmost вузол (рухаємось завжди вліво). `lastEntry()` = rightmost. Обидва O(log n). `floorEntry(key)` — найбільший ключ ≤ key: рухаємося по дереву, відстежуємо останній вузол ≤ key. `ceilingEntry(key)` — найменший ключ ≥ key: відстежуємо останній вузол ≥ key. `lowerEntry(key)` — строго < key. `higherEntry(key)` — строго > key. `pollFirstEntry()` = `firstEntry()` + видалення: O(log n) через fixAfterDeletion.
+
+[[java-collection-framework-treemap-iterator-impl]]
+.TreeMap ітерація — in-order traversal без рекурсії
+TreeMap ітератор не використовує рекурсивний in-order обхід (щоб не витрачати stack). Замість цього: починає з leftmost вузла, для переходу до наступного використовує `successor()`: якщо є правий нащадок → іде вліво до кінця; якщо ні → піднімається до батька поки не знайде "правий поворот". Це ітеративний in-order traversal O(1) per step, O(n) total.
+
+[[java-collection-framework-treemap-submaps]]
+.DescendingSubMap, AscendingSubMap та живі view
+`subMap()`, `headMap()`, `tailMap()` повертають `AscendingSubMap` або `DescendingSubMap` — живий view що делегує всі операції до оригінального `TreeMap`. `descendingMap()` повертає `DescendingSubMap` з reversed ordering. Всі submaps перевіряють межі при вставці (кидають `IllegalArgumentException` якщо ключ поза діапазоном). `headMap(toKey, boolean inclusive)` — NavigableMap версія дозволяє включати або виключати toKey.
+
+[[java-collection-framework-treemap-comparator-performance]]
+.Comparator як bottleneck та case-insensitive TreeMap
+При мільйонах операцій `compareTo()`/`compare()` може стати bottleneck. Рекомендації: уникати allocations у Comparator, кешувати проміжні результати, використовувати примітивні порівняння. `String.CASE_INSENSITIVE_ORDER` — нечутливий до регістру TreeMap: `new TreeMap<>(String.CASE_INSENSITIVE_ORDER)`. "hello" і "HELLO" будуть вважатися одним ключем (compare повертає 0).
+
+[[java-collection-framework-treemap-clone]]
+.TreeMap.clone() — O(n) копіювання дерева
+`clone()` створює новий порожній `TreeMap` з тим самим `comparator`, потім копіює дерево методом `buildFromSorted()`: обходить entries оригіналу у відсортованому порядку і будує оптимально збалансоване дерево. Це O(n) операція. Shallow copy — ключі і значення не клонуються.
+
+[[java-collection-framework-treemap-memory]]
+.Пам'ять TreeMap.Entry vs HashMap.Node
+`TreeMap.Entry`: `key` ref (8) + `value` ref (8) + `left` ref (8) + `right` ref (8) + `parent` ref (8) + `boolean color` (1 + 7 padding) + object header (16) ≈ 64 байт. `HashMap.Node` ≈ 48 байт. TreeMap Entry споживає ~30% більше пам'яті, плюс немає масиву бакетів (лише посилання), але немає також порожніх бакетів.
+
+.Внутрішній устрій — червоно-чорне дерево
+`TreeMap` зберігає дані у *червоно-чорному дереві*. Кожен вузол дерева — це внутрішній клас `Entry`:
+
+[source,java]
+----
+static final class Entry<K,V> implements Map.Entry<K,V> {
+    K key;
+    V value;
+    Entry<K,V> left;    // лівий нащадок (менші ключі)
+    Entry<K,V> right;   // правий нащадок (більші ключі)
+    Entry<K,V> parent;  // батьківський вузол
+    boolean color;      // RED = false, BLACK = true
+}
+----
+
+Власивості червоно-чорного дерева:
+
+[source]
+----
+1. Кожен вузол або червоний, або чорний
+2. Корінь — завжди чорний
+3. Всі листи (null-вузли) — чорні
+4. Якщо вузол червоний → обидва його нащадки чорні
+5. Від кожного вузла до будь-якого листа однакова кількість чорних вузлів (black-height)
+----
+
+Ці властивості гарантують, що висота дерева завжди ≤ `2 * log₂(n+1)`, що забезпечує O(log n) для всіх операцій.
+
+.Візуалізація дерева
+[source]
+----
+put(5), put(3), put(7), put(1), put(4)
+
+        5(B)
+       /    \
+    3(R)     7(B)
+   /   \
+ 1(B)  4(B)
+
+(B) = чорний, (R) = червоний
+In-order обхід: 1, 3, 4, 5, 7 → завжди відсортовано!
+----
+
+.Ротації для балансування
+При вставці або видаленні, якщо властивості дерева порушуються — виконуються *ліва або права ротація* і *перефарбовування*:
+
+[source,java]
+----
+// Спрощено — ліва ротація навколо вузла p:
+private void rotateLeft(Entry<K,V> p) {
+    if (p != null) {
+        Entry<K,V> r = p.right;
+        p.right = r.left;
+        if (r.left != null) r.left.parent = p;
+        r.parent = p.parent;
+        if (p.parent == null) root = r;
+        else if (p.parent.left == p) p.parent.left = r;
+        else p.parent.right = r;
+        r.left = p;
+        p.parent = r;
+    }
+}
+----
+
+NOTE: Ротації є O(1) операціями — змінюють лише кілька посилань. Кількість ротацій при одній вставці — не більше 2. При видаленні — не більше 3. Тому балансування не змінює асимптотичну складність O(log n).
+
+.Навігаційні операції — практичний приклад
+[source,java]
+----
+TreeMap<Integer, String> calendar = new TreeMap<>();
+calendar.put(20250101, "New Year");
+calendar.put(20250314, "Pi Day");
+calendar.put(20250704, "Independence Day");
+calendar.put(20251225, "Christmas");
+
+// Наступна подія після 1 березня (20250301):
+calendar.higherEntry(20250301);  // → 20250314=Pi Day
+
+// Остання подія до кінця літа (20250831):
+calendar.floorEntry(20250831);   // → 20250704=Independence Day
+
+// Всі літні події [1 червня, 1 вересня):
+calendar.subMap(20250601, 20250901); // {20250704=Independence Day}
+
+// Видалити і повернути найближчу майбутню подію:
+Map.Entry<Integer, String> next = calendar.pollFirstEntry();
+// → 20250101=New Year
+----
+
+.TreeMap як Sorted frequency map
+[source,java]
+----
+String text = "banana";
+TreeMap<Character, Integer> freq = new TreeMap<>();
+for (char c : text.toCharArray()) {
+    freq.merge(c, 1, Integer::sum);
+}
+// freq: {a=3, b=1, n=2} — автоматично відсортовано за ключем (char)
+----
+
+.TreeMap vs HashMap vs LinkedHashMap
+[cols="3,1,1,1", options="header"]
+|===
+|Складність get/put/remove      |⚠️ O(log n)            |✅ O(1)*           |✅ O(1)*
+|Навігаційні методи             |✅ ceiling/floor/higher/lower |❌            |❌
+|Діапазонні запити              |✅ headMap/tailMap/subMap |❌              |❌
+|===
+|`null` ключ                    |❌ (без Comparator)    |✅ 1 null          |✅ 1 null
+|===
+|Потокобезпечність              |❌                     |❌                 |❌
+|===
+|Рекомендовано для              |сортовані дані, range queries |загального використання |LRU-кеш, insertion-order
+|===
+|===
+|===
+
+TIP: *Використовуй `TreeMap` коли:* потрібна сортована за ключем Map; потрібні range-запити (`headMap`, `subMap`); потрібен `firstKey()`/`lastKey()` або `ceiling`/`floor` операції; реалізуєш EventBus, планувальник або будь-яку структуру де важливий порядок ключів. Для потокобезпечного варіанту → `ConcurrentSkipListMap`.
+
+NOTE: Всі операції `TreeMap` (`put`, `get`, `remove`, `containsKey`) мають складність *O(log n)* — повільніше ніж O(1) у `HashMap`. При великих розмірах (~1М елементів) різниця відчутна: `HashMap.get` ~5нс vs `TreeMap.get` ~200нс. Обирай `TreeMap` тільки якщо потрібна сортованість.
+
+[#java-collection-framework-treemap-pitfalls]
+.Підводні камені
+
+.null ключ → NullPointerException без кастомного Comparator
+[source,java]
+----
+TreeMap<String, Integer> map = new TreeMap<>();
+
+map.put(null, 1); // ❌ NullPointerException!
+// При першому put(null,...) дерево порожнє — null вставляється як корінь.
+// При другому put() відбувається порівняння: null.compareTo(existingKey) → NPE!
+
+// Точніше: у Java 21+ перший put(null) відразу кидає NPE.
+// У старших версіях NPE може кинутись при другому put().
+
+// ЯКЩО null ключі потрібні — передай Comparator що їх підтримує:
+TreeMap<String, Integer> withNull = new TreeMap<>(Comparator.nullsFirst(
+    Comparator.naturalOrder()
+));
+withNull.put(null, 0); // ✅ null ключ як "найменший"
+withNull.put("a", 1);
+withNull.put("b", 2);
+System.out.println(withNull.firstKey()); // null (найменший за Comparator)
+System.out.println(withNull.keySet());   // [null, a, b]
+----
+
+.Comparator inconsistent with equals → "дублікати" ключів
+[source,java]
+----
+// ПАСТКА: Comparator що ігнорує регістр
+TreeMap<String, Integer> map = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+
+map.put("hello", 1);
+map.put("HELLO", 2); // CASE_INSENSITIVE: compare("hello","HELLO")==0 → перезаписує!
+
+System.out.println(map.size()); // 1! (не 2)
+System.out.println(map.get("hello")); // 2
+System.out.println(map.get("HELLO")); // 2
+System.out.println(map.get("Hello")); // 2
+
+// Ця поведінка коректна за контрактом TreeMap:
+// "ordered by its comparator" — два ключі з compareTo()==0 вважаються рівними
+
+// ПАСТКА з власним Comparator:
+record Person(String name, int age) {}
+TreeMap<Person, String> persons = new TreeMap<>(
+    Comparator.comparing(Person::name) // порівнює тільки ім'я!
+);
+persons.put(new Person("Alice", 25), "engineer");
+persons.put(new Person("Alice", 30), "manager"); // те ж ім'я → перезаписує!
+System.out.println(persons.size()); // 1! Alice(30) витіснила Alice(25)
+----
+
+WARNING: `TreeMap` вважає два ключі рівними якщо `comparator.compare(k1, k2) == 0`. Якщо Comparator порівнює лише підмножину полів об'єкта — різні об'єкти що збігаються за цими полями будуть вважатися одним ключем. Comparator *обов'язково має бути consistent with equals*: якщо `k1.equals(k2)` → `comparator.compare(k1, k2) == 0`, і навпаки.
+
+.Відсутність потокобезпечності — пошкодження дерева при concurrent записі
+[source,java]
+----
+TreeMap<Integer, String> map = new TreeMap<>();
+
+// Два потоки одночасно вставляють:
+ExecutorService pool = Executors.newFixedThreadPool(2);
+pool.submit(() -> {
+    for (int i = 0; i < 1000; i++) map.put(i, "thread1");
+});
+pool.submit(() -> {
+    for (int i = 1000; i < 2000; i++) map.put(i, "thread2");
+});
+pool.awaitTermination(5, TimeUnit.SECONDS);
+
+// Можливі наслідки: нескінченна петля в rotateLeft/rotateRight,
+// NPE при обходу дерева, втрата записів, некоректна балансування
+
+// РІШЕННЯ 1 — synchronizedSortedMap (coarse lock):
+SortedMap<Integer, String> syncMap = Collections.synchronizedSortedMap(new TreeMap<>());
+// Кожна операція синхронізована але блокує всю map
+
+// РІШЕННЯ 2 — ConcurrentSkipListMap (рекомендовано):
+ConcurrentSkipListMap<Integer, String> concMap = new ConcurrentSkipListMap<>();
+// Lock-free, O(log n), те ж API NavigableMap
+----
+
+WARNING: *Concurrent запис у `TreeMap` корумпує Red-Black Tree.* Наслідки: нескінченні петлі, `NullPointerException`, некоректні результати пошуку. Для потокобезпечного сортованого Map завжди використовуй `ConcurrentSkipListMap`.
+
+.Мутабельний ключ що впливає на порядок — пошкодження дерева
+[source,java]
+----
+class MutableKey implements Comparable<MutableKey> {
+    int value;
+    MutableKey(int v) { this.value = v; }
+
+    @Override
+    public int compareTo(MutableKey other) {
+        return Integer.compare(this.value, other.value);
+    }
+}
+
+TreeMap<MutableKey, String> map = new TreeMap<>();
+MutableKey key10 = new MutableKey(10);
+MutableKey key20 = new MutableKey(20);
+MutableKey key30 = new MutableKey(30);
+
+map.put(key10, "ten");
+map.put(key20, "twenty");
+map.put(key30, "thirty");
+
+System.out.println(map.get(key10)); // "ten" ✅
+
+// ЗМІНЮЄМО ключ після вставки!
+key10.value = 25; // тепер key10 "повинен" бути між key20 і key30
+
+System.out.println(map.get(key10)); // null ❌ — пошук іде в невірний бік дерева!
+System.out.println(map.size());     // 3 — елемент є але недосяжний через Binary Search
+System.out.println(map.containsKey(key10)); // false ❌
+
+// Дерево тепер у невалідному стані — властивості BST порушено!
+// Подальші операції можуть давати некоректні результати
+----
+
+WARNING: *Ніколи не змінюй поля об'єктів що впливають на їх порядок (compareTo/Comparator) після вставки в `TreeMap`.* Зміна ключа після `put` порушує інваріант Binary Search Tree: елемент фізично знаходиться у вузлі але не може бути знайдений (пошук іде у хибний підграф). Видали елемент, зміни ключ, вставь знову.
+
+.subMap/headMap/tailMap — живі view з обмеженнями на вставку
+[source,java]
+----
+TreeMap<Integer, String> map = new TreeMap<>();
+for (int i = 1; i <= 10; i++) map.put(i, "v" + i);
+
+// subMap повертає ЖИВИЙ view — зміни видимі в обидва боки:
+SortedMap<Integer, String> sub = map.subMap(3, 7); // ключі [3, 7)
+
+// Модифікація через view → відображається в оригінальній map:
+sub.put(5, "FIVE"); // ✅ 5 ∈ [3,7)
+System.out.println(map.get(5)); // "FIVE" ← оригінал змінено!
+
+// Видалення через view:
+sub.remove(4); // ✅ 4 ∈ [3,7)
+System.out.println(map.containsKey(4)); // false ← видалено з оригіналу!
+
+// Спроба вставити за межами діапазону:
+sub.put(2, "two");  // ❌ IllegalArgumentException! 2 < 3 (нижня межа)
+sub.put(7, "seven"); // ❌ IllegalArgumentException! 7 >= 7 (ексклюзивна верхня межа)
+sub.put(8, "eight"); // ❌ IllegalArgumentException!
+
+// Зміни в оригіналі visible у view (але тільки якщо в діапазоні):
+map.put(6, "SIX");
+System.out.println(sub.containsKey(6)); // true ← оновлення видиме
+map.put(8, "eight");
+System.out.println(sub.containsKey(8)); // false ← 8 поза діапазоном [3,7)
+
+// Для незмінного snapshot скопіюй:
+SortedMap<Integer, String> snapshot = new TreeMap<>(sub); // незалежна копія
+----
+
+NOTE: `headMap(toKey)`, `tailMap(fromKey)`, `subMap(from, to)` повертають *живі view* — підмапу що автоматично синхронізується з оригіналом. Це ефективно (без копіювання) але вимагає розуміння: (1) зміни у view змінюють оригінал; (2) зміни в оригіналі видимі у view; (3) вставка ключів за межами діапазону кидає `IllegalArgumentException`. Для snapshot — скопіюй у `new TreeMap<>(sub)`.

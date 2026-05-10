@@ -1,0 +1,461 @@
+ifndef::imagesdir[:imagesdir: ../../../../../imgs/]
+
+[#java-collection-framework-properties]
+==== Properties class
+`Properties` — це *legacy* клас що наслідує `Hashtable<Object,Object>` і спеціалізується на зберіганні *пар String-String*. Широко використовується для читання/запису конфігураційних файлів `.properties` та системних властивостей JVM. Незважаючи на legacy-статус залишається активно використовуваним у конфігурації Java-застосунків. Є потокобезпечним (успадковано від `Hashtable`).
+
+.Ієрархія наслідування
+[source,subs="normal"]
+----
+Object
+  └── Dictionary<Object,Object>
+        └── <<java-collection-framework-hashtable,Hashtable<Object,Object>>>
+              └── <<java-collection-framework-properties,Properties>>
+----
+
+Реалізовані інтерфейси:
+
+* `Map<Object,Object>` — через `Hashtable`
+* `Cloneable`, `Serializable`
+
+WARNING: Хоча `Properties` наслідує `Hashtable<Object,Object>`, *завжди використовуй* `getProperty()`/`setProperty()` (рядковий API) замість `get()`/`put()` (Object API). Змішування двох API може призвести до `ClassCastException` та непередбачуваної поведінки.
+
+NOTE: `Properties` підтримує *defaults* — ланцюжок батьківських `Properties`. Якщо ключ не знайдений у поточній мапі — пошук продовжується у `defaults`.
+
+[#java-collection-framework-properties-constructors]
+.Конструктори
+
+.Properties()
+[source,java]
+----
+Properties props = new Properties();
+----
+
+*Що робить:* створює порожній об'єкт без значень за замовчуванням.
+
+.Properties(int initialCapacity)
+[source,java]
+----
+Properties props = new Properties(64); // Java 11+
+----
+
+*Що робить:* встановлює початкову ємність внутрішньої хеш-таблиці.
+
+.Properties(Properties defaults)
+[source,java]
+----
+Properties defaults = new Properties();
+defaults.setProperty("timeout", "30");
+defaults.setProperty("retries", "3");
+
+Properties config = new Properties(defaults);
+config.setProperty("timeout", "60"); // перевизначає default
+
+config.getProperty("timeout");  // → "60" (з config)
+config.getProperty("retries");  // → "3"  (з defaults — не знайдено в config)
+config.getProperty("unknown");  // → null (немає ні в config ні в defaults)
+----
+
+[[java-collection-framework-properties-methods]]
+.Properties методи — propertyNames, stringPropertyNames, list
+`propertyNames()` — повертає `Enumeration<?>` всіх ключів включно з ключами у ланцюжку defaults (рекурсивно). Може містити non-String ключі. `stringPropertyNames()` — повертає `Set<String>` тільки тих ключів де і ключ і значення є String (ігнорує non-String). Безпечний для `getProperty()`. `list(PrintStream out)` або `list(PrintWriter out)` — виводить всі властивості для дебагінгу (значення > 40 символів обрізаються). `System.getProperties()` повертає системний Properties об'єкт; `System.setProperty(k,v)` додає до нього запис; передача через `-Dkey=value` при запуску JVM.
+
+[#java-collection-framework-properties-key-methods]
+.Ключові методи
+
+.setProperty та getProperty
+[source,java]
+----
+Properties props = new Properties();
+
+// Встановити:
+props.setProperty("db.host", "localhost");
+props.setProperty("db.port", "5432");
+props.setProperty("db.name", "mydb");
+
+// Отримати:
+String host = props.getProperty("db.host");          // → "localhost"
+String port = props.getProperty("db.port", "3306");  // → "5432" (знайдено)
+String user = props.getProperty("db.user", "admin"); // → "admin" (не знайдено → default)
+----
+
+.Завантаження з файлу .properties
+[source,java]
+----
+// Файл config.properties:
+// db.host=localhost
+// db.port=5432
+// db.name=mydb
+// # Це коментар
+// app.name=MyApp
+
+Properties props = new Properties();
+
+// З classpath (в resources/):
+try (InputStream is = getClass().getClassLoader()
+        .getResourceAsStream("config.properties")) {
+    props.load(is);
+}
+
+// З файлової системи:
+try (FileInputStream fis = new FileInputStream("config.properties")) {
+    props.load(fis);
+}
+
+// З Reader (з явним charset):
+try (FileReader reader = new FileReader("config.properties", StandardCharsets.UTF_8)) {
+    props.load(reader);
+}
+----
+
+.Запис у файл
+[source,java]
+----
+Properties props = new Properties();
+props.setProperty("version", "1.0.0");
+props.setProperty("feature.enabled", "true");
+
+// Зберегти у файл з коментарем:
+try (FileOutputStream fos = new FileOutputStream("app.properties")) {
+    props.store(fos, "Application configuration - generated automatically");
+}
+
+// Файл буде виглядати:
+// #Application configuration - generated automatically
+// #Wed Apr 16 12:00:00 UTC 2026
+// version=1.0.0
+// feature.enabled=true
+----
+
+.XML формат
+[source,java]
+----
+// Завантажити з XML:
+// <?xml version="1.0" encoding="UTF-8"?>
+// <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+// <properties>
+//   <entry key="db.host">localhost</entry>
+// </properties>
+
+try (InputStream is = new FileInputStream("config.xml")) {
+    props.loadFromXML(is);
+}
+
+// Зберегти як XML:
+try (OutputStream os = new FileOutputStream("config.xml")) {
+    props.storeToXML(os, "Config", "UTF-8");
+}
+----
+
+.Системні властивості JVM
+[source,java]
+----
+// Всі системні властивості:
+Properties sysProps = System.getProperties();
+
+// Найважливіші:
+System.getProperty("java.version");      // версія Java
+System.getProperty("java.home");         // шлях до JRE
+System.getProperty("user.home");         // домашня директорія користувача
+System.getProperty("user.dir");          // поточна директорія
+System.getProperty("os.name");           // назва ОС
+System.getProperty("file.separator");    // "/" або "\"
+System.getProperty("path.separator");    // ":" або ";"
+System.getProperty("line.separator");    // "\n" або "\r\n"
+
+// Встановити системну властивість:
+System.setProperty("my.custom.key", "value");
+
+// Передати при запуску JVM:
+// java -Dmy.custom.key=value -jar app.jar
+----
+
+.Обхід всіх властивостей
+[source,java]
+----
+Properties props = new Properties();
+props.setProperty("a", "1");
+props.setProperty("b", "2");
+
+// Через stringPropertyNames() — безпечно (тільки String ключі):
+for (String key : props.stringPropertyNames()) {
+    System.out.println(key + " = " + props.getProperty(key));
+}
+
+// Через forEach (Java 8+):
+props.forEach((key, value) ->
+    System.out.println(key + " = " + value)
+);
+// УВАГА: forEach повертає Object, а не String!
+// Краще використовувати: props.stringPropertyNames() + props.getProperty()
+----
+
+[#java-collection-framework-properties-format]
+.Формат .properties файлу
+[source,properties]
+----
+# Коментар (починається з # або !)
+! Теж коментар
+
+# Простий запис:
+key=value
+key2 = value2           # пробіли навколо = ігноруються
+key3 : value3           # : теж роздільник
+
+# Многорядкові значення (через \):
+long.value=перший рядок \
+           другий рядок \
+           третій рядок
+
+# Спецсимволи (Unicode escape):
+unicode.key=\u041F\u0440\u0438\u0432\u0456\u0442  # "Привіт"
+
+# Пробіли у значенні:
+spaced.value=  перший  другий  # пробіли на початку ігноруються; в кінці — зберігаються
+
+# Екранування спецсимволів:
+path.windows=C:\\Program Files\\App
+url=http\://example.com\:8080
+----
+
+.Практичний приклад — конфігурація застосунку
+[source,java]
+----
+public class AppConfig {
+    private final Properties props;
+
+    public AppConfig(String resourcePath) {
+        props = new Properties();
+        // Defaults:
+        Properties defaults = new Properties();
+        defaults.setProperty("server.port", "8080");
+        defaults.setProperty("server.host", "0.0.0.0");
+        defaults.setProperty("db.pool.size", "10");
+
+        props = new Properties(defaults);
+
+        try (InputStream is = getClass().getClassLoader()
+                .getResourceAsStream(resourcePath)) {
+            if (is != null) props.load(is);
+        } catch (IOException e) {
+            throw new RuntimeException("Cannot load config: " + resourcePath, e);
+        }
+    }
+
+    public String get(String key) {
+        return props.getProperty(key);
+    }
+
+    public int getInt(String key) {
+        return Integer.parseInt(props.getProperty(key));
+    }
+
+    public boolean getBoolean(String key) {
+        return Boolean.parseBoolean(props.getProperty(key));
+    }
+}
+
+// Використання:
+AppConfig config = new AppConfig("application.properties");
+int port = config.getInt("server.port"); // 8080 якщо не перевизначено
+----
+
+.Properties vs Map<String,String> vs Environment Variables
+[cols="3,1,1,1", options="header"]
+|===
+|Критерій                       |Properties         |Map<String,String>     |Environment Variables
+|Thread-safe                    |✅ (від Hashtable) |❌ (залежить від impl) |✅ (read-only в runtime)
+|.properties файл               |✅ вбудована підтримка |❌ треба писати вручну |❌
+|Defaults chain                 |✅                 |❌                     |❌
+|System properties JVM          |✅ System.getProperties() |❌             |System.getenv()
+|===
+|Тип ключів/значень             |Object (але String на практиці) |String    |String
+|===
+|Рекомендовано                  |legacy конфігурація |нові API              |container/cloud config
+|===
+|===
+
+[#java-collection-framework-properties-pitfalls]
+.Підводні камені
+
+.getProperty() vs get() — різна семантика з defaults
+[source,java]
+----
+Properties defaults = new Properties();
+defaults.setProperty("timeout", "30");
+defaults.setProperty("retries", "3");
+
+Properties config = new Properties(defaults);
+config.setProperty("timeout", "60"); // перевизначає
+
+// getProperty() — перевіряє ПОТОЧНУ map і DEFAULTS ланцюжок:
+config.getProperty("timeout"); // "60" (з config)
+config.getProperty("retries"); // "3"  (з defaults — НЕ знайдено в config)
+config.getProperty("unknown"); // null (немає ніде)
+
+// get() (успадкований від Hashtable) — перевіряє ТІЛЬКИ поточну map, ІГНОРУЄ defaults!
+config.get("timeout"); // "60" (є в config)
+config.get("retries"); // null ❌ (немає в config! defaults ігнорується!)
+config.get("unknown"); // null
+
+// Це критична пастка при роботі з defaults-ланцюжком:
+Properties base = new Properties();
+base.setProperty("mode", "production");
+Properties env = new Properties(base);
+// Хтось передає env туди де очікується Map і викликає .get():
+Map<Object, Object> map = env;
+map.get("mode"); // null ❌ — defaults ігнорується через Hashtable.get()!
+
+// ПРАВИЛО: ЗАВЖДИ використовуй getProperty()/setProperty() для Properties!
+----
+
+WARNING: *`get("key")` (метод `Hashtable`) та `getProperty("key")` (метод `Properties`) — НЕ еквівалентні!* `get()` ігнорує ланцюжок `defaults` і повертає `null` для ключів що існують тільки у батьківських `Properties`. Завжди використовуй `getProperty()` для читання і `setProperty()` для запису.
+
+.Type safety — можна покласти не-String через успадкований put()
+[source,java]
+----
+Properties props = new Properties();
+
+// КОМПІЛЮЄТЬСЯ без помилок (через Hashtable<Object,Object>):
+props.put(42, new Date());       // ❌ int ключ і Date значення!
+props.put("valid", "string");    // ✅
+props.put("number", 12345);      // ❌ Integer значення, не String!
+
+// getProperty() поверне null для non-String ключів:
+props.getProperty("valid");      // "string" ✅
+props.getProperty("42");         // null ❌ (ключ — Integer 42, не String "42")
+props.getProperty("number");     // null ❌ (значення Integer, getProperty очікує String)
+
+// ClassCastException при store() або stringPropertyNames():
+try (StringWriter sw = new StringWriter()) {
+    props.store(sw, "test"); // ❌ ClassCastException — Date.toString() не викличеться правильно
+}
+
+// ПРАВИЛО: Завжди використовуй setProperty(String, String), а не put(Object, Object)!
+props.setProperty("timeout", "30"); // ✅ type-safe
+
+// Безпечна ітерація тільки String ключів:
+for (String key : props.stringPropertyNames()) { // ✅ тільки String ключі
+    String value = props.getProperty(key);        // ✅ String значення
+}
+// props.keySet() поверне Set<Object> — може містити non-String ключі!
+----
+
+WARNING: `Properties` успадковує `Hashtable<Object,Object>` і дозволяє `put(Object, Object)` з будь-якими типами. Це порушує очікування що `Properties` зберігає пари `String→String`. `getProperty()` повертає `null` для non-String ключів або ключів з non-String значеннями. `store()` кидає `ClassCastException`. Завжди використовуй `setProperty()/getProperty()`.
+
+.Кодування файлу — ISO-8859-1 за замовчуванням при load(InputStream)
+[source,java]
+----
+Properties props = new Properties();
+
+// load(InputStream) читає у кодуванні ISO-8859-1 (Latin-1):
+try (InputStream is = new FileInputStream("config.properties")) {
+    props.load(is); // ❌ UTF-8 символи (кирилиця, китайські тощо) будуть скалічені!
+}
+
+// Значення в properties файлі (UTF-8):
+// app.name=Застосунок   ← кирилиця
+// Результат після load(InputStream): "ÐÑÑÐvÐÑÐ½Ñ" ← кракозябри!
+
+// ПРАВИЛЬНО 1 — load(Reader) з явним charset:
+try (InputStreamReader reader = new InputStreamReader(
+        new FileInputStream("config.properties"), StandardCharsets.UTF_8)) {
+    props.load(reader); // ✅ читає UTF-8 коректно
+}
+
+// ПРАВИЛЬНО 2 — Java 9+ Unicode escape у .properties файлі:
+// app.name=\u0417\u0430\u0441\u0442\u043e\u0441\u0443\u043d\u043e\u043a
+// (але це нечитабельно вручну)
+
+// ПРАВИЛЬНО 3 — XML формат (завжди UTF-8 або вказаний charset):
+try (InputStream is = new FileInputStream("config.xml")) {
+    props.loadFromXML(is); // ✅ XML підтримує Unicode нативно
+}
+
+// store(OutputStream) також використовує ISO-8859-1 і escapes Unicode:
+try (OutputStream os = new FileOutputStream("config.properties")) {
+    props.store(os, "Config"); // Unicode символи записуються як \uXXXX escape
+}
+// store(Writer) — записує у charset Writer-а:
+try (OutputStreamWriter writer = new OutputStreamWriter(
+        new FileOutputStream("config.properties"), StandardCharsets.UTF_8)) {
+    props.store(writer, "Config"); // ✅ записує UTF-8
+}
+----
+
+WARNING: *`load(InputStream)` і `store(OutputStream)` використовують ISO-8859-1!* Будь-який Unicode символ поза Latin-1 (кирилиця, ієрогліфи, emoji) буде пошкоджений при читанні або записаний як `\uXXXX` escape при записі. Для корректної роботи з Ukrainian текстом *завжди* використовуй `load(Reader)`/`store(Writer)` з `StandardCharsets.UTF_8`.
+
+.XML та classic формат — несумісні
+[source,java]
+----
+Properties props = new Properties();
+props.setProperty("key", "value");
+
+// Запис у classic .properties формат:
+try (OutputStream os = new FileOutputStream("config.properties")) {
+    props.store(os, "comment");
+}
+// Файл: key=value
+
+// Запис у XML формат:
+try (OutputStream os = new FileOutputStream("config.xml")) {
+    props.storeToXML(os, "comment");
+}
+// Файл: <?xml ...><properties><entry key="key">value</entry></properties>
+
+// ПАСТКА: loadFromXML на .properties файлі → InvalidPropertiesFormatException:
+Properties p2 = new Properties();
+try (InputStream is = new FileInputStream("config.properties")) {
+    p2.loadFromXML(is); // ❌ InvalidPropertiesFormatException! Очікує XML
+}
+
+// І навпаки — load на .xml файлі не кидає exception але дає кракозябри:
+Properties p3 = new Properties();
+try (InputStream is = new FileInputStream("config.xml")) {
+    p3.load(is); // Не кидає exception! Парсить XML як properties text — дає сміття
+}
+System.out.println(p3.size()); // 0 або містить XML-теги як ключі!
+
+// ПРАВИЛО: load/store ↔ .properties; loadFromXML/storeToXML ↔ .xml
+----
+
+.Ланцюжок defaults — несподівані значення з батьківських Properties
+[source,java]
+----
+Properties grandparent = new Properties();
+grandparent.setProperty("color", "red");
+grandparent.setProperty("size", "large");
+
+Properties parent = new Properties(grandparent);
+parent.setProperty("color", "blue"); // перевизначає grandparent
+
+Properties child = new Properties(parent);
+child.setProperty("weight", "heavy");
+
+// child.getProperty() проходить весь ланцюжок:
+child.getProperty("weight"); // "heavy"  ← є в child
+child.getProperty("color");  // "blue"   ← є в parent (grandparent "red" схований)
+child.getProperty("size");   // "large"  ← є тільки в grandparent
+child.getProperty("missing"); // null    ← немає ніде
+
+// Непередбачувана поведінка: хтось змінює grandparent після створення child:
+grandparent.setProperty("newProp", "surprise");
+child.getProperty("newProp"); // "surprise" ← раптом з'явилось!
+
+// Дебаг: знайти звідки береться значення:
+Properties current = child;
+while (current != null) {
+    if (current.containsKey("color")) {
+        System.out.println("Found 'color' in: " + System.identityHashCode(current));
+        break;
+    }
+    // Reflection для доступу до defaults поля (воно protected):
+    // current = (Properties) current.getClass().getDeclaredField("defaults").get(current);
+}
+----
+
+NOTE: Ланцюжок `defaults` у `Properties` може бути дуже глибоким і непрозорим. `getProperty(key)` проходить весь ланцюжок знизу вверх. Зміни у батьківських `Properties` після конструювання дочірніх автоматично видимі через `getProperty()`. Це може призводити до "магічних" значень що з'являються нізвідки. Для дебагу використовуй `propertyNames()` — він повертає всі ключі включно з defaults.
+
+TIP: Для сучасної конфігурації Java-застосунків надавай перевагу спеціалізованим бібліотекам: *Typesafe Config (HOCON)* — для Scala/Java додатків; *Spring Boot `@Value` + application.yml/properties* — для Spring; *MicroProfile Config* — для Jakarta EE; *Apache Commons Configuration* — для складних ієрархій конфігурації. Вони підтримують типи, validation, hot reload та зрозуміліший синтаксис ніж raw `Properties`.
+
+NOTE: У сучасних застосунках `Properties` часто замінюють більш потужними бібліотеками конфігурації: Apache Commons Configuration, Typesafe Config (HOCON), Spring Boot application.properties/yaml, MicroProfile Config. Але `Properties` залишається стандартним форматом для системних та legacy конфігурацій.

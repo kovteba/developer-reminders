@@ -1,0 +1,5 @@
+ifndef::imagesdir[:imagesdir: ../../../imgs/]
+ifndef::architecturemethodologyexampledir[:architecturemethodologyexampledir: ../../../../../examples/??????/??????/src/main/java/kovteba]
+
+[#architecture-methodology]
+==== Architecture Methodology

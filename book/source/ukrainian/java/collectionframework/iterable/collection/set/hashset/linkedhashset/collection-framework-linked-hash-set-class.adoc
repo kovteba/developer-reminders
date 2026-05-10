@@ -3,38 +3,145 @@ ifndef::imagesdir[:imagesdir: ../../../../../../../imgs]
 
 [#java-collection-framework-linkedhashset]
 ====== LinkedHashSet class
-`LinkedHashSet` - розширює клас `HashSet`, не додаючи жодних нових методів. Він використовує `HashMap` для зберігання елементів. Він зберігає порядок вставки елементів, що дозволяє вам ітерувати набір в порядку вставки. LinkedHashSet не дозволяє дублювання елементів. LinkedHashSet дозволяє `null` значення. LinkedHashSet є найшвидшим набором для доступу до елементів.
+`LinkedHashSet<E>` — розширює клас `HashSet`, зберігаючи *порядок вставки* елементів завдяки використанню `LinkedHashMap` під капотом. Не допускає дублікатів. Дозволяє один `null`-елемент. Не є потокобезпечним. Операції `add`/`remove`/`contains`/`size` виконуються за O(1)* — як у `HashSet`, з невеликим overhead на підтримку двозв'язного списку.
+
+.Ієрархія наслідування
+[source,subs="normal"]
+----
+Object
+  └── AbstractCollection<E>
+        └── AbstractSet<E>
+              └── <<java-collection-framework-hash-set,HashSet<E>>>
+                    └── <<java-collection-framework-linkedhashset,LinkedHashSet<E>>>
+----
+
+Реалізовані інтерфейси: `Set<E>`, `Cloneable`, `Serializable`.
+
+WARNING: `LinkedHashSet` *не є потокобезпечним*. Паралельна модифікація з кількох потоків призведе до `ConcurrentModificationException` або пошкодження структури. Для потокобезпечного Set зі збереженням порядку вставки — `Collections.synchronizedSet(new LinkedHashSet<>())` або, якщо порядок не критичний, `ConcurrentHashMap.newKeySet()`.
+
+.Внутрішній устрій — LinkedHashMap під капотом
+[source,java]
+----
+public class LinkedHashSet<E> extends HashSet<E> {
+    // Використовує LinkedHashMap замість HashMap:
+    HashSet(int initialCapacity, float loadFactor, boolean dummy) {
+        map = new LinkedHashMap<>(initialCapacity, loadFactor);
+    }
+    // Sentinel-значення — те саме PRESENT що й у HashSet
+}
+----
+
+Завдяки `LinkedHashMap`, кожен запис має додаткові поля `before` і `after` що утворюють *двозв'язний список* в порядку вставки. Саме цей список забезпечує передбачуваний порядок при ітерації.
 
 [#java-collection-framework-linked-hash-set-constructors]
-.Конструктори:
-* `LinkedHashSet()`: створює порожній набір;
-* `LinkedHashSet(Collection<? extends E> c)`: створює набір, що містить всі елементи колекції `c`;
-* `LinkedHashSet(int initialCapacity)`: створює порожній набір з початковою ємністю `initialCapacity`;
-* `LinkedHashSet(int initialCapacity, float loadFactor)`: створює порожній набір з початковою ємністю `initialCapacity` і коефіцієнтом завантаження `loadFactor`.
+.Конструктори
+
+.LinkedHashSet()
+[source,java]
+----
+LinkedHashSet<String> set = new LinkedHashSet<>();
+----
+
+*Що робить:* створює порожній `LinkedHashSet` з початковою ємністю 16 і load factor 0.75.
+
+.LinkedHashSet(Collection<? extends E> c)
+[source,java]
+----
+List<String> list = List.of("c", "a", "b", "a", "c");
+LinkedHashSet<String> set = new LinkedHashSet<>(list);
+// set: [c, a, b] — дублікати видалені, порядок вставки збережений
+----
+
+*Що робить:* копіює елементи з колекції, видаляючи дублікати і зберігаючи порядок першої появи.
+
+.LinkedHashSet(int initialCapacity)
+[source,java]
+----
+LinkedHashSet<String> set = new LinkedHashSet<>(64);
+----
+
+.LinkedHashSet(int initialCapacity, float loadFactor)
+[source,java]
+----
+LinkedHashSet<String> set = new LinkedHashSet<>(64, 0.5f);
+----
 
 [#java-collection-framework-linked-hash-set-methods]
-.Методи:
-* `boolean add(E e)`: додає елемент `e` в набір;
-* `void clear()`: видаляє всі елементи з набору;
-* `Object clone()`: створює копію набору;
-* `boolean contains(Object o)`: повертає `true`, якщо набір містить елемент `o`;
-* `boolean isEmpty()`: повертає `true`, якщо набір порожній;
-* `Iterator<E> iterator()`: повертає ітератор для набору;
-* `boolean remove(Object o)`: видаляє елемент `o` з набору;
-* `boolean removeAll(Collection<?> c)`: видаляє всі елементи колекції `c` з набору;
-* `boolean retainAll(Collection<?> c)`: видаляє всі елементи, крім тих, що містяться в колекції `c`;
-* `boolean removeIf(Predicate<? super E> filter)`: видаляє всі елементи, які відповідають умові `filter`;
-* `int size()`: повертає кількість елементів в наборі.
+.Ключові методи
+[source,java]
+----
+LinkedHashSet<String> set = new LinkedHashSet<>();
 
+set.add("Java");   // true  — додано, порядок: [Java]
+set.add("Python"); // true  — додано, порядок: [Java, Python]
+set.add("Java");   // false — дублікат, порядок НЕ змінюється: [Java, Python]
+set.add(null);     // true  — один null дозволено
+
+set.contains("Python"); // true
+set.remove("Java");     // true — видалено, порядок: [Python, null]
+
+set.size();    // 2
+set.isEmpty(); // false
+
+// Ітерація у порядку вставки — завжди передбачувано:
+for (String s : set) {
+    System.out.println(s); // Python, null
+}
+----
+
+[[java-collection-framework-linkedhashset-big-o-notation]]
 [#java-collection-framework-linked-hash-set-big-o-natation]
-.BigO notation для методів `LinkedHashSet`:
-* `add(E e)`: O(1);
-* `clear()`: O(n);
-* `contains(Object o)`: O(1);
-* `isEmpty()`: O(1);
-* `iterator()`: O(1);
-* `remove(Object o)`: O(1);
-* `removeAll(Collection<?> c)`: O(n);
-* `retainAll(Collection<?> c)`: O(n);
-* `removeIf(Predicate<? super E> filter)`: O(n);
-* `size()`: O(1).
+.BigO notation для `LinkedHashSet`
+[cols="2,1,4", options="header"]
+|===
+|`remove(Object o)`     |O(1)*      |Як у HashSet + від'єднання з linked list
+|`contains(Object o)`   |O(1)*      |Як у HashSet — хешування + lookup
+|`size()`               |O(1)       |Пряме поле
+|===
+|`isEmpty()`            |O(1)       |`size == 0`
+|===
+|`clear()`              |O(n)       |Обнуляє бакети + двозв'язний список
+|===
+|`iterator()`           |O(1)       |Ітерує по linked list → передбачуваний порядок вставки
+|===
+|`addAll(Collection c)` |O(m)       |m — розмір доданої колекції
+|===
+|`retainAll(Collection c)` |O(n)    |Лінійний перебір + contains по c
+|===
+|`removeIf(Predicate)`  |O(n)       |Лінійний перебір
+|===
+|===
+|===
+
+NOTE: Пам'ять: +16 байт на запис порівняно з `HashSet` (поля `before` і `after` у `LinkedHashMap.Entry`). При великих множинах це може бути значним overhead.
+
+[[java-collection-framework-linkedhashset-pitfalls]]
+.Підводні камені
+
+.LinkedHashSet — порядок вставки, не сортований
+[source,java]
+----
+LinkedHashSet<Integer> set = new LinkedHashSet<>();
+set.add(3); set.add(1); set.add(2);
+System.out.println(set); // [3, 1, 2] — НЕ [1, 2, 3]!
+// Якщо потрібне сортування → TreeSet
+----
+
+WARNING: `LinkedHashSet` зберігає *insertion order* (порядок вставки), а НЕ сортований порядок. Елементи 3, 1, 2 залишаться у порядку 3, 1, 2 — а не 1, 2, 3. Якщо потрібне сортування — використовуй `TreeSet`.
+
+.Re-insertion не змінює порядок
+[source,java]
+----
+LinkedHashSet<String> set = new LinkedHashSet<>();
+set.add("a"); set.add("b"); set.add("c");
+set.add("a"); // "a" вже є — порядок НЕ оновлюється!
+System.out.println(set); // [a, b, c] — "a" залишилась першою
+// На відміну від LinkedHashMap з access-order=true
+----
+
+NOTE: Повторний `add()` для вже наявного елемента повертає `false` і *не змінює його позицію* у порядку ітерації. Якщо потрібна семантика "перемістити в кінець при повторному доданні" — `LinkedHashMap` з `accessOrder=true` є ближчим аналогом.
+
+.Memory overhead при великих множинах
+NOTE: Якщо порядок вставки не важливий, використовуй `HashSet` замість `LinkedHashSet`. Кожен елемент у `LinkedHashSet` займає на ~16 байт більше (два додаткові посилання для двозв'язного списку). При 1 мільйоні елементів різниця — ~16 МБ.
+
+TIP: Три правила вибору `Set`: (1) Потрібна унікальність без порядку → `HashSet`. (2) Потрібна унікальність + порядок вставки → `LinkedHashSet`. (3) Потрібна унікальність + сортування → `TreeSet`.

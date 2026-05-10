@@ -1,0 +1,164 @@
+ifndef::imagesdir[:imagesdir: ../../imgs]
+
+[#architecture]
+=== Architecture
+
+include::design/architecture-design.adoc[]
+
+include::methodology/architecture-methodology.adoc[]
+
+include::pattern/architecture-pattern.adoc[]
+
+[[microservices-vs-monolithic]]
+Монолітная архітектура це додаток створений як единє неділиме ціле. Головним недоліком такої структури є те що при необхідності додати зміни приходиться зупиняти весь додаток навіть при невеликих змінах. Також одним з великих недоліків є те що с часом кодова база завелика для зручної підтримки. Єдиним плюсом моноліта можна виділити те що він дозволяє використовувати простий спосіб розробки. Тобто не требе керувати сквозними задачами так як все знаходиться в одному місці.
+
+[[microservices-vs-soa]]
+SOA - це підхід до розробки програмного забезпечення використовуються компоненти які називаються сервісами. Кожен сервіс це є якась бізнес можливість. Архітектура мікросервісів є еволюцією SOA. Якщо у SOA сервіс є повноцінна бізнес можливість, то у мікросервісів сервіс є набагато меньший програмний компонент який спеціалізується на виконанні тільки одної задачи. Мікросервіси усувають <<service-oriented-architecture-disadvantages,недоліки SOA>> і роблять програмне забезпечення більш сумісним з сучасними хмарними корпоративними середовищами. Для доступу до сервісів SOA використовує <<service-oriented-architecture-esb,ESB>>, у той час як у мікросервісній архітектурі використовується <<microservices-architecture-communication,API-інтерфейси RESTful>>. Наступною відмінністю є зберігання даних. У SOA використовуєтсья єдиний рівень зберігання, який використовується усіми сервісами. У мікросервісах кожен сервіс має свій власний рівень зберігання даних. Це дозволяє кожному сервісу використовувати той тип зберігання даних, який найкраще підходить для виконання його функцій. І останній відмінності це масштабованість. У мікросервісах кожен сервіс може бути масштабований окремо від інших сервісів. Це дозволяє масштабувати тільки ті сервіси, які вимагають більше ресурсів, а не всю систему цілком. Також розвертання сервісів SOA може бути більш складною задачею так як вони пов'язані між собою на відміну від мікросервісної архітектури.
+
+|===
+|Відмінності| <<soa-architecture,SOA>> | <<microservices-architecture,Microservices>>
+|Реалізація|Різні сервіси з загальними ресурсами|Мікросервіси з власними ресурсами і більш спеціалізовані
+|Зв'язок|ESB використовує протоколи обміну повідомленями(SAOP, AMQP, MSMQ)|API-інтерфейси RESTful
+|Зберігання даних|Один рівень зберігання даних|Кожен сервіс має свій власний рівень зберігання даних
+|Розгортання|Складне розгортання|Кожен сервіс може бути розгорнутий в окремому контейнері
+|Повторне використання|Сервіси можуть бути повторно використані через загальні ресурси|Сервіси можуть бути повторно використані завдякі окремим API
+|Швидкість|МОже зменшуватись з додавання нових сервісів|Стабільна
+|===
+
+[[monolithic-vs-soa]]
+
+
+[#proxy-vs-decorator]
+•	Proxy (Заместитель):
+•	Proxy реализует тот же интерфейс, что и реальный объект, и управляет доступом к нему. Реальный объект может быть создан и использоваться только по мере необходимости, или Proxy может добавлять дополнительные действия перед или после передачи управления реальному объекту.
+•	Decorator (Декоратор):
+•	Decorator также реализует тот же интерфейс, что и оборачиваемый объект, и добавляет новое поведение, вызывая методы обернутого объекта и добавляя собственные операции до или после этого вызова.
+
+
+
+
+
+Даю полные, чёткие, профессиональные списки, которые используют архитекторы.
+И сразу отвечаю:
+
+✅ EDD относится к: архитектурным подходам (Architectural Approaches)
+
+Потому что это способ мышления/моделирования, а не стиль, не паттерн и не методология.
+
+⸻
+
+🟦 1. Архитектурные паттерны (Architectural Patterns)
+
+Паттерны — это типовые архитектурные решения, решающие конкретную проблему.
+
+✔️ Основные архитектурные паттерны:
+✅CQRS (Command Query Responsibility Segregation)
+•	Event Sourcing
+•	Saga Pattern (Orchestration / Choreography)
+•	Outbox Pattern
+•	Anti-Corruption Layer
+•	Sidecar Pattern
+•	Ambassador Pattern
+•	Adapter Pattern (в архитектурном смысле)
+•	Bulkhead Pattern
+•	Circuit Breaker
+•	Strangler Fig Pattern (Strangler Application)
+•	BFF (Backend For Frontend)
+•	Gateway Aggregation / Routing
+•	Pipes and Filters
+•	Publisher–Subscriber
+•	Shared Kernel (из DDD)
+•	Repository Pattern (когда используется на архитектурном уровне)
+•   Plug-in Architecture (Microkernel Architecture)
+•	Service Discovery
+
+Это именно архитектурные паттерны — решения определённого класса проблем.
+
+⸻
+
+🟩 2. Архитектурные подходы (Architectural Approaches)
+
+Это принципы мышления и способы моделирования систем, НЕ описывающие конкретную структуру.
+
+✔️ Основные архитектурные подходы:
+•	EDD — Event-Driven Design ← сюда относится EDD
+•	EDA — Event-Driven Architecture (как подход)
+•	Reactive Design / Reactive Principles
+•	Domain-Driven Design (как подход мышления) (иногда относят к методологиям, но по сути это подход + методология)
+•	API-First Design
+•	Contract-First Design
+•	Test-Driven Development (TDD) — если рассматривать архитектурно
+•	Behavior-Driven Development (BDD) — частично
+•	Function-Oriented Design
+•	Document-Driven Design
+•	Ports & Adapters Thinking (Hexagonal mindset)
+
+EDD находится именно здесь — это способ думать через события.
+
+⸻
+
+🟧 3. Архитектурные методологии (Architectural Methodologies)
+
+Методологии — это формальные процессы, включая роли, шаги и правила.
+
+✔️ Основные методологии:
+•	DDD — Domain-Driven Design (включает элементы методологии)
+•	TOGAF (The Open Group Architecture Framework)
+•	Zachman Framework
+•	SAFe (Scaled Agile Framework, архитектурная часть)
+•	RUP (Rational Unified Process)
+•	Agile Architecture Discipline
+•	IEEE 1471 / ISO 42010 (architecture description methodology)
+•	4C Model Methodology (context-container-component-code)
+
+Методологии всегда определяют как работать, а не структуру или подход.
+
+⸻
+
+🟪 4. Архитектурные стили / дизайны (Architectural Styles / Designs)
+
+Это структура системы, её форма, уровни и организация.
+
+✔️ Основные архитектурные стили:
+•	Layered Architecture (Многоуровневая)
+•	Monolithic Architecture
+•	Microservices Architecture
+•	SOA (Service-Oriented Architecture)
+•	EDA — Event-Driven Architecture (как архитектурный стиль)
+•	Hexagonal Architecture
+•	Onion Architecture
+•	Clean Architecture
+•	Client–Server Architecture
+•	Pipe-and-Filter Architecture
+•	Serverless Architecture
+•	Modular Monolith
+•	Distributed Architecture
+•	Space-Based Architecture
+•	Peer-to-Peer Architecture
+•	Component-Based Architecture
+
+Это формы построения системы, её структурный дизайн.
+
+⸻
+
+🎯 РЕЗЮМЕ
+
+Категория	Что это?	Пример
+Архитектурные паттерны	Решение конкретной проблемы	CQRS, Saga, Event Sourcing
+Архитектурные подходы	Способ думать и моделировать	EDD, Reactive, API-First
+Архитектурные методологии	Процесс + правила	DDD, TOGAF, RUP
+Архитектурные стили / дизайны	Форма системы	Microservices, Clean, Hexagonal
+
+👉 EDD = архитектурный подход, не стиль, не паттерн, не методология.
+
+⸻
+
+Хочешь — могу:
+
+🔹 Сформировать тебе полную структуру каталогов для документации
+(architectural-styles, architectural-patterns, approaches, methodologies)
+🔹 Автоматически распределить все твои .adoc по этим категориям
+🔹 Создать шаблоны документов
+
+Сделать?
+

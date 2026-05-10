@@ -1,0 +1,55 @@
+ifndef::imagesdir[:imagesdir: ../../../../imgs/]
+ifndef::monolithicexampledir[:monolithicexampledir: ../../../../../../examples/?????/??????/src/main/java/kovteba]
+
+[#monolithic]
+==== Monolithic
+// TODO Monolithic
+
+// [[monolithic-architecture-definition]] Monolithic Architecture - це підхід до розробки програмного забезпечення, в якому весь код програми розміщений в одному проекті. Всі компоненти програми взаємодіють один з одним безпосередньо, без використання зовнішніх інтерфейсів. Цей підхід дозволяє розробникам швидко створювати програмне забезпечення, але водночас ускладнює його підтримку та розширення.
+//
+// [[monolithic-architecture-advantages]]Переваги монолітної архітектури:
+//
+// * <<monolithic-architecture-advantages-simple-to-develop,Простота розробки>>
+// * <<monolithic-architecture-advantages-simple-to-understand,Простота розуміння>>
+// * <<monolithic-architecture-advantages-simple-to-maintain,Простота підтримки>>
+// * <<monolithic-architecture-advantages-simple-to-deploy,Простота впровадження>>
+//
+// [[monolithic-architecture-advantages-simple-to-develop]]
+// Монолітні системи дозволяють розробникам швидко створювати програмне забезпечення, оскільки весь код розміщений в одному проекті.
+//
+// [[monolithic-architecture-advantages-simple-to-understand]]
+// Монолітні системи можуть бути дуже простими для розуміння, оскільки всі компоненти взаємодіють один з одним безпосередньо.
+//
+// [[monolithic-architecture-advantages-simple-to-maintain]]
+// Монолітні системи можуть бути дуже простими для підтримки, оскільки весь код розміщений в одному проекті.
+//
+// [[monolithic-architecture-advantages-simple-to-deploy]]
+// Монолітні системи можуть бути дуже простими для впровадження, оскільки весь код розміщений в одному проекті.
+//
+// [#monolithic-architecture-disadvantages]
+// Недоліками монолітньої страктури є:
+//
+// * <<monolithic-architecture-disadvantages-scaling,Маштабування>>
+// * <<monolithic-architecture-disadvantages-reuse,Повторне використання>>
+// * <<monolithic-architecture-disadvantages-limited-fault-tolerance,Обмежена відмовостійкість>>
+// * <<monolithic-architecture-disadvantages-difficult-to-understand,Складно розуміти>>
+// * <<monolithic-architecture-disadvantages-difficult-to-maintain,Складно підтримувати>>
+// * <<monolithic-architecture-disadvantages-difficult-to-deploy,Складно впроваджувати>>
+//
+// [[monolithic-architecture-disadvantages-scaling]]
+// Монолітні системи мають обмежену можливість маштабування. Якщо вам потрібно збільшити обсяг обробки даних або кількість користувачів, вам доведеться масштабувати всю систему, навіть якщо тільки одному компоненту потрібні додаткові ресурси.
+//
+// [[monolithic-architecture-disadvantages-reuse]]
+// Монолітні системи не дуже гнучкі, коли мова йде про повторне використання коду. Якщо ви хочете використовувати один і той же компонент в іншому проекті, вам доведеться витягти його з монолітного додатку.
+//
+// [[monolithic-architecture-disadvantages-limited-fault-tolerance]]
+// Якщо один компонент монолітної системи відмовить, це може призвести до відмови всієї системи.
+//
+// [[monolithic-architecture-disadvantages-difficult-to-understand]]
+// Монолітні системи можуть бути дуже великими і складними. Це може зробити їх важкими для розуміння, особливо для нових розробників.
+//
+// [[monolithic-architecture-disadvantages-difficult-to-maintain]]
+// Чим більше розмір монолітної системи, тим складніше її підтримувати. Це може призвести до затримок у виправленні помилок або внесенні змін.
+//
+// [[monolithic-architecture-disadvantages-difficult-to-deploy]]
+// Монолітні системи можуть бути складними для впровадження та зіткнутися з проблмами безпрерервної доставки та практиками DevOps. Це може призвести до затримок у випуску нових функцій або виправлення помилок.

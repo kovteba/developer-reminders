@@ -1,0 +1,246 @@
+
+.bean
+Термин __бин__ (англ. Bean) - в Spring используется для ссылки на любой компонент, управляемый контейнером. Обычно бины на определенном уровне придерживаются спецификации JavaBean, но это не обязательно особенно если для связывания бинов друг с другом планируется применять __Constructor Injection__. Для получения экземпляра бина используется ApplicationContext. __IoC__ контейнер управляет жизненным циклом спринг бина, областью видимости и внедрением.
+
+Каждый бин должен иметь, по крайней мере, одно имя, которое является уникальным внутри содержащего бин контекста `ApplicationContext`. При определении имени бина платформа Spriпg следует простому процессу распознавания. Если в дескрипторе `<bean>` предусмотрен атрибут __id__, его значение применяется в качестве имени. Коrда атрибут __id__ не указан, Spring ищет атрибут __name__, и если он определен, то используется первое имя, заданное в атрибуте name. (Мы говорим первое имя, потому что в атрибуте __name__ допускается определять множество имен) Если не указан ни атрибут __id__, ни атрибут __name__, в качестве имени платформа Spring применяет имя класса бина, разумеется, при условии, что другие бины не используют то же самое имя класса. В случае если множество бинов с отсутствующими атрибутами __id__и __name__ имеют одно и то же имя класса, Spring сгенерирует исключение`org.springframework.beans.factory.NoSuchBeanDefinitionException` при внедрении во время инициализации `ApplicationContext`.
+
+Платформа Spring разрешает бину иметь более одного имени. Для этого в атрибуте `name` дескриптора `<bean>` бина необходимо указать список имен, разделенных пробелами, запятыми или точками с запятой. Это можно сделать вместо применения атрибута id или в сочетании с ним.Чтобы определить псевдонимы для имен бинов Spring, кроме атрибута `name` можно воспользоваться дескриптором `<alias>`.
+
+[source, xml]
+----
+<?xrnl version = "l.O" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi = "http://www.wЗ.org/2001/XМLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd">
+    <bean id="namel" name="name2 name3,name4;name5" class = "java.lang.String"/>
+    <alias name = "name1" alias = "name2"/>
+</beans>
+----
+
+Существует несколько способов работы с классами в Spring:
+
+XML конфигурация:
+
+[source, xml]
+----
+<bean name="myBean" class="kovteba.beans.MyBean"></bean>
+----
+
+Java based конфигурация. Все настройки и указания бинов прописываются в java коде:
+
+[source, java]
+----
+@Configuration
+@ComponentScan
+public class MyConfiguration {
+
+   @Bean
+   public MyService getService(){
+      return new MyService();
+   }
+}
+----
+
+Для извлечения бина из контекста используется следующий подход:
+
+[source, java]
+----
+AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(MyConfiguration.class );
+MyService service = ctx.getBean(MyService.class );
+----
+
+Annotation based конфигурация. Можно использовать внутри кода аннотации @Component, @Service, @Repository,  @Controller для указания классов в качестве спринг бинов. Для их поиска и управления контейнером прописывается настройка в xml файле:
+
+[source, xml]
+----
+<context:component-scan base-package="kovteba.beans"/>
+----
+
+.Жизненный цикл Spring Bean
+*Жизненный цикл Spring бина* время существования класса. Spring бины инициализируются при инициализации Spring контейнера и происходит внедрение всех зависимостей. Когда контейнер уничтожается, то уничтожается и всё содержимое.Если нам необходимо задать какое-либо действие при инициализации и уничтожении бина, то нужно воспользоваться методами `init()` и `destroy()`. Для этого можно использовать аннотации `@PostConstruct` и `@PreDestroy`.
+
+image::beanlife.png[scaledwidth=100%]
+
+[source, java]
+----
+@PostConstruct
+public void init(){
+   System.out.println("INIT")
+}
+@PreDestroy
+public void destroy(){
+   System.out.println("DESTROY")
+}
+----
+
+Или через xml конфигурацию:
+
+[source, xml]
+----
+<bean name="myBean" class="kovteba.MyBean" init-method="init" destroy-method="destroy">
+    <property name="someProp" ref="someProp"></property>
+</bean>
+----
+
+.Scope Spring Bean
+В Spring предусмотрены различные области времени действия бинов:
+
+* *singleton*  может быть создан только один экземпляр бина. Этот тип используется спрингом по умолчанию, если не указано другое. Следует осторожно использовать публичные свойства класса, т.к. они не будут потокобезопасными.
+* *rototype*  создается новый экземпляр при каждом запросе.destroy метод не вызывается
+* *request*   аналогичен prototype, но название служит пояснением к использованию бина в веб приложении. Создается новый экземпляр при каждом HTTP request.
+* *session*  новый бин создается в контейнере при каждой новой HTTP сессии.
+* *global-session*: используется для создания глобальных бинов на уровне сессии для Portlet  приложений.
+
+.Singleton
+- __Совместно используемый объект без состояния__. Имеется объект, не поддерживающий состояние, и множество зависимых от него объектов. Поскольку состояние не поддерживается и, следовательно, синхронизация не нужна, не потребуется создавать новый экземпляр бина каждый раз, когда он необходим зависимому объекту для какой-то обработки.
+- __Совместно используемый объект с состоянием только для чтения__. Этот сценарий похож на предыдущий, но здесь поддерживается состояние, предназначенное только для чтения. В данном случае синхронизация по-прежнему не нужна, поэтому создание экземпляра для каждого запроса бина просто увеличивает накладные расходы.
+- __Совместно используемый объект с совместно используемым состоянием__. Если нужен бин, состояние которого должно использоваться совместно, то одиночный экземпляр будет идеальным выбором. В этом случае потребуется обеспечить как можно более детализированную синхронизацию при записи состояния.
+- __Объекты с высоким коэффициентом использования и записываемым состоянием.__ Если есть бин, который интенсивно применяется в приложении, вы можете обнаружить, что сохранение его одиночным и синхронизация всего доступа к нему по записи позволяют обеспечить более высокую производительность, чем постоянное создание сотен экземпляров этого объекта. Используя такой подход, старайтесь обеспечить как можно более детализированную синхронизацию без ущерба для согласованности. Этот подход особенно полезен в ситуациях, когда приложение создает большое количество экземпляров в течение  длительного периода времени, когда совместно используемый объект имеет  лишь небольшую часть записываемого состояния или когда создание нового экземпляра сопряжено с большими расходами ресурсов.
+
+.Non Singleton
+* *Объекты с записываемым состоянием*. Если имеется бин с большим объемом записываемого состояния, может выясниться, что затраты на синхронизацию превышают затраты на создание нового экземпляра для обработки каждого запроса от зависимого объекта.
+* *Объекты с закрытым состоянием*. В ряде случаев зависимым объектам нужен бин, который имеет закрытое состояние, так что зависимые объекты могут проводить свою обработку отдельно друг от друга. В такой ситуации одиночный экземпляр точно не подходит, поэтому необходим неодиночный экземпляр.
+
+.Концепции инверсии управления
+Разновидности LоС, включают пассивную инверсию зависимостей, или внедрение зависимостей (_Dependency Injection_), и активную инверсию зависимостей, или поиск зависимостей (_Dependency Lookup_).
+
+
+
+
+
+
+
+== Инициализация Bean
+- @PostConstruct
+- init-method
+- Interface InitializingBean
+
+К одному и тому же экземпляру бина можно применять все механизмы. В этом случае Spring вызывает метод, аннотированный `@PostConstruct`, затем метод `InitializingBean.afterPropertiesSet()` и, наконец, ваш метод инициализации, указанный в конфигурационном файле.
+
+=== @PostConstruct
+При инициализации бина `@PostConstruct` или `init-method` в XML файле сообщает Spring, что нужно вызвать метод отмеченный аннотацией или указаный в конфигурационном файле, после окончания конфигурирования бина.
+
+Применение метода инициализации является идеальным способом удостовериться в правильности конфигурации бинов.Благодаря этому механизму вы можете получить все преимущества loC, не теряя контроля, который дает определение зависимостей вручную. Единственное ограничение метода инициализации связано с тем, что он не может принимать аргументы. Можно определять любой возвращаемый тип, хотя он игнорируется Spriпg, и можно даже использовать статический метод, но этот метод не должен принимать аргументы.
+
+[Examples...](https://github.com/kovteba/Examples/tree/master/spring10)
+
+=== init method
+[Examples...](https://github.com/kovteba/Examples/tree/master/spring10)
+
+=== Interface InitializingBean
+Интерфейс `InitializingBean`, предлагаемый в Spring, позволяет определять внутри бина код, который будет выполняться, когда бин получает уведомление о том, что платформа Spring завершила его конфигурирования.Подобно методу инициализации, это дает возможность проверить допустимость конфигурации бина, предоставляя наряду с этим любые стандартные значения. В интерфейсе `InitializingBean` определен единственный метод`afterPropertiesSet()`, который служит той же цели, что и метод `init()`
+
+[Examples...](https://github.com/kovteba/Examples/tree/master/spring11)
+
+== Уничтожение Bean
+- @PreDestroy
+- destroy-method
+- Interface DisposableBean
+
+Spring запускает эти методы непосредственно перед уничтожением бина.
+
+Как и в случае с созданием бина, при уничтожении бина можно использовать все механизмы на одном и том же экземпляре бина. В такой ситуации Spring сначала вызывает метод, аннотированный `@PreDestroy`, затем метод `DisposaЬleBean.destroy()` и, наконец, ваш метод уничтожения, сконфигурированный в определении XML.
+
+=== @PreDestroy
+При уничтожении бина
+
+=== Interface DisposableBean
+
+
+
+== @Qualifier
+В слечае когда два бина подходят возникает неопределенность, эта анотация использоуется какой бин нужно использовать
+
+[source,java]
+----
+   @Autowired
+   public MusicPlayer(@Qualifier("rockMusic") Music music) {
+      this.music = music;
+   }
+----
+
+
+
+
+
+
+== @Component
+`@Component` - Spring сканирует выделенный пакет в поисках данной аннотации и инициализирует Beans
+
+Добавить в ApplicationContext.xml
+
+[source,xml]
+----
+<context:component-scan base-package="kovteba"/>
+----
+
+== Add list
+
+[source,java]
+----
+public class MusicPlayer {
+   private List<Music> musicList = new ArrayList<>();
+   public void playMusicList(){
+      for (Music s : musicList){
+         System.out.println("Playing: " + s.getSong());
+      }
+   }
+   public List<Music> getMusicList() { return musicList; }
+   public void setMusicList(List<Music> musicList) { this.musicList = musicList; }
+}
+----
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/util
+        http://www.springframework.org/schema/util/spring-util-2.5.xsd">
+
+    <bean id="classicMusicBean" class="kovteba.dependencyinjectionbeans.xmlexamples.example3addlist.ClassicalMusic"/>
+    <bean id="rockMusicBean" class="kovteba.dependencyinjectionbeans.xmlexamples.example3addlist.RockMusic"/>
+
+    <bean id="musicPlayer" class="kovteba.dependencyinjectionbeans.xmlexamples.example3addlist.MusicPlayer">
+        <property name="musicList">
+            <list value-type="kovteba.dependencyinjectionbeans.xmlexamples.example3addlist.Music">
+                <ref bean="classicMusicBean"/>
+                <ref bean="rockMusicBean"/>
+            </list>
+        </property>
+    </bean>
+
+</beans>
+----
+
+[source,java]
+----
+public class Example3App {
+   public static void main(String[] args) {
+      ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("applicationContext.xml");
+      MusicPlayer musicPlayer = context.getBean("musicPlayer", MusicPlayer.class);
+      musicPlayer.playMusicList();
+      context.close();
+   }
+}
+----
+
+== Interface BeanNameAware
+Интерфейс BeanNameAware, который бин может реализовать, чтобы получить свое имя, имеет единственный метод:`setBeanName(String)`. Платформа Spring вызывает метод setBeanName () после завершения конфигурирования бина, но перед любыми обратными вызовами жизненного цикла (инициализации или уничтожения)
+
+Метод `BeanNameAware.setBeanName()` вызывается перед тем, как первый экземпляр бина будет возвращен приложению через вызов `ApplicationContext.getBean()`
+
+[Examples...](https://github.com/kovteba/Examples/tree/master/spring12)
+
+
+
+== Потокобезопасен ли Spring bean
+По умолчанию бин задается как синглтон в Spring. Таким образом все публичные переменные класса могут быть изменены одновременно из разных мест. Так что - нет, не является. Однако поменяв область действия бина на `request`, `prototype`,`session` он станет потокобезопасным, но это скажется на производительности.
+

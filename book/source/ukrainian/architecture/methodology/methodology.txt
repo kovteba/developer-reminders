@@ -1,0 +1,17 @@
+🟦 1. МЕТОДОЛОГИИ / ПОДХОДЫ К ПРОЕКТИРОВАНИЮ
+
+Это про то, как анализировать домен и думать о системе, но не про структуру кода и не про deployment.
+
+✔ Методологии доменного анализа:
+	•	DDD — Domain-Driven Design
+	•	Event Storming +
+	•	Event Modeling
+	•	MDD / MDA — Model-Driven Design / Architecture +
+	•	Domain Modeling (классический)
+	•	Service-Oriented Analysis
+	•	Business Capability Mapping
+
+✔ Методологии разработки:
+	•	TDD — Test-Driven Development
+	•	BDD — Behavior-Driven Development
+	•	ATDD — Acceptance Test Driven Development

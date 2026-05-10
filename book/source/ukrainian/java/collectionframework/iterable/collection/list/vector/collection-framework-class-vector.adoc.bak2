@@ -1,0 +1,143 @@
+ifndef::imagesdir[:imagesdir: ../../../../../imgs/]
+
+[#java-collection-framework-vector]
+====== Vector
+`Vector<E>` — *legacy* реалізація динамічного масиву об'єктів з пакету `java.util`, яка з'явилась у Java 1.0. Функціонально ідентична `ArrayList`, але всі методи синхронізовані (`synchronized`). Через це `Vector` є потокобезпечним, але повільним. Не рекомендується до використання у новому коді — замість нього використовуй `ArrayList` (однопотоковий код) або `CopyOnWriteArrayList` (багатопотоковий).
+
+.Ієрархія наслідування
+[source,subs="normal"]
+----
+Object
+  └── AbstractCollection<E>
+        └── AbstractList<E>
+              └── <<java-collection-framework-vector,Vector<E>>>
+                    └── <<java-collection-framework-stack,Stack<E>>>
+----
+
+WARNING: `Vector` є *legacy* класом. Синхронізація на рівні методів блокує весь об'єкт — при паралельному доступі тисяч потоків це створює вузьке місце. Для безпечного багатопотокового списку використовуй `CopyOnWriteArrayList`.
+
+[#java-collection-framework-vector-constructors]
+.Конструктори класу `Vector`
+* `Vector()` — створює порожній вектор з початковою ємністю 10;
+* `Vector(int initialCapacity)` — створює порожній вектор з вказаною початковою ємністю;
+* `Vector(int initialCapacity, int capacityIncrement)` — при переповненні збільшує масив не вдвічі, а на `capacityIncrement` елементів;
+* `Vector(Collection<? extends E> c)` — копіює елементи з переданої колекції.
+
+NOTE: На відміну від `ArrayList` (збільшується на 50%), `Vector` за замовчуванням *подвоює* свій внутрішній масив при переповненні — `newCapacity = 2 * oldCapacity`. Це може призвести до зайвого споживання пам'яті.
+
+[#java-collection-framework-vector-big-o-notation]
+.BigO notation для `Vector`
+Аналогічна `ArrayList`, але кожен метод огорнутий `synchronized` — додаткові витрати на захоплення монітора при кожному виклику:
+
+[cols="2,1,4", options="header"]
+|===
+|Метод                                  |Складність     |Пояснення
+|`get(int index)`                       |O(1)           |Прямий доступ до `elementData[index]`, але `synchronized` — блокує при паралельному доступі
+|`set(int index, E e)`                  |O(1)           |`elementData[index] = e` з блокуванням
+|`add(E e)` / `addElement(E e)`        |O(1)*          |Амортизоване O(1). При resize — O(n): копія масиву. Resize подвоює розмір (×2, не ×1.5!)
+|`add(int index, E e)`                  |O(n)           |`System.arraycopy` зсуває елементи правіше index. Блокування на весь час
+|===
+|`remove(int index)`                    |O(n)           |Зсув елементів після видаленого + блокування
+|===
+|`remove(Object o)`                     |O(n)           |Лінійний пошук + зсув + блокування
+|===
+|`contains(Object o)`                   |O(n)           |Лінійний перебір через `equals()`
+|===
+|`size()`                               |O(1)           |Повертає поле `elementCount`, але `synchronized`!
+|===
+|`isEmpty()`                            |O(1)           |`elementCount == 0`, але `synchronized`!
+|===
+|`clear()`                              |O(n)           |Обнуляє всі елементи для GC, `elementCount = 0`
+|===
+|`addAll(Collection c)`                 |O(m)           |`System.arraycopy` блоком, блокування на весь час
+|===
+|`sort(Comparator c)`                   |O(n log n)     |TimSort, блокування на весь час сортування
+|===
+|`iterator()`                           |O(1)           |Створює ітератор — fail-fast, але сам `iterator()` виклик синхронізований
+|===
+|`elements()`                           |O(1)           |Повертає legacy `Enumeration` — не підтримує `remove()`
+|===
+|===
+
+.Vector vs ArrayList vs CopyOnWriteArrayList
+[cols="3,1,1,1", options="header"]
+|===
+|Критерій                       |Vector                 |ArrayList          |CopyOnWriteArrayList
+|Потокобезпечність              |✅ synchronized        |❌ немає           |✅ copy-on-write
+|Продуктивність                 |❌ низька              |✅ висока          |⚠️ повільний write
+|Ріст масиву                    |×2 (або +increment)    |×1.5               |нова копія при write
+|Рекомендовано                  |❌ legacy              |✅ однопотоковий   |✅ read-heavy многопотоковий
+|===
+|===
+
+[[java-collection-framework-vector-pitfalls]]
+.Підводні камені та нюанси
+
+.synchronized ≠ потокобезпечний для складених операцій
+[source,java]
+----
+Vector<String> v = new Vector<>();
+v.add("a");
+v.add("b");
+
+// НЕБЕЗПЕЧНО — check-then-act не атомарна:
+if (!v.isEmpty()) {
+    v.remove(0); // інший потік може видалити елемент між isEmpty() і remove()!
+    // → IndexOutOfBoundsException або видалення "не того" елемента
+}
+
+// ПРАВИЛЬНО — синхронізуй весь складений блок:
+synchronized (v) {
+    if (!v.isEmpty()) v.remove(0); // ✅ атомарна перевірка і видалення
+}
+----
+
+WARNING: Кожен окремий метод `Vector` є потокобезпечним, але складені операції — ні. Між двома synchronized-методами інший потік може змінити стан списку. Для атомарних складених операцій потрібна зовнішня синхронізація через `synchronized (v) { ... }`.
+
+.Коефіцієнт росту ×2 vs ×1.5 у ArrayList — більше витрат пам'яті
+[source,java]
+----
+// ArrayList: 10 → 15 → 22 → 33 → 49 → ... (×1.5, менші стрибки)
+// Vector:    10 → 20 → 40 → 80 → 160 → ... (×2, більші стрибки = більше пустої пам'яті)
+
+// Після 100 000 add()-операцій:
+// ArrayList capacity ≈ 118 906 (≈19% надлишок)
+// Vector capacity    ≈ 131 072 (≈31% надлишок)
+----
+
+NOTE: `Vector` подвоює розмір при переповненні (`newCapacity = 2 * oldCapacity`), тоді як `ArrayList` збільшує на 50% (`oldCapacity + oldCapacity >> 1`). Це означає що `Vector` витрачає більше пам'яті. Якщо заданий `capacityIncrement > 0`, то зростання лінійне: `newCapacity = oldCapacity + capacityIncrement`.
+
+.Legacy Enumeration vs сучасний Iterator
+[source,java]
+----
+Vector<String> v = new Vector<>(List.of("a", "b", "c"));
+
+// Legacy — Enumeration (не підтримує remove()):
+Enumeration<String> e = v.elements();
+while (e.hasMoreElements()) {
+    System.out.println(e.nextElement()); // тільки читання
+}
+
+// Сучасний — Iterator (підтримує remove()):
+Iterator<String> it = v.iterator();
+while (it.hasNext()) {
+    if (it.next().equals("b")) it.remove(); // ✅
+}
+
+// Або просто:
+v.removeIf(s -> s.equals("b")); // ✅ Java 8+
+----
+
+.capacityIncrement — контроль кроку зростання
+[source,java]
+----
+Vector<String> v = new Vector<>(10, 5);
+// Початкова ємність: 10
+// При переповненні: зростає на 5 (не вдвічі!)
+// 10 → 15 → 20 → 25 → ...
+// Корисно якщо пам'ять обмежена і відомий очікуваний крок росту
+----
+
+WARNING: У новому коді *завжди* використовуй `ArrayList` замість `Vector`. Для потокобезпечності — `CopyOnWriteArrayList` (reads >> writes) або `Collections.synchronizedList(new ArrayList<>())` (рівномірне навантаження). `Vector` залишений лише для зворотної сумісності.
+
+IMPORTANT: *Не використовуй `Vector` у новому коді.* Клас `Vector` є legacy з Java 1.0 і залишений лише для зворотної сумісності. `Stack` наслідує `Vector` і теж є legacy — замість нього використовуй `Deque` / `ArrayDeque`.

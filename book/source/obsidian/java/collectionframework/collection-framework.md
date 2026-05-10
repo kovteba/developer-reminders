@@ -1,0 +1,189 @@
+# Java Collection Framework API ^java-collection-framework
+
+_Java Collection Framework_ - ієрархія інтерфейсів та їх реалізацій, яка є частиною `JDK`. Колекція або (контейнер) це набір класів та інтерфейсів, які дозволяють зберігати та обробляти групи об'єктів.
+
+**Умовні позначення**
+```text
+[I]  - Interface
+[A]  - Abstract class
+[C]  - Class
+[L]  - Legacy
+[CC] - java.util.concurrent
+```
+
+**Collection/Iterable**
+```text
+[I] [[#java-collection-framework-iterable|Iterable<T>]]
+└── [I] [[#java-collection-framework-collection|Collection<E>]]
+    ├── [I] [[#java-collection-framework-list|List<E>]]
+    │   └── [A] AbstractList<E>
+    │       ├── [A] AbstractSequentialList<E>
+    │       │   └── [C] [[#java-collection-framework-linkedlist|LinkedList<E>]]
+    │       ├── [C] [[#java-collection-framework-arraylist|ArrayList<E>]]
+    │       ├── [L] [[#java-collection-framework-vector|Vector<E>]]
+    │       │   └── [L] [[#java-collection-framework-stack|Stack<E>]]
+    │       └── [CC] [[#java-collection-framework-copyonwritearraylist|CopyOnWriteArrayList<E>]]
+    │
+    ├── [I] [[#java-collection-framework-set|Set<E>]]
+    │   ├── [I] [[#java-collection-framework-sorted-set|SortedSet<E>]]
+    │   │   └── [I] [[#java-collection-framework-navigableset|NavigableSet<E>]]
+    │   │       └── [A] AbstractSet<E>
+    │   │           ├── [C] [[#java-collection-framework-treeset|TreeSet<E>]]
+    │   │           └── [CC] [[#java-collection-framework-concurrentskiplistset|ConcurrentSkipListSet<E>]]
+    │   │
+    │   └── [A] AbstractSet<E>
+    │       ├── [C] [[#java-collection-framework-hash-set|HashSet<E>]]
+    │       │   └── [C] [[#java-collection-framework-linkedhashset|LinkedHashSet<E>]]
+    │       ├── [A] [[#java-collection-framework-enumset|EnumSet<E>]]
+    │       │   ├── [C] RegularEnumSet<E>
+    │       │   └── [C] JumboEnumSet<E>
+    │       └── [CC] [[#java-collection-framework-copyonwritearrayset|CopyOnWriteArraySet<E>]]
+    │
+    └── [I] Queue<E>
+        ├── [C] PriorityQueue<E>
+        ├── [I] Deque<E>
+        │   ├── [C] [[#java-collection-framework-arraydeque|ArrayDeque<E>]]
+        │   ├── [C] [[#java-collection-framework-linkedlist|LinkedList<E>]]
+        │   └── [I] BlockingDeque<E>
+        │       └── [CC] [[#java-collection-framework-linkedblockingqueue|LinkedBlockingDeque<E>]]
+        │
+        └── [I] BlockingQueue<E>
+            ├── [CC] [[#java-collection-framework-arrayblockingqueue|ArrayBlockingQueue<E>]]
+            ├── [CC] [[#java-collection-framework-linkedblockingqueue|LinkedBlockingQueue<E>]]
+            ├── [CC] [[#java-collection-framework-priorityblockingqueue|PriorityBlockingQueue<E>]]
+            ├── [CC] [[#java-collection-framework-delayqueue|DelayQueue<E>]]
+            ├── [CC] [[#java-collection-framework-synchronousqueue|SynchronousQueue<E>]]
+            ├── [CC] LinkedBlockingDeque<E>
+            └── [I] TransferQueue<E>
+                └── [CC] [[#java-collection-framework-linkedtransferqueue|LinkedTransferQueue<E>]]
+```
+
+**Map**
+```text
+[I] [[#java-collection-framework-map|Map<K,V>]]
+├── [I] [[#java-collection-framework-sortedmap|SortedMap<K,V>]]
+│   └── [I] [[#java-collection-framework-navigablemap|NavigableMap<K,V>]]
+│       ├── [C] [[#java-collection-framework-treemap|TreeMap<K,V>]]
+│       └── [CC] [[#java-collection-framework-concurrentskiplistmap|ConcurrentSkipListMap<K,V>]]
+│
+├── [I] ConcurrentMap<K,V>
+│   └── [I] ConcurrentNavigableMap<K,V>
+│       └── [CC] [[#java-collection-framework-concurrentskiplistmap|ConcurrentSkipListMap<K,V>]]
+│
+└── [A] AbstractMap<K,V>
+    ├── [C] [[#java-collection-framework-hashmap|HashMap<K,V>]]
+    │   └── [C] [[#java-collection-framework-linkedhashmap|LinkedHashMap<K,V>]]
+    ├── [C] [[#java-collection-framework-treemap|TreeMap<K,V>]]
+    ├── [C] [[#java-collection-framework-weakhashmap|WeakHashMap<K,V>]]
+    ├── [C] [[#java-collection-framework-identityhashmap|IdentityHashMap<K,V>]]
+    ├── [C] [[#java-collection-framework-enummap|EnumMap<K,V>]]
+    ├── [CC] [[#java-collection-framework-concurrenthashmap|ConcurrentHashMap<K,V>]]
+    ├── [CC] [[#java-collection-framework-concurrentskiplistmap|ConcurrentSkipListMap<K,V>]]
+    └── [L] [[#java-collection-framework-hashtable|Hashtable<K,V>]]
+        └── [L] [[#java-collection-framework-properties|Properties]]
+```
+
+На вершині ієрархії в Java Collection Framework розташовуються 2 інтерфейси:
+
+1. [[#java-collection-framework-collection-interface|_Collection_]] - прості послідовні набори елементів.
+2. [[#java-collection-framework-map-interface|_Map_]] - набори пар «ключ — значення».
+
+## Складність алгоритмів
+Складність алгоритмів визначається за допомогою _Big O Notation_. Це математичний спосіб опису складності алгоритмів.
+
+**Можливі варіанти складності алгоритмів:** ^java-collection-framework-big-o-notation
+- O(1) - константний час;
+- O(log(log(N))) - логарифм двічі від логарифму N;
+- O(log(N)) - логарифм N;
+- O(N^C), 0<C<1 - поліноміальний час;
+- O(N) - лінійний час;
+- O(N*log(N)) - лінійно-логарифмічний час;
+- O(N^C), C>1 - квадратичний час;
+- O(C^N), C>1 - експоненціальний час;
+- O(N!) - факторіальний час.
+
+**Складність деяких операцій для різних реалізацій колекцій:**
+![[java/collectionframework/BigONotation.png]]
+
+Також треба розповісти про _fail-fast_ та _fail-safe_ поведінку ітераторів. ^java-collection-framework-fail-fast-fail-safe
+
+### fail-fast ^java-collection-framework-fail-fast
+_fail-fast_ поведінка означає, що при виникненні помилки або стану, який може призвести до помилки, система негайно припиняє подальшу роботу та повідомляє про це. Використання _fail-fast_ підходу дозволяє уникнути недетермінованої поведінки програми протягом часу. Рекомендується не основувати логіку програми на _fail-fast_ відмовах, і використовувати їх тільки як ознаку помилки реалізації.
+
+В Java Collections API деякі ітератори ведуть себе як _fail-fast_ і викидають `ConcurrentModificationException`, якщо після його створення була проведена модифікація колекції, тобто додано або видалено елемент напряму з колекції, а не використовуючи методи ітератора. ^java-collection-framework-fail-fast-example Прикладом таких колекцій є `ArrayList`, `HashMap`, `HashSet` та інші.
+
+Реалізація такого поведінки здійснюється за рахунок підрахунку кількості модифікацій колекції (modification count):
+
+- при зміні колекції лічильник модифікацій також змінюється;
+- при створенні ітератору йому передається поточне значення лічильника;
+- при кожному зверненні до ітератору збережене значення лічильника порійвнюється з поточним, і, якщо вони не співпадають, виникає виняток.
+
+### fail-safe ^java-collection-framework-fail-safe
+Ітератори _fail-safe_(«умний» итератор) не викидають `ConcurrentModificationException`, навіть якщо колекція була змінена після створення ітератора. Це досягається за рахунок того, що ітератори _fail-safe_ працюють з копією колекції, а не з оригіналом. Це означає, що вони не бачать змін, які відбуваються в оригінальній колекції. Такі ітератори використовуються в колекціях, які підтримують одночасний доступ до даних, ^java-collection-framework-fail-safe-example наприклад, `CopyOnWriteArrayList` або `ConcurrentHashMap`. Ці колекції створюють копію даних при кожній модифікації, тому ітератори можуть працювати з копією даних, не бачачи змін в оригіналі. Такий підхід дозволяє уникнути виникнення помилок при одночасному доступі до даних з різних потоків. Зазвичай плата за _fail-safe_ поведінку - можлива не консистентність даних («слабка консистентність»).
+
+Далі розглянемо бе більш детально інтерфейси та їх реалізації.
+
+![[collection-framework-interface-iterable.md]]
+![[collection-framework-interface-map.md]]
+
+Після того як ми розглянули основні реалізації, зараз розберімось з деякими загальними питаннями.
+
+**Индексирование данных: ^java-collection-framework-hashmap-hashset**
+HashMap обычно используется для эффективного индексирования и извлечения данных на основе уникальных ключей. Например, его можно использовать для хранения профилей пользователей, где ключами будут их имена пользователя. Удаление дубликатов: HashSet полезен для удаления повторяющихся элементов из коллекции. Он может использоваться для фильтрации уникальных значений из списка или для проверки наличия дубликатов. Кэширование: HashMap может быть использован в качестве механизма кэширования, где можно сохранять и извлекать быстро результаты дорогостоящих вычислений или запросов к базе данных с использованием уникальных ключей.
+
+**Необходимо добавить 1млн. элемент, какую структуру вы используете? ^java-collection-framework-add-1-million-of-rows**
+Тоже довольно популярная скрытая версия первого вопроса. Так же постановка предполагает выбор одного из предложенных вариантов, хотя на самом деле информации для однозначного выбора нет. Нужно задавать дополнительные вопросы: в какую часть списка происходит добавление элементов? есть ли информация о том, что потом будет происходить с элементами списка? какие то ограничения по памяти или скорости выполнения? В целом, все тот же первый вопрос, но немного с другой стороны: вы через дополнительные вопросы, показываете глубину понимания работы Array и Linked List. Однажды я сам «клюнул» на этот крючок, домыслив про себя, что добавить — это «вставить» в конец списка и усиленно продвигал ArrayList, хотя ничего не знал (и не пытался узнать) про дальнейшие действие с этим списком и возможные ограничения.
+
+**Collections support class Collections.emptyList() или новый экземпляр**
+Тот же вопрос применяется к emptyMap() и emptySet().
+
+Оба метода возвращают пустой список, но Collections.emptyList() непреложный (immutable) список. Это означает, что вы не можете добавлять новые элементы к "пустому" списку. На фоне, каждый вызов метода Collections.emptyList() фактически не создает новый экземпляр пустого списка. Вместо этого, оно будет использовать снова уже существующий пустой экземпляр. Если Вы знакомы с синглтоном как с паттерном проектирования, Вы должны понять что имеется в виду. Это должно Вам дать большую производительность, если вызывается часто.
+
+**В чем разница между классами java.util.Collection и java.util.Collections?**
+java.util.Collections - набор статических методов для работы с коллекциями.
+java.util.Collection - один один из основных интерфейсов Java Collections Framework.
+
+**Интерфейсы Comparable и Comparator?**
+Java предоставляет Comparable интерфейс, который должен быть реализован любым пользовательским классом, если мы хотим использовать методы сортировки Arrays или Collections. Сопоставимый интерфейс имеет метод CompareTo (T obj), который используется методами сортировки. Мы должны переопределить этот метод таким образом, чтобы он возвращал отрицательное целое число, ноль или положительное целое число, если объект «this» меньше, равен или больше объекта, переданного в качестве аргумента. Но в большинстве сценариев реальной жизни Мы хотим сортировать по разным параметрам. Например, как генеральный директор, я хотел бы сортировать сотрудников по зарплате, а HR хотел бы сортировать их по возрасту. Это ситуация, когда нам нужно использовать интерфейс Comparator потому что реализация метода Comparable.compareTo(Object o) может сортировать только по одному полю, и мы не можем выбрать поле, по которому хотим отсортировать интерфейс Object.Comparator. compare(Object o1, Object o2) должен быть реализован метод, который принимает два аргумента Object, он должен быть реализован таким образом, чтобы он возвращал отрицательное значение int, если первый аргумент меньше второго, и возвращает ноль, если они равны, и положительное значение int, если первое. аргумент больше, чем второй.
+
+**Что есть в java.util.concurrent***
+Concurrent Collections — набор коллекций, более эффективно работающие в многопоточной среде нежели стандартные универсальные коллекции из java.util пакета. Вместо базового враппера Collections.synchronizedList с блокированием доступа ко всей коллекции используются блокировки по сегментам данных или же оптимизируется работа для параллельного чтения данных по wait-free алгоритмам.
+Queues — неблокирующие и блокирующие очереди с поддержкой многопоточности. Неблокирующие очереди заточены на скорость и работу без блокирования потоков. Блокирующие очереди используются, когда нужно «притормозить» потоки «Producer» или «Consumer», если не выполнены какие-либо условия, например, очередь пуста или перепонена, или же нет свободного «Consumer»'a.
+Synchronizers — вспомогательные утилиты для синхронизации потоков. Представляют собой мощное оружие в «параллельных» вычислениях.
+Executors — содержит в себе отличные фрейморки для создания пулов потоков, планирования работы асинхронных задач с получением результатов.
+Locks — представляет собой альтернативные и более гибкие механизмы синхронизации потоков по сравнению с базовыми synchronized, wait, notify, notifyAll.
+Atomics — классы с поддержкой атомарных операций над примитивами и ссылками.
+
+**CopyOnWrite коллекции**
+Название говорит само за себя. Все операции по изменению коллекции (add, set, remove) приводят к созданию новой копии внутреннего массива. Тем самым гарантируется, что при проходе итератором по коллекции не кинется ConcurrentModificationException. Следует помнить, что при копировании массива копируются только референсы (ссылки) на объекты (shallow copy), т.ч. доступ к полям элементов не thread-safe. CopyOnWrite коллекции удобно использовать, когда write операции довольно редки, например при реализации механизма подписки listeners и прохода по ним.
+
+**Чем отличается HashMap от Hashtable?**
+Класс HashMap по функционалу очень похож на Hashtable. Главное отличие в том, что методы класса Hashtable синхронизированы, а HashMap - нет. Кроме этого класс HashMap в отличии от Hashtable разрешает использование null в качестве ключей и значений.
+Наличие синхронизации в Hashtable уменьшает производительность кода, использующего данный класс. Поэтому классы JCF (Java Collections Framework, появившийся в Java 2), в том числе и HashMap, несинхронизированы. Если синхронизация все же нужна, можно использовать методы класса Collections:
+
+* Collections.synchronizedMap(map)
+* Collections.synchronizedList(list)
+* Collections.synchronizedSet(set) Данные методы возвращают синхронизированный декоратор переданной коллекции. При этом все равно в случае итерирования по коллекции требуется ручная синхронизация.
+
+**Преимущества ConcurrentHashMap**
+Карта имеет схожий с hashmap интерфейс взаимодействия
+Потокобезопасность
+Операции чтения не требуют блокировок и выполняются параллельно
+Операции записи зачастую также могут выполняться параллельно без блокировок
+Элементы карты имеют значение value, объявленное как volatile
+
+**Как поведёт себя уже инстанциированный итератор для collection, если вызвать collection.remove()?**
+При следующем вызове методов итератора будет выброшено ConcurrentModificationException.
+
+**Как избежать ConcurrentModificationException во время перебора коллекции?**
+Попробовать подобрать или реализовать самостоятельно другой итератор, работающий по принципу fail-safe.
+Использовать ConcurrentHashMap и CopyOnWriteArrayList.
+Преобразовать список в массив и перебирать массив.
+Блокировать изменения списка на время перебора с помощью блока synchronized.
+Отрицательная сторона последних двух вариантов - ухудшение производительности.
+
+
+**Зачем добавили ArrayList, если уже был Vector?**
+Методы класса Vector синхронизированы, а ArrayList - нет;
+По умолчанию, Vector удваивает свой размер, когда заканчивается выделенная под элементы память. ArrayList же увеличивает свой размер только на половину.
+Vector это устаревший класс и его использование не рекомендовано.

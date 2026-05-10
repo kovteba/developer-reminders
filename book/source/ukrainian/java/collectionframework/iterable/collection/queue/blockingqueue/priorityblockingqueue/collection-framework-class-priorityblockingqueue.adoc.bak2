@@ -1,0 +1,230 @@
+ifndef::imagesdir[:imagesdir: ../../../../../../../imgs/]
+
+[#java-collection-framework-priorityblockingqueue]
+=== PriorityBlockingQueue
+`PriorityBlockingQueue<E>` — це *необмежена потокобезпечна черга з пріоритетом* з пакету `java.util.concurrent`, яка реалізує `BlockingQueue<E>`. Елементи видаляються *у порядку пріоритету* (мінімальний елемент першим — min-heap), а не FIFO. Є потокобезпечним аналогом `PriorityQueue`. Не допускає `null`.
+
+.Ієрархія наслідування
+[source,subs="normal"]
+----
+Object
+  └── AbstractCollection<E>
+        └── AbstractQueue<E>
+              └── <<java-collection-framework-priorityblockingqueue,PriorityBlockingQueue<E>>>
+----
+
+Реалізовані інтерфейси:
+
+* `BlockingQueue<E>` — блокуючі `put` / `take`
+* `Queue<E>` — `offer`, `poll`, `peek`
+* `Collection<E>`, `Iterable<E>`, `Serializable`
+
+WARNING: `PriorityBlockingQueue` *необмежена* (unbounded). Метод `put()` *ніколи не блокується* — черга росте необмежено. Блокується лише `take()` коли черга порожня. При безконтрольному рості черга може спричинити `OutOfMemoryError`.
+
+WARNING: `PriorityBlockingQueue` *не допускає `null`* та *не гарантує FIFO для елементів з однаковим пріоритетом*. Порядок елементів з рівним пріоритетом є непередбачуваним.
+
+[#java-collection-framework-priorityblockingqueue-constructors]
+.Конструктори
+
+.PriorityBlockingQueue()
+[source,java]
+----
+PriorityBlockingQueue<Integer> pq = new PriorityBlockingQueue<>();
+----
+
+*Що робить:* створює порожню чергу з початковою ємністю 11 і натуральним порядком.
+
+.PriorityBlockingQueue(int initialCapacity)
+[source,java]
+----
+PriorityBlockingQueue<Task> pq = new PriorityBlockingQueue<>(100);
+----
+
+.PriorityBlockingQueue(int initialCapacity, Comparator<? super E> comparator)
+[source,java]
+----
+PriorityBlockingQueue<Task> pq = new PriorityBlockingQueue<>(
+    100,
+    Comparator.comparingInt(Task::priority)
+);
+----
+
+*Що робить:* черга з кастомним пріоритетом. За замовчуванням — `null` (натуральний порядок через `Comparable`).
+
+.PriorityBlockingQueue(Collection<? extends E> c)
+[source,java]
+----
+PriorityBlockingQueue<Integer> pq = new PriorityBlockingQueue<>(List.of(3, 1, 2));
+// pq.peek() → 1
+----
+
+*Що робить:* копіює елементи і виконує heapify — O(n).
+
+[[java-collection-framework-priorityblockingqueue-internal]]
+.PriorityBlockingQueue — внутрішня реалізація та паралельний resize
+`PriorityBlockingQueue` = `PriorityQueue` heap + `ReentrantLock` + `Condition notEmpty`. Немає `notFull` — черга unbounded. Паралельний resize: `lock.unlock()` → CAS на `allocationSpinLock` (тільки один потік розширює) → `new Object[newCap]` → `lock.lock()` → `System.arraycopy`. Під час resize інші потоки можуть читати стару heap структуру. Після resize масив замінюється атомарно.
+
+[#java-collection-framework-priorityblockingqueue-structure]
+.Внутрішній устрій
+`PriorityBlockingQueue` — це *бінарна мінімальна купа* на масиві (як `PriorityQueue`) + *один ReentrantLock* + `Condition notEmpty`:
+
+[source,java]
+----
+private transient Object[] queue;              // внутрішній масив-купа
+private transient int size;                    // кількість елементів
+private transient Comparator<? super E> comparator;
+
+private final ReentrantLock lock = new ReentrantLock();
+private final Condition notEmpty = lock.newCondition();
+
+// Немає Condition notFull — черга необмежена!
+private transient volatile int allocationSpinLock; // CAS для resize
+----
+
+.Особливість resize — паралельний
+На відміну від `ArrayBlockingQueue`, resize виконується *поза lock* через CAS на `allocationSpinLock`:
+
+[source,java]
+----
+// Спрощено:
+private void tryGrow(Object[] array, int oldCap) {
+    lock.unlock();  // ← звільняємо lock під час розширення!
+    Object[] newArray = null;
+    if (allocationSpinLock == 0 &&
+        ALLOC.compareAndSet(this, 0, 1)) {  // CAS: тільки один потік розширює
+        try {
+            int newCap = oldCap + ((oldCap < 64) ? (oldCap + 2) : (oldCap >> 1));
+            newArray = new Object[newCap];
+        } finally {
+            allocationSpinLock = 0;
+        }
+    }
+    // ...
+    lock.lock();  // ← знову захоплюємо lock
+    if (newArray != null && queue == array) {
+        queue = newArray;
+        System.arraycopy(array, 0, newArray, 0, oldCap);
+    }
+}
+----
+
+NOTE: Паралельний resize означає що `offer()` на великій черзі не блокує інші потоки під час розширення масиву — це покращує throughput.
+
+[#java-collection-framework-priorityblockingqueue-big-o-notation]
+.BigO notation для `PriorityBlockingQueue`
+[cols="2,1,4", options="header"]
+|===
+|Метод                          |Складність     |Пояснення
+|`offer(E e)` / `put(E e)`      |O(log n)       |Вставка + sift up; `put` ніколи не блокується (unbounded)
+|`add(E e)`                     |O(log n)       |Як `offer`
+|`take()`                       |O(log n)       |Блокує якщо порожня; після пробудження — sift down
+|`poll()`                       |O(log n)       |Як `take` але повертає `null` якщо порожня
+|===
+|`poll(time, unit)`             |O(log n)       |Блокує з таймаутом
+|===
+|`peek()`                       |O(1)           |Повертає `queue[0]` без видалення
+|===
+|`remove(Object o)`             |O(n)           |Лінійний пошук + sift down/up
+|===
+|`contains(Object o)`           |O(n)           |Лінійний пошук
+|===
+|`size()`                       |O(1)           |Поле `size` під lock
+|===
+|`clear()`                      |O(n)           |Обнуляє всі елементи масиву
+|===
+|`drainTo(Collection c)`        |O(n)           |Забирає всі елементи; ефективніше ніж n разів `poll`
+|===
+|===
+
+.Практичне застосування — планувальник задач
+[source,java]
+----
+record Task(String name, int priority) implements Comparable<Task> {
+    @Override
+    public int compareTo(Task other) {
+        return Integer.compare(this.priority, other.priority); // менший = вищий пріоритет
+    }
+}
+
+PriorityBlockingQueue<Task> taskQueue = new PriorityBlockingQueue<>();
+
+// Producers:
+taskQueue.put(new Task("Deploy",  3));
+taskQueue.put(new Task("Hotfix",  1));  // найвищий пріоритет
+taskQueue.put(new Task("Review",  2));
+
+// Consumer worker thread:
+Thread worker = new Thread(() -> {
+    try {
+        while (!Thread.currentThread().isInterrupted()) {
+            Task task = taskQueue.take(); // блокується якщо черга порожня
+            System.out.println("Processing: " + task.name());
+        }
+    } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+    }
+});
+// Виконання: Hotfix → Review → Deploy
+----
+
+.Обмеження розміру черги (back-pressure)
+[source,java]
+----
+// PriorityBlockingQueue необмежена → потрібно обмежити вручну якщо треба
+// Один зі способів — семафор:
+
+Semaphore capacity = new Semaphore(100);
+PriorityBlockingQueue<Task> queue = new PriorityBlockingQueue<>();
+
+// Producer:
+capacity.acquire();     // блокується якщо черга "повна"
+queue.offer(task);
+
+// Consumer:
+Task t = queue.take();
+capacity.release();     // звільняє місце
+----
+
+.PriorityBlockingQueue vs PriorityQueue vs ArrayBlockingQueue
+[cols="3,1,1,1", options="header"]
+|===
+|Критерій                       |PriorityBlockingQueue  |PriorityQueue      |ArrayBlockingQueue
+|Потокобезпечність              |✅                     |❌                 |✅
+|Порядок видалення              |за пріоритетом         |за пріоритетом     |FIFO
+|Обмеженість                    |❌ unbounded           |❌ unbounded       |✅ bounded
+|`put()` блокує                 |❌ ніколи              |—                  |✅ якщо повна
+|===
+|`take()` блокує                |✅ якщо порожня        |—                  |✅ якщо порожня
+|===
+|`null` елементи                |❌                     |❌                 |❌
+|===
+|===
+
+IMPORTANT: Пам'ятай що `PriorityBlockingQueue` є *необмеженою* — `put()` ніколи не блокується і черга може рости до OOM. Якщо потрібна back-pressure (тиск зворотного зв'язку) — обмеж розмір вручну через `Semaphore` або використовуй `ArrayBlockingQueue` з компаратором через `TreeSet`-обгортку.
+
+[[java-collection-framework-priorityblockingqueue-pitfalls]]
+.Підводні камені
+
+WARNING: `PriorityBlockingQueue.put()` *ніколи не блокується* — черга необмежена і росте до `OutOfMemoryError`. Блокується лише `take()` коли черга порожня. Це принципово *відрізняє* її від `ArrayBlockingQueue` де `put()` блокується при повній черзі. Якщо потрібен back-pressure — обмежуй розмір вручну через `Semaphore`.
+
+WARNING: Елементи з *однаковим пріоритетом* не мають гарантованого порядку — `PriorityBlockingQueue` не є FIFO для рівнозначних елементів. Внутрішня heap-структура визначає їх порядок, який є непередбачуваним.
+
+WARNING: `PriorityBlockingQueue` *не допускає `null`*. Спроба додати `null` викине `NullPointerException` — порівняння `null` через `Comparable` або `Comparator` неможливе.
+
+NOTE: Якщо потрібен FIFO-порядок серед елементів з однаковим пріоритетом — використовуй вторинний компаратор із sequence number:
+
+.FIFO для рівних пріоритетів
+[source,java]
+----
+AtomicLong seq = new AtomicLong();
+record Task(int priority, long sequence, Runnable action) implements Comparable<Task> {
+    public int compareTo(Task other) {
+        int c = Integer.compare(priority, other.priority);
+        return c != 0 ? c : Long.compare(sequence, other.sequence); // FIFO при рівному пріоритеті
+    }
+}
+PriorityBlockingQueue<Task> queue = new PriorityBlockingQueue<>();
+queue.put(new Task(1, seq.getAndIncrement(), () -> System.out.println("task A")));
+queue.put(new Task(1, seq.getAndIncrement(), () -> System.out.println("task B")));
+// Тепер task A гарантовано буде взята раніше ніж task B (однаковий пріоритет, менший sequence)
+----

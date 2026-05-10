@@ -1,0 +1,580 @@
+ifndef::imagesdir[:imagesdir: ../../../../../../../imgs/]
+ifndef::linkedlistdir[:linkedlistdir: ../../../../../../../../../examples/java/src/main/java/kovteba/collectionframework/iterable/collection/list/linkedlist]
+ifndef::linkedlisttestdir[:linkedlisttestdir: ../../../../../../../../../examples/java/src/main/java/kovteba/collectionframework/iterable/collection/list/linkedlist]
+
+[[java-collection-framework-concurrenthashmap-java8-vs-java7]]
+.Java 8+ vs Java 7 ConcurrentHashMap — сегментна vs bucket-level архітектура
+Java 7 ділив таблицю на фіксовану кількість сегментів (Segment — кожен зі своїм ReentrantLock). Максимальний паралелізм = кількість сегментів (default 16). Java 8 замінив сегменти на lock per bucket: lock захоплюється лише на один Node (synchronized на головному вузлі бакета). Теоретичний ліміт паралельних writers = кількість бакетів (починаючи з 16, зростає при resize). `Collections.synchronizedMap` блокує весь об'єкт при кожній операції → при 100 потоках 99 завжди чекають. ConcurrentHashMap при 100 потоках і 100 бакетах → всі пишуть паралельно.
+
+[[java-collection-framework-concurrenthashmap-sizectl]]
+.sizeCtl — поліморфне поле ConcurrentHashMap
+`sizeCtl` кодує різні стани одним `volatile int` полем: `-1` = таблиця ініціалізується; `-(1 + N)` = N потоків беруть участь у resize; `0` = таблиця ще не ініціалізована; `>0` = threshold для наступного resize (capacity * loadFactor). Під час resize: `sizeCtl = resizeStamp(n) << 16 | (N+1)` де N — кількість потоків що допомагають. Це дозволяє обійтися без окремих полів для кожного стану.
+
+[[java-collection-framework-concurrenthashmap-cas-insert]]
+.Lock-free вставка через CAS у порожній бакет
+Якщо бакет порожній, `putVal` використовує `casTabAt(tab, i, null, newNode)` (CAS) без захоплення lock. Якщо CAS успішний — вставка завершена. Якщо CAS провалюється (інший потік вставив між читанням і CAS) — retry через CAS-loop (`for(;;)`). Lock захоплюється (synchronized на головному вузлі) тільки якщо бакет вже містить вузли. Це означає ConcurrentHashMap не є "повністю non-blocking" — при колізіях є lock.
+
+[[java-collection-framework-concurrenthashmap-forwarding-node]]
+.ForwardingNode та helpTransfer — паралельний resize
+`ForwardingNode` — спеціальний вузол з hash=-1 що вставляється у бакет після його перенесення у новий масив. Коли інший потік зустрічає ForwardingNode при `put` — він викликає `helpTransfer()` і сам починає переносити інші бакети замість очікування. Потоки координуються через `sizeCtl` і stride (розмір порції бакетів на один потік). `get()` при зустрічі ForwardingNode перенаправляється у новий масив через `find()` методу ForwardingNode.
+
+[[java-collection-framework-concurrenthashmap-transfer]]
+.transfer() та resizeStamp() — безпечний паралельний resize
+`transfer(tab, nextTab)` переносить бакети зі старого у новий масив. Кожен потік отримує stride бакетів для обробки (мінімум `MIN_TRANSFER_STRIDE=16`). `resizeStamp(n)` генерує унікальний stamp для конкретного розміру `n`: `Integer.numberOfLeadingZeros(n) | (1 << 15)`. Stamp записується у старший 16 біт `sizeCtl`. Якщо stamp не збігається при спробі приєднатися до resize — це інший resize (race condition захищений).
+
+[[java-collection-framework-concurrenthashmap-count]]
+.baseCount та counterCells — scalable size tracking
+Замість одного AtomicLong (bottle neck при тисячах puts) ConcurrentHashMap використовує LongAdder-подібну структуру: `baseCount` (CAS-оновлюваний при відсутності contention) + `counterCells[]` (масив де кожен потік оновлює свою комірку). `size()` = `baseCount + sum(counterCells)`. `mappingCount()` повертає long версію. Обидва є наближеними при активних паралельних змінах.
+
+[#java-collection-framework-concurrenthashmap]
+=== ConcurrentHashMap
+`ConcurrentHashMap` у Java — це *потокобезпечна хеш-таблиця* з пакету `java.util.concurrent`, яка реалізує інтерфейс `ConcurrentMap<K,V>`. На відміну від `Hashtable` і `Collections.synchronizedMap` — не блокує всю таблицю при записі, а використовує *блокування на рівні окремого бакета (bucket-level locking)*.
+
+Головна ідея: читання — *взагалі без lock* (завдяки `volatile`), запис — *lock тільки на один бакет* зі 256+ можливих. Тому тисячі потоків можуть читати і писати одночасно без суттєвого contention.
+
+* `ConcurrentMap<K,V>` — атомарні операції `putIfAbsent`, `replace`, `remove(k,v)`
+* `Map<K,V>` — стандартні операції хеш-мапи
+* `Serializable` — підтримка серіалізації
+
+.Ієрархія наслідування
+[source,subs="normal"]
+----
+Object
+  └── AbstractMap<K,V>
+        └── <<java-collection-framework-concurrenthashmap,ConcurrentHashMap<K,V>>>
+----
+
+[[java-collection-framework-concurrenthashmap-no-null-reason]]
+.Чому ConcurrentHashMap не допускає null
+Фундаментальна причина: у concurrent контексті `get(key) == null` може означати або "ключ відсутній" або "ключ є але значення null". В однопотоковому HashMap можна перевірити `containsKey()` після `get()`. В конкурентному середовищі між `get()` і `containsKey()` інший потік міг вставити або видалити ключ — race condition. Тому ConcurrentHashMap вибрав суворе правило: null заборонений, get() != null завжди означає "ключ є і має значення".
+
+WARNING: `ConcurrentHashMap` *не допускає `null`* ні для ключів ні для значень. Спроба додати `null` викине `NullPointerException`. Це свідоме рішення: у конкурентному середовищі неможливо відрізнити «ключ відсутній» від «ключ є але значення `null`» при виклику `get`.
+
+NOTE: `ConcurrentHashMap` знаходиться у пакеті `java.util.concurrent`. Є рекомендованою заміною для `Hashtable` і `Collections.synchronizedMap(new HashMap<>())` у будь-якому багатопотоковому коді.
+
+.Конструктор ConcurrentHashMap()
+[source,java]
+----
+ConcurrentHashMap<String, Integer> map = new ConcurrentHashMap<>();
+----
+
+*Що робить:* створює порожню мапу з початковою ємністю *16 бакетів* і load factor *0.75*. Масив бакетів (`table`) не ініціалізується одразу — створюється при першому `put` (lazy initialization).
+
+*Коли використовувати:* стандартний вибір для потокобезпечної мапи у більшості сценаріїв.
+
+.Конструктор ConcurrentHashMap(int initialCapacity)
+[source,java]
+----
+ConcurrentHashMap<String, Integer> map = new ConcurrentHashMap<>(64);
+----
+
+*Що робить:* створює порожню мапу з початковою ємністю `initialCapacity`. Реальний розмір масиву округлюється до *найменшого степеня двійки* що забезпечує load factor ≤ 0.75. Наприклад, `initialCapacity=64` → масив розміром 64, threshold=48.
+
+*Коли використовувати:* коли заздалегідь відома приблизна кількість записів — уникає дорогих resize операцій.
+
+.Конструктор ConcurrentHashMap(int initialCapacity, float loadFactor)
+[source,java]
+----
+ConcurrentHashMap<String, Integer> map = new ConcurrentHashMap<>(64, 0.9f);
+----
+
+*Що робить:* створює мапу з заданою початковою ємністю і load factor. Вищий load factor → менше resize але більше колізій. Нижчий → менше колізій але більше пам'яті.
+
+*Коли використовувати:* коли потрібен тонкий контроль над trade-off між пам'яттю і продуктивністю.
+
+.Конструктор ConcurrentHashMap(int initialCapacity, float loadFactor, int concurrencyLevel)
+[source,java]
+----
+ConcurrentHashMap<String, Integer> map = new ConcurrentHashMap<>(64, 0.75f, 16);
+----
+
+*Що робить:* `concurrencyLevel` — *застарілий* параметр з Java 7 де він визначав кількість сегментів. У Java 8+ ігнорується для внутрішньої структури але впливає на початковий розмір таблиці: `initialCapacity = max(initialCapacity, concurrencyLevel)`.
+
+*Коли використовувати:* тільки для сумісності зі старим кодом. У новому коді достатньо двопараметричного конструктора.
+
+.Конструктор ConcurrentHashMap(Map<? extends K, ? extends V> m)
+[source,java]
+----
+Map<String, Integer> source = Map.of("a", 1, "b", 2);
+ConcurrentHashMap<String, Integer> map = new ConcurrentHashMap<>(source);
+----
+
+*Що робить:* створює мапу і послідовно додає всі записи з `m` через `putVal`. Початкова ємність = `max(16, m.size() / 0.75 + 1)` округлена до степеня двійки.
+
+[[java-collection-framework-concurrenthashmap-volatile-read]]
+.Як get() читає без lock — роль volatile
+`tabAt(tab, i)` використовує `Unsafe.getObjectVolatile` — атомарне volatile читання конкретної комірки масиву. Звичайний доступ `tab[i]` не є volatile-читанням у Java Memory Model. `Node.val` оголошено `volatile` — тому оновлення значення іншим потоком через `put()` одразу видиме через `get()` без lock. При collision у ланцюжку `get()` ітерує через `node.next` (теж `volatile`) без захоплення lock.
+
+[[java-collection-framework-concurrenthashmap-weakly-consistent]]
+.Weakly consistent ітератор ConcurrentHashMap
+Ітератор відображає стан на момент створення плюс деякі зміни що відбулись пізніше. Гарантії: (1) кожен елемент що існував на момент старту ітерації буде відвіданий (якщо не видалений); (2) не кидає ConcurrentModificationException; (3) нові елементи що додані після старту можуть або не можуть бути відвідані. EntrySetView теж weakly consistent — це live view але без гарантії повної консистентності при concurrent змінах.
+
+[[java-collection-framework-concurrenthashmap-size-accuracy]]
+.Чому ConcurrentHashMap.size() неточний
+`size()` = `baseCount + sum(counterCells[])`. При активних паралельних puts кожен потік може ще не синхронізувати свій counterCell. Між обчисленням `baseCount` і підсумовуванням counterCells можуть відбутися нові вставки. `mappingCount()` повертає `long` і є кращим для великих мап (> Integer.MAX_VALUE). Для точного size потрібен би глобальний lock що вбило б конкурентність.
+
+[[java-collection-framework-concurrenthashmap-putifabsent-atomic]]
+.putIfAbsent() — атомарна реалізація
+`putIfAbsent(k, v)` під lock на бакет перевіряє відсутність ключа і вставляє — атомарно. НЕ як `if(!contains) put` яке не є атомарним. Різниця від `computeIfAbsent(k, fn)`: `putIfAbsent` обчислює `v` ЗАВЖДИ (до виклику), `computeIfAbsent` обчислює `fn(k)` тільки якщо ключ відсутній. Для expensive values завжди обирай `computeIfAbsent`.
+
+[[java-collection-framework-concurrenthashmap-parallel-bulk]]
+.Паралельні bulk операції — forEach, search, reduce
+`forEach(parallelismThreshold, action)`: якщо `size() >= threshold` — виконується паралельно через ForkJoinPool.commonPool(). `search(threshold, fn)`: паралельний пошук, зупиняється при першому ненульовому результаті. `reduce(threshold, transformer, reducer)`: паралельна редукція. `mapReduceKeys/Values/Entries` — трансформація з редукцією. `threshold=1` — завжди паралельно; `Long.MAX_VALUE` — завжди послідовно.
+
+[[java-collection-framework-concurrenthashmap-compute-vs-merge]]
+.compute() vs merge() у ConcurrentHashMap
+`compute(k, BiFunction<K, V, V> fn)`: завжди виклик fn, може повернути null (видаляє запис). Якщо два потоки викликають compute(sameKey, ...) одночасно — другий потік чекає на lock поки перший завершить fn. `merge(k, V value, BiFunction<V, V, V> fn)`: якщо ключ відсутній → вставляє value; якщо є → fn(existingVal, value). fn не може приймати null, але якщо повертає null → видаляє запис.
+
+[[java-collection-framework-concurrenthashmap-computeifabsent-deadlock]]
+.computeIfAbsent() deadlock при рекурсивному виклику
+Якщо функція-маппер у `computeIfAbsent(k, fn)` рекурсивно викликає `computeIfAbsent(k, ...)` з тим самим ключем — deadlock: перший виклик утримує lock на бакет і чекає на результат fn. fn робить другий виклик з тим самим ключем → намагається захопити той самий lock → deadlock. Java 9+ документує це як prohibited. Рішення: уникати рекурсивних обчислень або використовувати попередньо обчислені значення.
+
+[[java-collection-framework-concurrenthashmap-happens-before]]
+.Happens-before гарантії ConcurrentHashMap
+Запис через `put(k, v)` happens-before будь-яке наступне `get(k)` що повертає це значення (volatile write/read на val та next). Всі дії всередині `compute/merge/computeIfAbsent` відбуваються під lock — happens-before наступного compute того ж ключа. `forEach` weakly consistent — не гарантує повний happens-before порядок.
+
+[[java-collection-framework-concurrenthashmap-keyset]]
+.ConcurrentHashMap.newKeySet() — потокобезпечний Set
+`newKeySet()` повертає `KeySetView` — live view ключів підтриманий ConcurrentHashMap. Дозволяє використовувати map як concurrent Set. `add(k)` вставляє `k -> Boolean.TRUE`. `remove(k)` видаляє запис. Всі операції є thread-safe з тими ж гарантіями що і ConcurrentHashMap.
+
+[[java-collection-framework-concurrenthashmap-treeify]]
+.ConcurrentHashMap treeification та блокування
+Treeification відбувається у `treeifyBin()` після unlock. Але самому `treeifyBin()` потрібен lock на бакет щоб перетворити ланцюжок у TreeBin. Під час treeification інші потоки що звертаються до того самого бакета будуть заблоковані. TreeBin має власний ReentrantReadWriteLock для читання дерева без block на весь бакет.
+
+[[java-collection-framework-concurrenthashmap-memory-layout]]
+.Memory layout ConcurrentHashMap та cache-line оптимізація
+`CounterCell` annotated `@Contended` — це запобігає false sharing між різними counterCells у одній cache-line (64 байт). Кожна CounterCell займає окрему cache-line. `@Contended` padding додає ~128 байт навколо поля. Основний масив `table[]` — volatile reference. Вузли `Node` мають `volatile val` та `volatile next` для lock-free читання.
+
+[[java-collection-framework-concurrenthashmap-replace-cas]]
+.replace(k, oldVal, newVal) — CAS на рівні Map
+`replace(K key, V oldValue, V newValue)` під lock на бакет читає поточне значення, порівнює з `oldValue` через `equals()`, якщо рівні — замінює на `newValue`. Атомарна операція. Аналог CAS але на рівні Map.Entry. Повертає `true` якщо заміна відбулась. Корисно для optimistic locking паттернів.
+
+[#java-collection-framework-concurrenthashmap-class-big-o-notation]
+.BigO notation для ConcurrentHashMap:
+[cols="2,1,4", options="header"]
+|===
+|`put(K key, V value)`              |O(1)*          |Обчислює хеш, захоплює lock *тільки на один бакет* (synchronized на головному вузлі бакета). O(log n) якщо бакет перетворений у дерево
+|`putIfAbsent(K key, V value)`      |O(1)*          |Атомарна операція: перевіряє і вставляє під одним lock на бакет. Не потребує зовнішньої синхронізації
+|`remove(Object key)`               |O(1)*          |Захоплює lock на бакет, видаляє вузол, перебудовує ланцюжок/дерево
+|===
+|`remove(Object key, Object value)` |O(1)*          |Атомарна операція: видаляє тільки якщо значення збігається. Під одним lock на бакет
+|===
+|`replace(K key, V value)`          |O(1)*          |Атомарно замінює значення якщо ключ існує. Під lock на бакет
+|===
+|`replace(K key, V old, V new)`     |O(1)*          |Атомарно замінює тільки якщо поточне значення == `old`. CAS-семантика на рівні бакета
+|===
+|`containsKey(Object key)`          |O(1)*          |Аналог `get != null` — без lock, через `volatile` читання
+|===
+|`containsValue(Object value)`      |O(n)           |Лінійний перебір *всіх* бакетів і всіх вузлів у кожному. Не захоплює глобальний lock — результат може бути неточним при паралельних змінах
+|===
+|`size()`                           |O(n)           |Підсумовує лічильники з масиву `CounterCell[]` — один прохід по масиву лічильників. Неточний при паралельних змінах
+|===
+|`mappingCount()`                   |O(n)           |Як `size()` але повертає `long`. Рекомендований для великих мап (> Integer.MAX_VALUE елементів)
+|===
+|`isEmpty()`                        |O(n)           |Аналогічно `size()` — перевіряє суму лічильників
+|===
+|`clear()`                          |O(n)           |Послідовно захоплює lock на кожен бакет і очищає. Не атомарна — інші потоки бачать часткове очищення
+|===
+|`putAll(Map m)`                    |O(m)           |Послідовно викликає `put` для кожного запису. Не атомарна операція
+|===
+|`getOrDefault(key, default)`       |O(1)*          |Як `get` але повертає `default` замість `null`
+|===
+|`computeIfAbsent(key, mappingFn)`  |O(1)*          |Атомарно обчислює і вставляє значення якщо ключ відсутній. Функція виконується під lock на бакет
+|===
+|`computeIfPresent(key, remapFn)`   |O(1)*          |Атомарно оновлює значення якщо ключ присутній. Під lock на бакет
+|===
+|`compute(key, remapFn)`            |O(1)*          |Атомарно обчислює нове значення (і вставляє або видаляє). Під lock на бакет
+|===
+|`merge(key, value, remapFn)`       |O(1)*          |Атомарно: якщо ключ відсутній — вставляє `value`, інакше — застосовує `remapFn(old, value)`. Під lock на бакет
+|===
+|`forEach(action)`                  |O(n)           |Слабко консистентний прохід по всіх записах. Не захоплює глобальний lock
+|===
+|`forEach(parallelismThreshold, action)` |O(n)      |Паралельний прохід через `ForkJoinPool` якщо розмір > threshold
+|===
+|`reduce(threshold, transformer, reducer)` |O(n)    |Паралельна редукція через `ForkJoinPool`
+|===
+|`search(threshold, searchFn)`      |O(n)           |Паралельний пошук — зупиняється при першому ненульовому результаті
+|===
+|`keySet()`                         |O(1)           |Повертає `KeySetView` — live view, не копію. Ітерація по ньому — O(n)
+|===
+|`values()`                         |O(1)           |Повертає `ValuesView` — live view
+|===
+|`entrySet()`                       |O(1)           |Повертає `EntrySetView` — live view
+|===
+|===
+|===
+
+NOTE: O(1)* означає *амортизоване O(1)* за умови рівномірного розподілу хешів. При поганій хеш-функції всі ключі можуть потрапити в один бакет → O(n) для ланцюжка або O(log n) для дерева.
+
+.Внутрішній устрій — еволюція Java 7 → Java 8
+У *Java 7* `ConcurrentHashMap` ділився на фіксовану кількість *сегментів* (Segment), кожен зі своїм lock. Максимальний паралелізм = кількість сегментів (default 16).
+
+У *Java 8+* архітектура кардинально змінилась:
+
+[source,java]
+----
+// Масив бакетів — volatile для видимості без lock при читанні
+transient volatile Node<K,V>[] table;
+
+// Новий масив під час resize
+private transient volatile Node<K,V>[] nextTable;
+
+// Базовий лічильник + масив лічильників для зменшення contention
+private transient volatile long baseCount;
+private transient volatile CounterCell[] counterCells;
+
+// -1 = ініціалізація, -N = resize (N-1 потоків допомагають)
+// >0 = threshold для наступного resize
+private transient volatile int sizeCtl;
+----
+
+.Структура бакета — три можливих стани
+Кожен бакет `table[i]` може бути у трьох станах:
+
+[source]
+----
+1. null → бакет порожній
+
+2. Node<K,V> → ланцюжок (linked list), якщо вузлів ≤ 8:
+   table[i] → [k1,v1] → [k2,v2] → [k3,v3] → null
+
+3. TreeBin<K,V> → червоно-чорне дерево, якщо вузлів > 8 і table.length ≥ 64:
+   table[i] → [TreeBin: k2,v2 / k1,v1 \ k3,v3]
+
+4. ForwardingNode → маркер що бакет вже перенесено під час resize
+----
+
+NOTE: Перетворення ланцюжка на дерево (*treeify*) відбувається коли кількість вузлів у бакеті перевищує `TREEIFY_THRESHOLD = 8` *і* загальний розмір таблиці ≥ `MIN_TREEIFY_CAPACITY = 64`. Якщо таблиця менша — замість treeify відбувається resize. Зворотне перетворення (*untreeify*) — коли вузлів стає ≤ `UNTREEIFY_THRESHOLD = 6`.
+
+.Як працює get(key) — без lock
+[source,java]
+----
+map.get("key");
+----
+
+[source,java]
+----
+public V get(Object key) {
+    Node<K,V>[] tab; Node<K,V> e, p; int n, eh; K ek;
+    int h = spread(key.hashCode());             // обчислюємо хеш
+    if ((tab = table) != null && (n = tab.length) > 0 &&
+        (e = tabAt(tab, (n - 1) & h)) != null) { // volatile читання бакета
+        if ((eh = e.hash) == h) {
+            if ((ek = e.key) == key || (ek != null && key.equals(ek)))
+                return e.val;                   // перший вузол — пощастило
+        }
+        else if (eh < 0)
+            return (p = e.find(h, key)) != null ? p.val : null; // дерево або ForwardingNode
+        while ((e = e.next) != null) {          // ланцюжок
+            if (e.hash == h && ((ek = e.key) == key || (ek != null && key.equals(ek))))
+                return e.val;
+        }
+    }
+    return null;
+}
+----
+
+NOTE: `tabAt` використовує `Unsafe.getObjectVolatile` — атомарне volatile читання конкретного елемента масиву. Звичайний `tab[i]` *не є* volatile читанням у Java, тому потрібен `Unsafe`. Весь `get` — *без жодного lock*.
+
+.Як працює put(key, value) — lock на бакет
+[source,java]
+----
+map.put("key", 42);
+----
+
+[source,java]
+----
+final V putVal(K key, V value, boolean onlyIfAbsent) {
+    int hash = spread(key.hashCode());
+    for (;;) {                                      // CAS-loop
+        Node<K,V>[] tab; Node<K,V> f; int n, i, fh;
+        if (tab == null || (n = tab.length) == 0)
+            tab = initTable();                      // lazy init через CAS
+        else if ((f = tabAt(tab, i = (n-1) & hash)) == null) {
+            if (casTabAt(tab, i, null, new Node<>(hash,key,value)))
+                break;                             // бакет порожній → CAS без lock!
+        }
+        else if ((fh = f.hash) == MOVED)
+            tab = helpTransfer(tab, f);            // допомагаємо resize
+        else {
+            synchronized (f) {                     // lock ТІЛЬКИ на головний вузол бакета
+                if (tabAt(tab, i) == f) {          // double-check після захоплення lock
+                    if (fh >= 0) {                 // ланцюжок
+                        // ... пошук або додавання у кінець
+                    } else if (f instanceof TreeBin) {
+                        // ... вставка у дерево
+                    }
+                }
+            }
+            if (binCount >= TREEIFY_THRESHOLD)
+                treeifyBin(tab, i);                // можливо treeify після unlock
+        }
+    }
+    addCount(1L, binCount);                        // оновлюємо лічильник
+    return null;
+}
+----
+
+NOTE: Якщо бакет *порожній* — `put` використовує *CAS (Compare-And-Swap)* без lock. Lock захоплюється тільки якщо бакет вже містить вузли. Це зменшує contention при рівномірному розподілі ключів.
+
+.Лічильник розміру — CounterCell замість одного AtomicLong
+Замість одного `AtomicLong size` (який став би вузьким місцем при тисячах паралельних `put`) — `ConcurrentHashMap` використовує *масив лічильників* `CounterCell[]`:
+
+[source,java]
+----
+// Кожен потік оновлює свій CounterCell (за Thread ID):
+private transient volatile CounterCell[] counterCells;
+private transient volatile long baseCount;
+
+// size() = baseCount + sum(counterCells)
+----
+
+[source]
+----
+Потік-1 → counterCells[0] += 1
+Потік-2 → counterCells[1] += 1   ← різні комірки, немає contention
+Потік-3 → counterCells[2] += 1
+...
+size() = baseCount + counterCells[0] + counterCells[1] + ... → O(масив лічильників)
+----
+
+NOTE: Ця техніка називається *LongAdder* і є окремим класом у `java.util.concurrent.atomic`. Саме тому `size()` у `ConcurrentHashMap` — не O(1) а O(кількість CounterCell), і може повертати *неточне значення* при паралельних змінах.
+
+.Паралельний resize — helpTransfer
+Коли `count > threshold` відбувається resize. На відміну від `HashMap` — resize у `ConcurrentHashMap` *паралельний*: кілька потоків одночасно переносять бакети зі старої таблиці у нову:
+
+[source]
+----
+Старий масив (n=16):        Новий масив (n=32):
+[0][1][2]...[15]    →→→    [0][1][2]...[31]
+      ↑                          ↑
+  ForwardingNode           потоки переносять бакети
+  (вже перенесено)         за допомогою sizeCtl
+----
+
+Потік що зустрічає `ForwardingNode` при `put` — *сам допомагає* переносити бакети (`helpTransfer`) замість того щоб чекати. `sizeCtl` кодує кількість потоків що зараз беруть участь у resize.
+
+.Атомарні операції — навіщо вони і як використовувати
+[source,java]
+----
+ConcurrentHashMap<String, Integer> wordCount = new ConcurrentHashMap<>();
+
+// НЕПРАВИЛЬНО — не атомарно (read-check-write між двома операціями):
+if (!map.containsKey("word")) {
+    map.put("word", 1);
+}
+
+// ПРАВИЛЬНО — атомарно під одним lock на бакет:
+map.putIfAbsent("word", 1);
+
+// НЕПРАВИЛЬНО — не атомарний інкремент:
+map.put("word", map.get("word") + 1);
+
+// ПРАВИЛЬНО — атомарний інкремент через merge:
+map.merge("word", 1, Integer::sum);
+
+// АБО через compute:
+map.compute("word", (k, v) -> v == null ? 1 : v + 1);
+----
+
+.Паралельні bulk операції (Java 8+)
+[source,java]
+----
+ConcurrentHashMap<String, Integer> map = new ConcurrentHashMap<>();
+// ... заповнюємо map
+
+// Паралельний forEach якщо розмір > 1000:
+map.forEach(1000, (k, v) ->
+    System.out.println(k + "=" + v)
+);
+
+// Паралельна редукція — сума всіх значень:
+long total = map.reduceValues(1000, v -> (long) v, Long::sum);
+
+// Паралельний пошук першого значення > 100:
+String found = map.search(1000, (k, v) -> v > 100 ? k : null);
+----
+
+NOTE: Параметр `parallelismThreshold` визначає мінімальний розмір мапи для паралельного виконання. Якщо `map.size() < threshold` — операція виконується послідовно. `threshold=1` — завжди паралельно, `Long.MAX_VALUE` — завжди послідовно.
+
+.ConcurrentHashMap vs альтернативи
+[cols="3,1,1,1", options="header"]
+|===
+|Читання без lock                   |✅ завжди          |❌ synchronized get |❌ synchronized get
+|Гранулярність lock при записі      |✅ один бакет      |❌ вся таблиця |❌ вся таблиця
+|`null` ключі/значення              |❌ заборонено      |❌ заборонено |✅ (залежить від Map)
+|===
+|Атомарні операції                  |✅ putIfAbsent, compute, merge |❌ |❌
+|===
+|Паралельні bulk операції           |✅ forEach, reduce, search |❌ |❌
+|===
+|`size()` точний                    |⚠️ приблизний      |✅ точний  |✅ точний
+|===
+|Продуктивність при high contention |✅ висока          |❌ низька  |❌ низька
+|===
+|Рекомендовано                      |✅ завжди          |❌ legacy  |❌ краще ConcurrentHashMap
+|===
+|===
+|===
+
+[#java-collection-framework-concurrenthashmap-pitfalls]
+.Підводні камені
+
+.size() є наближеним значенням — використовуй mappingCount() для великих мап
+[source,java]
+----
+ConcurrentHashMap<String, Integer> map = new ConcurrentHashMap<>();
+// ... 1000 потоків одночасно виконують put і remove
+
+// size() підсумовує counterCells[] — може бути неточним при паралельних змінах:
+int s = map.size(); // може бути 999 або 1001 під час активних операцій
+
+// Для дуже великих мап (> 2 млрд елементів) size() повертає Integer.MAX_VALUE!
+// mappingCount() повертає long і є точнішим:
+long count = map.mappingCount(); // рекомендовано для великих мап
+
+// НІКОЛИ не покладайся на точність size() для критичної логіки:
+if (map.size() == expectedCount) { // ❌ може бути хибним при конкуренції
+    proceed();
+}
+----
+
+NOTE: `size()` та `mappingCount()` повертають *наближене* значення при активних паралельних операціях. Це компроміс між точністю і продуктивністю: точний size вимагав би глобального lock. Використовуй `mappingCount()` для великих мап (> `Integer.MAX_VALUE`) і прийми факт що size() є приблизним.
+
+.putIfAbsent vs computeIfAbsent — ключова різниця
+[source,java]
+----
+ConcurrentHashMap<String, List<String>> map = new ConcurrentHashMap<>();
+
+// ПАСТКА: putIfAbsent ЗАВЖДИ обчислює value (навіть якщо ключ вже є):
+map.putIfAbsent("key", expensiveCall()); // expensiveCall() виконується ЗАВЖДИ!
+// Якщо "key" вже існує — результат expensiveCall() просто відкидається
+// але час на його обчислення вже витрачено!
+
+// ПРАВИЛЬНО: computeIfAbsent обчислює value ТІЛЬКИ якщо ключ відсутній:
+map.computeIfAbsent("key", k -> expensiveCall()); // expensiveCall() — тільки при відсутності
+
+// Практичний приклад — мультимапа:
+// НЕПРАВИЛЬНО (wasteful):
+map.putIfAbsent("category", new ArrayList<>()); // ArrayList завжди створюється
+map.get("category").add("item");
+
+// ПРАВИЛЬНО:
+map.computeIfAbsent("category", k -> new ArrayList<>()).add("item"); // ArrayList — тільки при необхідності
+----
+
+WARNING: `putIfAbsent(key, value)` — `value` є виразом, що *обчислюється до виклику методу*. Це означає що навіть якщо ключ вже існує — значення вже обчислено (конструктор викликано, метод викликано тощо). Для ліниво обчислюваних значень завжди використовуй `computeIfAbsent(key, mappingFunction)`.
+
+.null ключі та значення — NullPointerException
+[source,java]
+----
+ConcurrentHashMap<String, Integer> map = new ConcurrentHashMap<>();
+
+map.put(null, 1);    // ❌ NullPointerException!
+map.put("key", null); // ❌ NullPointerException!
+map.get(null);        // ❌ NullPointerException!
+
+// Порівняй з HashMap:
+HashMap<String, Integer> hm = new HashMap<>();
+hm.put(null, 1);    // ✅ — один null ключ дозволено
+hm.put("k", null);  // ✅ — null значення дозволено
+
+// ЧОМУ ConcurrentHashMap забороняє null?
+// Причина: у конкурентному середовищі неможливо відрізнити два випадки:
+// 1. map.get("key") повернув null → ключ відсутній
+// 2. map.get("key") повернув null → ключ є, але значення null
+// При single-threaded HashMap між containsKey і get немає race condition.
+// У CHM між containsKey(k)==false і get(k)==null інший потік міг put(k,null)!
+----
+
+NOTE: Заборона `null` у `ConcurrentHashMap` — *свідоме проектне рішення*. У конкурентному коді `map.get(key) == null` має одне чітке значення: "ключ відсутній". Якщо треба зберігати "відсутнє значення" — використовуй `Optional` або sentinel-об'єкт: `map.put(key, Optional.empty())`.
+
+.Ітерація є weakly consistent — не кидає CME але може пропустити зміни
+[source,java]
+----
+ConcurrentHashMap<String, Integer> map = new ConcurrentHashMap<>();
+map.put("a", 1); map.put("b", 2); map.put("c", 3);
+
+// НА ВІДМІНУ від HashMap — ConcurrentHashMap НЕ кидає ConcurrentModificationException:
+for (Map.Entry<String, Integer> entry : map.entrySet()) {
+    map.put("newKey", 99); // ✅ без CME! Але "newKey" може і не з'явитися в ітерації
+
+    // Ітератор відображає стан на момент створення + деякі зміни що відбулись після.
+    // Це "weakly consistent" — не гарантує побачення всіх змін, але не падає.
+}
+
+// Ітерація і модифікація безпечна, але результат непередбачуваний:
+// - Нові записи що додані ПІСЛЯ старту ітерації МОЖУТЬ з'явитись або НЕ з'явитись
+// - Видалені під час ітерації записи МОЖУТЬ або НЕ МОЖУТЬ бути пропущені
+map.forEach((k, v) -> {
+    if (v == 2) map.remove(k); // ✅ без CME, але "b" може бути ітероване вже після видалення
+});
+----
+
+.Складені операції — не атомарні навіть у ConcurrentHashMap
+[source,java]
+----
+ConcurrentHashMap<String, Integer> map = new ConcurrentHashMap<>();
+
+// АНТИПАТЕРН — check-then-act НЕ атомарний:
+if (!map.containsKey("key")) {   // Thread A перевіряє — false
+    map.put("key", 1);           // Thread B вставляє "key"=1 між цими рядками!
+}                                // Thread A теж вставляє "key"=1 → дублювання!
+
+// ПРАВИЛЬНО — putIfAbsent є атомарним (під одним lock на бакет):
+map.putIfAbsent("key", 1); // ✅ атомарна операція
+
+// АНТИПАТЕРН — read-modify-write НЕ атомарний:
+Integer val = map.get("counter");   // Thread A читає 5
+map.put("counter", val + 1);        // Thread B теж читає 5 і записує 6
+                                    // Thread A теж записує 6 → втрата інкременту!
+
+// ПРАВИЛЬНО — compute є атомарним (під lock на бакет):
+map.compute("counter", (k, v) -> v == null ? 1 : v + 1); // ✅ атомарний інкремент
+// або:
+map.merge("counter", 1, Integer::sum); // ✅ ще елегантніше
+----
+
+WARNING: *Атомарність окремих операцій (`put`, `get`, `remove`) не робить СКЛАДЕНІ операції атомарними.* Для атомарного read-modify-write використовуй: `compute()`, `computeIfAbsent()`, `computeIfPresent()`, `merge()`, `replace(k, oldV, newV)`. Уникай патерну `if(!containsKey) put` — він має race condition.
+
+.forEach та reduce не є атомарними транзакціями
+[source,java]
+----
+ConcurrentHashMap<String, Integer> scores = new ConcurrentHashMap<>();
+scores.put("alice", 100); scores.put("bob", 200); scores.put("carol", 300);
+
+// forEach — weakly consistent, не є транзакцією:
+int[] sum = {0};
+scores.forEach((k, v) -> {
+    sum[0] += v; // Під час ітерації інші потоки можуть змінювати scores!
+    // sum[0] може не відповідати реальній сумі в будь-який момент часу
+});
+
+// Для точної суми — використовуй reduce:
+long total = scores.reduceValues(1L, v -> (long) v, Long::sum);
+// АЛЕ: reduce теж weakly consistent — відображає стан що міг змінитись під час обробки
+
+// Для гарантовано точного snapshot — скопіюй:
+Map<String, Integer> snapshot = new HashMap<>(scores); // O(n) під lock!
+int exactSum = snapshot.values().stream().mapToInt(Integer::intValue).sum();
+----
+
+TIP: Для атомарних read-modify-write операцій використовуй `compute()`, `computeIfAbsent()`, `merge()`. Для паралельної обробки — `forEach(threshold, action)` та `reduce(threshold, transformer, reducer)` з `ForkJoinPool`. `threshold=1` — завжди паралельно; `Long.MAX_VALUE` — завжди послідовно.
+
+NOTE: У Java 8+ `ConcurrentHashMap` не має фіксованої кількості "сегментів" як у Java 7. Замість цього lock є на рівні окремого бакета (головного вузла бакета). Реальний паралелізм визначається кількістю бакетів (за замовчуванням 16, зростає при resize) а не `concurrencyLevel` параметром.
+
+IMPORTANT: `ConcurrentHashMap` — правильний вибір для *будь-якої* потокобезпечної мапи у сучасному Java коді. `Hashtable` є legacy з Java 1.0. `Collections.synchronizedMap` підходить лише якщо потрібна `null`-підтримка або точний `size()` під зовнішнім lock. Пам'ятай: атомарність окремих операцій (`put`, `get`) не робить *складені операції* атомарними — для цього використовуй `computeIfAbsent`, `merge`, `replace(k,old,new)`.
+
+=== Profiling & Memory considerations
+
+- Memory layout: `CounterCell` annotated `@Contended` helps avoiding false sharing; Node objects include volatile fields (`val`, `next`) to support lock-free reads — be mindful about object layout and cache lines.
+- Allocation pressure: high write throughput may cause frequent allocations (Nodes); consider object pooling or reuse strategies in hot paths.
+- GC & tuning: choose GC (G1, ZGC, Shenandoah) depending on latency requirements; monitor pause times, allocation rates and survivor promotion.
+
+=== Best practices
+
+- Tune `initialCapacity` to expected load to avoid expensive resizes under heavy concurrent writes.
+- For expensive value construction use `computeIfAbsent` instead of `putIfAbsent` to avoid wasted work.
+- Avoid relying on `size()` for critical control flow; use `mappingCount()` or maintain external counters if exact counts are required.
+- Add JMH benchmarks for hot paths and profile with async-profiler / JFR before optimizing.
+

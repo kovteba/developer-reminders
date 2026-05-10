@@ -1,0 +1,71 @@
+🟧 3. АРХИТЕКТУРНЫЕ ПАТТЕРНЫ (тактические)
+
+Эти паттерны используются внутри архитектур, чтобы решать конкретные задачи.
+
+⸻
+
+✔ 3.1. DDD тактические паттерны:
+	•	Entity
+	•	Value Object
+	•	Aggregate
+	•	Domain Service
+	•	Application Service
+	•	Repository
+	•	Factory
+	•	Domain Events
+	•	Anti-corruption Layer (ACL)
+
+⸻
+
+✔ 3.2. Паттерны интеграции и взаимодействия:
+	•	CQRS +
+	•	Event Sourcing +
+	•	Saga Pattern (Orchestration / Choreography)
+	•	Outbox Pattern
+	•	Strangler Fig Pattern
+	•	API Gateway Pattern
+	•	BFF — Backend For Frontend
+	•	Message Routing / Aggregator / Splitter (EIP)
+
+⸻
+
+✔ 3.3. Паттерны в микросервисах:
+	•	Sidecar
+	•	Ambassador
+	•	Adapter
+	•	Circuit Breaker
+	•	Bulkhead
+	•	Retry / Timeout
+	•	Service Discovery
+	•	Distributed Tracing
+
+⸻
+
+✔ 3.4. Паттерны устойчивости и масштабирования:
+	•	Cache-Aside
+	•	Read-Through
+	•	Write-Behind
+	•	Sharding
+	•	Replication
+	•	Load Balancing
+
+⸻
+
+✔ 3.5. Паттерны развертывания:
+	•	Blue-Green Deployment
+	•	Canary Release
+	•	Feature Flags
+	•	Rolling Updates
+
+⸻
+
+🟥 4. Антипаттерны (для полноты)
+	•	Big Ball of Mud
+	•	Distributed Monolith
+	•	Shared Database Antipattern
+	•	God Object
+	•	Lava Flow
+	•	Spaghetti Code
+	•	Service Mess (хаос из микросервисов)
+
+⸻

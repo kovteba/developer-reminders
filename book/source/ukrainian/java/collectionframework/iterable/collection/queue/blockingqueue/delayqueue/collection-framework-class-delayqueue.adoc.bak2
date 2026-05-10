@@ -1,0 +1,274 @@
+ifndef::imagesdir[:imagesdir: ../../../../../../../imgs/]
+
+[#java-collection-framework-delayqueue]
+=== DelayQueue
+`DelayQueue<E extends Delayed>` — це *необмежена блокуюча черга* з пакету `java.util.concurrent` де елементи стають доступними лише *після закінчення їх затримки*. Елементи повинні реалізовувати інтерфейс `Delayed`. Внутрішньо заснована на `PriorityQueue` — елемент з найменшою затримкою що вже спливла знаходиться першим. Не допускає `null`.
+
+.Ієрархія наслідування
+[source,subs="normal"]
+----
+Object
+  └── AbstractCollection<E>
+        └── AbstractQueue<E>
+              └── <<java-collection-framework-delayqueue,DelayQueue<E extends Delayed>>>
+                    (внутрішньо: <<java-collection-framework-priorityqueue,PriorityQueue<E>>>)
+----
+
+Реалізовані інтерфейси:
+
+* `BlockingQueue<E>` — блокуючі операції
+* `Iterable<E>`, `Collection<E>`, `Serializable`
+
+[#java-collection-framework-delayqueue-delayed-interface]
+.Інтерфейс Delayed
+Кожен елемент `DelayQueue` повинен реалізовувати `Delayed`:
+
+[source,java]
+----
+public interface Delayed extends Comparable<Delayed> {
+    // Повертає час що залишився до "дозрівання" елемента
+    // Повертає ≤ 0 якщо затримка вже минула
+    long getDelay(TimeUnit unit);
+}
+----
+
+[source,java]
+----
+// Реалізація елементу з затримкою:
+public class DelayedTask implements Delayed {
+    private final String name;
+    private final long expiresAt; // System.nanoTime() + delay
+
+    public DelayedTask(String name, long delay, TimeUnit unit) {
+        this.name = name;
+        this.expiresAt = System.nanoTime() + unit.toNanos(delay);
+    }
+
+    @Override
+    public long getDelay(TimeUnit unit) {
+        return unit.convert(expiresAt - System.nanoTime(), TimeUnit.NANOSECONDS);
+    }
+
+    @Override
+    public int compareTo(Delayed other) {
+        return Long.compare(
+            this.getDelay(TimeUnit.NANOSECONDS),
+            other.getDelay(TimeUnit.NANOSECONDS)
+        );
+    }
+
+    @Override
+    public String toString() { return name; }
+}
+----
+
+[#java-collection-framework-delayqueue-constructors]
+.Конструктори
+
+.DelayQueue()
+[source,java]
+----
+DelayQueue<DelayedTask> queue = new DelayQueue<>();
+----
+
+.DelayQueue(Collection<? extends E> c)
+[source,java]
+----
+DelayQueue<DelayedTask> queue = new DelayQueue<>(List.of(task1, task2));
+----
+
+[[java-collection-framework-delayqueue-leader-follower]]
+.DelayQueue — leader-follower pattern та точне очікування
+Leader-follower: тільки один потік (leader) викликає `available.awaitNanos(delay)` — чекає *точно* до моменту дозрівання елемента. Усі інші потоки (followers) викликають `available.await()` без таймауту. Коли leader прокидається і забирає елемент → `available.signal()` будить наступний follower який стає новим leader. Це запобігає "thundering herd" — ситуації де всі потоки прокидаються одночасно і конкурують за один елемент. При `take()` leader призначається через `leader = Thread.currentThread()` та скидається у `finally`.
+
+[#java-collection-framework-delayqueue-structure]
+.Внутрішній устрій
+`DelayQueue` містить `PriorityQueue` (де елементи впорядковані за `getDelay()`) і один `ReentrantLock`:
+
+[source,java]
+----
+private final transient ReentrantLock lock = new ReentrantLock();
+private final PriorityQueue<E> q = new PriorityQueue<E>();  // впорядковано за Delayed.compareTo
+private final Condition available = lock.newCondition();
+private Thread leader;  // потік що чекає на наступний елемент
+----
+
+.Leader-Follower pattern у take():
+[source,java]
+----
+public E take() throws InterruptedException {
+    lock.lockInterruptibly();
+    try {
+        for (;;) {
+            E first = q.peek();
+            if (first == null)
+                available.await();  // черга порожня — чекаємо
+            else {
+                long delay = first.getDelay(NANOSECONDS);
+                if (delay <= 0L)
+                    return q.poll(); // затримка минула → беремо елемент
+                // Затримка ще не минула:
+                if (leader != null)
+                    available.await();  // follower чекає поки leader не завершить
+                else {
+                    Thread thisThread = Thread.currentThread();
+                    leader = thisThread;
+                    try {
+                        available.awaitNanos(delay); // leader чекає рівно delay
+                    } finally {
+                        if (leader == thisThread)
+                            leader = null;
+                    }
+                }
+            }
+        }
+    } finally {
+        if (leader == null && q.peek() != null)
+            available.signal();
+        lock.unlock();
+    }
+}
+----
+
+NOTE: *Leader-Follower pattern*: тільки один потік (leader) чекає точний час до наступного елемента через `awaitNanos(delay)`. Інші потоки (followers) просто чекають. Коли leader забирає елемент — він будить наступного follower. Це уникає ситуації коли всі потоки прокидаються одночасно (thundering herd).
+
+[#java-collection-framework-delayqueue-big-o-notation]
+.BigO notation для `DelayQueue`
+[cols="2,1,4", options="header"]
+|===
+|Метод                          |Складність     |Пояснення
+|`offer(E e)` / `put(E e)`      |O(log n)       |Вставка в PriorityQueue + sift up; `put` ніколи не блокується (unbounded)
+|`take()`                       |O(log n)       |Блокує поки `getDelay() <= 0`; sift down після видалення
+|`poll()`                       |O(log n)       |Повертає `null` якщо черга порожня АБО першийелемент ще не "дозрів"
+|`poll(time, unit)`             |O(log n)       |Чекає до `time`, потім повертає `null`
+|===
+|`peek()`                       |O(1)           |Повертає перший елемент (можливо ще не дозрілий)
+|===
+|`remove(Object o)`             |O(n)           |Лінійний пошук у PriorityQueue
+|===
+|`size()`                       |O(1)           |Кількість ВСІХ елементів (включно з не-дозрілими)
+|===
+|`drainTo(Collection c)`        |O(n)           |Забирає лише *дозрілі* елементи (getDelay <= 0)
+|===
+|===
+
+NOTE: `poll()` повертає `null` у двох випадках: (1) черга порожня, (2) є елементи але їх затримка ще не минула. `peek()` повертає елемент з найменшою затримкою незалежно від того чи вона минула.
+
+.Практичні застосування
+
+.Кеш з TTL (Time-To-Live)
+[source,java]
+----
+class ExpiringCache<K, V> {
+    private final Map<K, V> data = new ConcurrentHashMap<>();
+    private final DelayQueue<ExpiryKey<K>> expiryQueue = new DelayQueue<>();
+
+    record ExpiryKey<K>(K key, long expiresAt) implements Delayed {
+        @Override public long getDelay(TimeUnit unit) {
+            return unit.convert(expiresAt - System.nanoTime(), NANOSECONDS);
+        }
+        @Override public int compareTo(Delayed o) {
+            return Long.compare(getDelay(NANOSECONDS), o.getDelay(NANOSECONDS));
+        }
+    }
+
+    public void put(K key, V value, long ttl, TimeUnit unit) {
+        data.put(key, value);
+        expiryQueue.offer(new ExpiryKey<>(key, System.nanoTime() + unit.toNanos(ttl)));
+    }
+
+    public V get(K key) { return data.get(key); }
+
+    // Очищення фоновим потоком:
+    public void startEviction() {
+        Thread evictionThread = new Thread(() -> {
+            try {
+                while (!Thread.currentThread().isInterrupted()) {
+                    ExpiryKey<K> expired = expiryQueue.take(); // блокується до expiry
+                    data.remove(expired.key());
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        });
+        evictionThread.setDaemon(true);
+        evictionThread.start();
+    }
+}
+----
+
+.Планувальник відкладених задач
+[source,java]
+----
+DelayQueue<DelayedTask> scheduler = new DelayQueue<>();
+
+// Запланувати задачу через 5 секунд:
+scheduler.offer(new DelayedTask("Send email", 5, TimeUnit.SECONDS));
+// Запланувати задачу через 1 хвилину:
+scheduler.offer(new DelayedTask("Cleanup", 1, TimeUnit.MINUTES));
+
+// Worker потік:
+while (true) {
+    DelayedTask task = scheduler.take(); // блокується до першої готової задачі
+    System.out.println("Executing: " + task);
+}
+----
+
+NOTE: `ScheduledThreadPoolExecutor` (з `Executors.newScheduledThreadPool`) використовує аналогічний механізм всередині — `DelayedWorkQueue`. `DelayQueue` — це будівельний блок для власних планувальників.
+
+.DelayQueue vs ScheduledExecutorService
+[cols="3,1,1", options="header"]
+|===
+|Критерій                       |DelayQueue             |ScheduledExecutorService
+|Рівень абстракції              |низький (структура даних) |високий (готовий планувальник)
+|Повторювані задачі             |❌ треба перевставляти  |✅ scheduleAtFixedRate
+|Управління потоками            |ручне                  |автоматичне (thread pool)
+|Гнучкість                      |✅ повна               |⚠️ обмежена
+|===
+|Рекомендовано для              |кастомних планувальників |стандартних задач
+|===
+|===
+
+[[java-collection-framework-delayqueue-pitfalls]]
+.Підводні камені
+
+.Правильна реалізація Delayed
+[source,java]
+----
+class DelayedTask implements Delayed {
+    private final long executeAt; // System.nanoTime() + delay
+
+    DelayedTask(long delayMs) {
+        this.executeAt = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(delayMs);
+    }
+
+    @Override
+    public long getDelay(TimeUnit unit) {
+        return unit.convert(executeAt - System.nanoTime(), TimeUnit.NANOSECONDS);
+    }
+
+    @Override
+    public int compareTo(Delayed other) {
+        return Long.compare(
+            getDelay(TimeUnit.NANOSECONDS),
+            other.getDelay(TimeUnit.NANOSECONDS)
+        );
+    }
+}
+----
+
+WARNING: `getDelay()` повинен використовувати `System.nanoTime()` (монотонний годинник), а НЕ `System.currentTimeMillis()` (системний час який може стрибати при синхронізації NTP). `compareTo()` повинен порівнювати наносекундні значення через `Long.compare` — не різницю (може бути переповнення `long`).
+
+.take() блокується навіть якщо черга не порожня
+[source,java]
+----
+DelayQueue<DelayedTask> q = new DelayQueue<>();
+q.put(new DelayedTask(60_000)); // затримка 60 секунд
+DelayedTask task = q.take(); // блокується на 60 секунд!
+// poll() повертає null якщо жоден елемент не "дозрів"
+DelayedTask t = q.poll(); // null — не блокується
+----
+
+WARNING: `take()` блокується навіть якщо черга *не порожня* — якщо всі наявні елементи ще не "дозріли" (їх `getDelay()` > 0). `poll()` в такому випадку повертає `null` без блокування. `size()` повертає загальну кількість елементів включно з тими що ще не дозріли.
+
+WARNING: `DelayQueue` *не допускає `null`*. Спроба додати `null` викине `NullPointerException`. Порядок між елементами визначається виключно через `Delayed.compareTo()` — реалізуй його коректно, інакше heap-порядок буде порушений і елементи можуть видаватись у неправильному порядку.

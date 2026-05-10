@@ -1,69 +1,296 @@
-ifndef::imagesdir[:imagesdir: ../../../../../../imgs]
+ifndef::imagesdir[:imagesdir: ../../../../../../imgs/]
 
 [#java-collection-framework-hash-set]
 ====== HashSet class
-`Hashset` - це клас який реалізує інтерфейс `Set` який у свою чергу розширяє інтерфейс `Collection`. Він представляє собою колекцію, яка не містить дублікатів елементів і використовує `HashMap` для зберігання хеш-кодів елементів. `HashSet` зберігає елементи в хеш-таблиці, яка забезпечує постійний час виконання операцій додавання, видалення та пошуку елементів. `HashSet` не гарантує порядок елементів під час ітерації. `HashSet` дозволяє зберігати тільки один нульовий елемент. `HashSet` не є синхронізованим, тому якщо необхідно забезпечити багатопоточний доступ до екземпляру `HashSet`, необхідно забезпечити зовнішню синхронізацію.
+`HashSet<E>` — це реалізація інтерфейсу `Set<E>` яка *не допускає дублікатів* і не гарантує порядку елементів. Внутрішньо реалізована через `HashMap<E, Object>` — елементи `HashSet` є ключами внутрішньої хеш-мапи. Допускає один `null`-елемент. Не є потокобезпечною. Операції `add`/`remove`/`contains`/`size` виконуються за O(1)*.
 
-Складається із так званий баскетов (buckets) і використовує хеш-коди для зберігання елементів.
+.Ієрархія наслідування
+[source,subs="normal"]
+----
+Object
+  └── AbstractCollection<E>
+        └── AbstractSet<E>
+              └── <<java-collection-framework-hash-set,HashSet<E>>>
+                    └── <<java-collection-framework-linkedhashset,LinkedHashSet<E>>>
+----
 
-// TODO: Внутреннее устройство HashSet
+Реалізовані інтерфейси: `Set<E>`, `Cloneable`, `Serializable`.
 
-Як що два об'єкти мають однаковий хеш-код то вони зберігаються в одному баскеті. Якщо ви викликаєте `add()` метод для додавання елемента в `HashSet`, то він викликає `hashCode()` метод для обчислення хеш-коду елемента і вставляє його в баскет. Якщо в баскеті вже є елементи, то він викликає `equals()` метод для перевірки наявності дублікатів. Якщо `equals()` повертає `false`, тоді елемент додається в баскет. Якщо `equals()` повертає `true`, тоді елемент не додається в баскет.
+WARNING: `HashSet` *не є потокобезпечним*. Паралельна модифікація з кількох потоків призведе до `ConcurrentModificationException` або пошкодження структури. Для потокобезпечного Set використовуй `Collections.synchronizedSet(new HashSet<>())` або `ConcurrentHashMap.newKeySet()`.
 
-Пошук елемента в `HashSet` займає постійний час, оскільки він використовує хеш-коди для зберігання елементів. Якщо два об'єкти мають однаковий хеш-код, то вони зберігаються в одному баскеті. Якщо ви викликаєте `contains()` метод для пошуку елемента в `HashSet`, то він викликає `hashCode()` метод для обчислення хеш-коду елемента і виконує пошук в баскеті. Якщо в баскеті вже є елементи, то він викликає `equals()` метод для перевірки наявності дублікатів. Якщо `equals()` повертає `true`, тоді метод `contains()` повертає `true`, інакше він повертає `false`.
+NOTE: `HashSet` дозволяє *рівно один* `null`-елемент. При спробі додати `null` вдруге — метод `add` поверне `false`, елемент не зміниться.
 
-image::collectionframework/hashset.png[scaledwidth=75%]
+[[java-collection-framework-hashset-present-sentinel]]
+[#java-collection-framework-hash-set-internal]
+.Внутрішній устрій — HashMap під капотом
 
+`HashSet` — це *тонка обгортка навколо `HashMap`*:
+
+[source,java]
+----
+public class HashSet<E> extends AbstractSet<E> implements Set<E> {
+    private transient HashMap<E, Object> map;  // внутрішня HashMap
+
+    // Sentinel-об'єкт: значення для ВСІХ ключів однакове
+    private static final Object PRESENT = new Object();
+
+    public boolean add(E e) {
+        return map.put(e, PRESENT) == null; // якщо ключ новий → put повертає null → true
+    }
+
+    public boolean remove(Object o) {
+        return map.remove(o) == PRESENT;
+    }
+
+    public boolean contains(Object o) {
+        return map.containsKey(o);
+    }
+
+    public int size() {
+        return map.size();
+    }
+}
+----
+
+.Що відбувається при add(e)
+[source]
+----
+1. Викликається map.put(e, PRESENT)
+2. Обчислюється hash(e.hashCode())
+3. Визначається бакет: i = (n-1) & hash
+4. Якщо бакет порожній → вставка. add() повертає true (елемент новий)
+5. Якщо бакет непорожній → порівнюємо hash + equals():
+   - Якщо equals() == true → дублікат! put() повертає PRESENT (не null).
+     add() повертає false (елемент НЕ додано)
+   - Якщо equals() == false → колізія: елементи різні, вставка в ланцюжок
+----
+
+WARNING: Рівність елементів перевіряється через `hashCode()` *і* `equals()`. Якщо клас перевизначає тільки один із них — `HashSet` працює некоректно. Завжди перевизначай обидва разом.
+
+[source,java]
+----
+// ПОГАНО — перевизначено тільки equals():
+class BadKey {
+    int id;
+    @Override public boolean equals(Object o) { return ((BadKey)o).id == id; }
+    // hashCode() не перевизначено → використовується з Object (адреса об'єкта)
+}
+
+HashSet<BadKey> set = new HashSet<>();
+BadKey k1 = new BadKey(); k1.id = 42;
+BadKey k2 = new BadKey(); k2.id = 42;
+
+set.add(k1);
+set.add(k2); // k1.equals(k2)==true, але hashCode різний → різні бакети → ДУБЛІКАТ!
+System.out.println(set.size()); // 2, а очікується 1!
+----
+
+[[java-collection-framework-hashset-linkedhashset-constructor]]
 [#java-collection-framework-hash-set-class-constructor]
-.Конструктори:
-* `HashSet()`: создает пустой список;
-* `HashSet(Collection<? extends E> col)`: создает хеш-таблицу, в которую добавляет все элементы коллекции `col`;
-* `HashSet(int capacity)`: параметр `capacity` указывает начальную емкость таблицы, которая по умолчанию равна `16`;
-* `HashSet(int capacity, float koef)`: параметр `koef` или коэффициент заполнения, значение которого должно быть в пределах от 0.0 до 1.0, указывает, насколько должна быть заполнена емкость объектами прежде чем произойдет ее расширение. Например, коэффициент 0.75 указывает, что при заполнении емкости на 3/4 произойдет ее расширение.
+.Конструктори
+
+.HashSet()
+[source,java]
+----
+HashSet<String> set = new HashSet<>();
+----
+
+*Що робить:* створює порожній `HashSet` з початковою ємністю 16 і load factor 0.75 (ті самі значення що й у `HashMap`).
+
+.HashSet(int initialCapacity)
+[source,java]
+----
+HashSet<String> set = new HashSet<>(64);
+----
+
+*Що робить:* встановлює початкову ємність внутрішньої `HashMap`. Аналогічно `HashMap` — уникає resize при відомій кількості елементів.
+
+.HashSet(int initialCapacity, float loadFactor)
+[source,java]
+----
+HashSet<String> set = new HashSet<>(64, 0.5f);
+----
+
+.HashSet(Collection<? extends E> c)
+[source,java]
+----
+List<String> list = List.of("a", "b", "c", "a", "b");
+HashSet<String> set = new HashSet<>(list); // видаляє дублікати!
+// set = {a, b, c}
+----
+
+*Типовий use case:* видалення дублікатів з колекції.
 
 [#java-collection-framework-hash-set-class-methods]
-.Методи:
-* `add(E e)`: добавляет элемент в хеш-таблицу;
-* `remove(Object o)`: удаляет элемент из хеш-таблицы;
-* `contains(Object o)`: проверяет наличие элемента в хеш-таблице;
-* `size()`: возвращает количество элементов в хеш-таблице;
-* `isEmpty()`: проверяет пуста ли хеш-таблица;
-* `clear()`: удаляет все элементы из хеш-таблицы;
-* `iterator()`: возвращает итератор для хеш-таблицы;
-* `spliterator()`: возвращает сплитератор для хеш-таблицы;
-* `forEach(Consumer<? super E> action)`: выполняет действие для каждого элемента в хеш-таблице;
-* `removeIf(Predicate<? super E> filter)`: удаляет все элементы, которые соответствуют предикату;
-* `toArray()`: возвращает массив, содержащий все элементы хеш-таблицы;
-* `toArray(T[] a)`: возвращает массив, содержащий все элементы хеш-таблицы;
-* `addAll(Collection<? extends E> c)`: добавляет все элементы коллекции `c` в хеш-таблицу;
-* `containsAll(Collection<?> c)`: проверяет наличие всех элементов коллекции `c` в хеш-таблице;
-* `removeAll(Collection<?> c)`: удаляет все элементы коллекции `c` из хеш-таблицы;
-* `retainAll(Collection<?> c)`: удаляет все элементы, которые не содержатся в коллекции `c`;
-* `equals(Object o)`: сравнивает хеш-таблицу с объектом `o`;
-* `hashCode()`: возвращает хеш-код хеш-таблицы;
-* `spliterator()`: возвращает сплитератор для хеш-таблицы.
+.Ключові методи
 
+[source,java]
+----
+HashSet<String> set = new HashSet<>();
+
+// add — повертає true якщо елемент доданий (новий), false якщо вже існував:
+set.add("Java");   // true
+set.add("Java");   // false (дублікат)
+set.add(null);     // true  (один null дозволено)
+
+// contains — O(1)*:
+set.contains("Java"); // true
+
+// remove — повертає true якщо елемент був і видалений:
+set.remove("Java"); // true
+set.remove("Go");   // false (не існував)
+
+// size, isEmpty, clear:
+set.size();    // поточна кількість
+set.isEmpty(); // true якщо порожній
+set.clear();   // видаляє всі елементи
+
+// Операції над множинами:
+Set<String> a = new HashSet<>(Set.of("1", "2", "3"));
+Set<String> b = new HashSet<>(Set.of("2", "3", "4"));
+
+// Перетин (intersection):
+Set<String> intersection = new HashSet<>(a);
+intersection.retainAll(b); // {2, 3}
+
+// Об'єднання (union):
+Set<String> union = new HashSet<>(a);
+union.addAll(b); // {1, 2, 3, 4}
+
+// Різниця (difference):
+Set<String> diff = new HashSet<>(a);
+diff.removeAll(b); // {1}
+----
+
+[[java-collection-framework-hashset-retainall-complexity]]
 [#java-collection-framework-hash-set-class-big-o-notation]
-.BigO notation для методов HashSet:
-* `add(E e)`: O(1);
-* `remove(Object o)`: O(1);
-* `contains(Object o)`: O(1);
-* `size()`: O(1);
-* `isEmpty()`: O(1);
-* `clear()`: O(1);
-* `iterator()`: O(1);
-* `spliterator()`: O(1);
-* `forEach(Consumer<? super E> action)`: O(n);
-* `removeIf(Predicate<? super E> filter)`: O(n);
-* `toArray()`: O(n);
-* `toArray(T[] a)`: O(n);
-* `addAll(Collection<? extends E> c)`: O(n);
-* `containsAll(Collection<?> c)`: O(n);
-* `removeAll(Collection<?> c)`: O(n);
-* `retainAll(Collection<?> c)`: O(n);
-* `equals(Object o)`: O(n);
-* `hashCode()`: O(n);
-* `spliterator()`: O(n).
+.BigO notation для `HashSet`
+[cols="2,1,4", options="header"]
+|===
+|`remove(Object o)`                 |O(1)*      |Хешування + видалення з HashMap
+|`contains(Object o)`               |O(1)*      |Хешування + пошук у HashMap
+|`size()`                           |O(1)       |Делегує до `HashMap.size()`
+|===
+|`isEmpty()`                        |O(1)       |`size == 0`
+|===
+|`clear()`                          |O(n)       |Обнуляє всі бакети HashMap
+|===
+|`iterator()`                       |O(1)       |Повертає ітератор. Ітерація — O(n)
+|===
+|`addAll(Collection c)`             |O(m)       |m — розмір доданої колекції
+|===
+|`retainAll(Collection c)`          |O(n)       |Лінійний перебір + contains по c
+|===
+|`removeAll(Collection c)`          |O(n*m)     |Залежить від реалізації c.contains
+|===
+|`containsAll(Collection c)`        |O(m)       |m — розмір c; для кожного елемента — O(1)* contains
+|===
+|`toArray()`                        |O(n)       |Копіювання у масив
+|===
+|===
+|===
 
+[[java-collection-framework-hashset-spliterator]]
+NOTE: O(1)* — амортизоване O(1) при рівномірному розподілі хешів. [[java-collection-framework-hash-set-access-by-key]] `HashSet` *не надає доступу по індексу або ключу*. Щоб отримати елемент — тільки через `contains()` або `iterator()`. Якщо потрібен доступ по ключу — використовуй `HashMap`, а не `HashSet`.
 
-[[java-collection-framework-hash-set-access-by-key]] Ні, в HashSet немає можливості отримати доступ до елементу по ключу або індексу. Якщо треба отримати елемент елемент, тоді треба викликати `iterator()` або використовуйте `for()` (той же самий Iterator). Якщо вам потрібно отримувати дані по ключу, то HashSet не підходить, по-перше, вона не призначена для цього, а по-друге, складність часу пошуку елемента займає O(n).
+.Підводні камені
+
+.Мутабельний об'єкт як елемент множини
+[source,java]
+----
+List<String> key = new ArrayList<>(List.of("a", "b"));
+Set<List<String>> set = new HashSet<>();
+set.add(key);
+System.out.println(set.contains(key)); // true
+
+key.add("c"); // мутуємо об'єкт — hashCode ЗМІНИВСЯ!
+System.out.println(set.contains(key)); // false — елемент "загублений"!
+System.out.println(set.size()); // 1 — елемент є, але знайти його неможливо!
+----
+
+WARNING: Ніколи не використовуй мутабельні об'єкти як елементи `HashSet` (і взагалі будь-якого `Set`). Якщо `hashCode()` об'єкта змінюється після вставки — елемент "загублений": він присутній у `Set`, але знайти його через `contains()` неможливо. Завжди використовуй *незмінні об'єкти* як елементи `Set`: `String`, `Integer`, `enum`-константи, `record`-класи.
+
+.Порушення контракту hashCode — дублікати у Set
+[source,java]
+----
+class User {
+    String name;
+    User(String name) { this.name = name; }
+
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof User u && name.equals(u.name);
+    }
+    // hashCode НЕ перевизначено!
+}
+
+Set<User> users = new HashSet<>();
+users.add(new User("Alice"));
+users.add(new User("Alice")); // різний hashCode → різний бакет → дублікат!
+System.out.println(users.size()); // 2 — а очікується 1!
+----
+
+NOTE: Якщо клас перевизначає `equals()`, але *не* перевизначає `hashCode()` — два "рівні" (за `equals`) об'єкти потраплять до різних бакетів і `HashSet` буде вважати їх різними елементами. Завжди перевизначай `hashCode()` разом з `equals()` (контракт з `java.lang.Object`).
+
+.HashSet не підтримує кастомний Comparator
+NOTE: На відміну від `TreeSet`, `HashSet` *не підтримує* кастомне порівняння через `Comparator`. Рівність елементів завжди визначається через `equals()` + `hashCode()`. Якщо потрібна "кастомна рівність" (наприклад, порівняння рядків без урахування регістру) — використовуй `TreeSet(Comparator)` або зберігай дані у `Map<Key, Value>` з нормалізованим ключем.
+
+.Порядок ітерації невизначений
+[source,java]
+----
+HashSet<Integer> set = new HashSet<>(Set.of(1, 2, 3, 4, 5));
+for (int n : set) {
+    System.out.print(n + " "); // порядок НЕПЕРЕДБАЧУВАНИЙ: може бути 1 3 5 2 4
+}
+// Якщо потрібен порядок → LinkedHashSet або TreeSet
+----
+
+.Ітерація та одночасна зміна
+[source,java]
+----
+HashSet<String> set = new HashSet<>(Set.of("a", "b", "c"));
+
+// НЕПРАВИЛЬНО:
+for (String s : set) {
+    if (s.equals("b")) set.remove(s); // ConcurrentModificationException!
+}
+
+// ПРАВИЛЬНО:
+set.removeIf(s -> s.equals("b")); // ✅ Java 8+
+
+// АБО через Iterator:
+Iterator<String> it = set.iterator();
+while (it.hasNext()) {
+    if (it.next().equals("b")) it.remove(); // ✅
+}
+----
+
+[[java-collection-framework-hashset-serialization]]
+[[java-collection-framework-hashset-equals-impl]]
+[[java-collection-framework-hashset-newsetfrommap]]
+[[java-collection-framework-hashset-clone]]
+[[java-collection-framework-hashset-pitfalls]]
+[[java-collection-framework-hashset-linkedhashset-treeset-diff]]
+.Порівняльна таблиця: HashSet vs LinkedHashSet vs TreeSet
+[cols="3,1,1,1", options="header"]
+|===
+|Внутрішня структура        |HashMap                |LinkedHashMap          |TreeMap (Red-Black Tree)
+|`add/remove/contains`      |O(1)*                  |O(1)*                  |O(log n)
+|`null`-елемент             |✅ один                |✅ один                |❌ (без Comparator)
+|===
+|Thread-safe                |❌                     |❌                     |❌
+|===
+|Пам'ять (vs HashSet)       |baseline               |+16 байт/entry         |+16 байт/entry
+|===
+|`first()` / `last()`       |❌                     |❌                     |✅
+|===
+|`headSet()` / `tailSet()`  |❌                     |❌                     |✅
+|===
+|Коли обирати               |дедуплікація, lookup   |стабільний порядок     |відсортований Set, range queries
+|===
+|===
+|===
+
+IMPORTANT: Завжди правило трьох `Set`: (1) Потрібна тільки унікальність і O(1) lookup → `HashSet`. (2) Потрібна унікальність + стабільний порядок вставки → `LinkedHashSet`. (3) Потрібна унікальність + сортування + навігаційні методи → `TreeSet`. Для thread-safety → `ConcurrentHashMap.newKeySet()` (аналог потокобезпечного `HashSet`).
+
+include::linkedhashset/collection-framework-linked-hash-set-class.adoc[]

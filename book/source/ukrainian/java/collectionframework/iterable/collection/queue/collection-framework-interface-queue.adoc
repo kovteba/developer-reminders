@@ -1,0 +1,62 @@
+ifndef::imagesdir[:imagesdir: ../../../../../../imgs/]
+ifndef::queuedir[:queuedir: ../../../../../../../../examples/java/src/main/java/kovteba/collectionframework/iterable/collection/queue]
+ifndef::queuetestdir[:queuetestdir: ../../../../../../../../examples/java/src/main/java/kovteba/collectionframework/iterable/collection/queue]
+
+[[java-collection-framework-blockingqueue-method-families]]
+.BlockingQueue — 4 сімейства методів та back-pressure
+`BlockingQueue` визначає 4 поведінки для кожної операції: (1) кидає виняток (`add`/`remove`/`element`), (2) повертає значення (`offer`/`poll`/`peek`), (3) блокує нескінченно (`put`/`take`), (4) блокує з таймаутом (`offer(e,t,u)`/`poll(t,u)`). `put()` реалізує back-pressure: producer блокується коли черга повна, змушуючи уповільнити виробництво. "Bursty traffic" (пікові навантаження): `LinkedBlockingQueue` з великою capacity буферизує пік; `SynchronousQueue` — ні (кожна задача вимагає вільного потоку).
+
+[#java-collection-framework-queue]
+===== Queue
+`Queue<E>` — інтерфейс, який розширює `Collection` і визначає поведінку *однонаправленої черги*. Елементи додаються в хвіст черги і видаляються з голови, згідно принципу `FIFO` (first-in, first-out).
+
+// [source,subs="normal"]
+// ----
+[I] <<java-collection-framework-queue,Queue<E>>>
+├── [C] <<java-collection-framework-priorityqueue,PriorityQueue<E>>>
+├── [I] <<java-collection-framework-deque,Deque<E>>>
+│   ├── [C] <<java-collection-framework-arraydeque,ArrayDeque<E>>>
+│   ├── [C] <<java-collection-framework-linkedlist,LinkedList<E>>>
+│   └── [I] BlockingDeque<E>
+│       └── [CC] <<java-collection-framework-linkedblockingqueue,LinkedBlockingDeque<E>>>
+│
+└── [I] BlockingQueue<E>
+    ├── [CC] <<java-collection-framework-arrayblockingqueue,ArrayBlockingQueue<E>>>
+    ├── [CC] <<java-collection-framework-linkedblockingqueue,LinkedBlockingQueue<E>>>
+    ├── [CC] PriorityBlockingQueue<E>
+    ├── [CC] DelayQueue<E>
+    ├── [CC] SynchronousQueue<E>
+    └── [I] TransferQueue<E>
+        └── [CC] LinkedTransferQueue<E>
+// ----
+
+[#java-collection-framework-queue-interface-methods]
+.Методи інтерфейсу `Queue`:
+
+Інтерфейс `Queue` надає дві групи методів — ті що кидають виняток при помилці і ті що повертають спеціальне значення:
+
+[cols="2,2,2", options="header"]
+|===
+|Видалення      |`remove()` → `NoSuchElementException` |`poll()` → `null`
+|Перегляд       |`element()` → `NoSuchElementException` |`peek()` → `null`
+|===
+|===
+
+.Опис методів:
+* `boolean add(E e)` — додає елемент у хвіст черги. Якщо черга обмежена і заповнена — кидає `IllegalStateException`;
+* `boolean offer(E e)` — додає елемент у хвіст черги. Якщо черга заповнена — повертає `false` (замість виключення). Рекомендований метод для обмежених черг;
+* `E remove()` — видаляє і повертає елемент з голови черги. Якщо черга порожня — кидає `NoSuchElementException`;
+* `E poll()` — видаляє і повертає елемент з голови черги. Якщо черга порожня — повертає `null`;
+* `E element()` — повертає (але не видаляє) елемент з голови черги. Якщо черга порожня — кидає `NoSuchElementException`;
+* `E peek()` — повертає (але не видаляє) елемент з голови черги. Якщо черга порожня — повертає `null`.
+
+TIP: Надавай перевагу методам що повертають значення (`offer`, `poll`, `peek`) над тими що кидають виняток (`add`, `remove`, `element`), якщо порожня/заповнена черга є очікуваним станом, а не помилкою.
+
+include::priorityqueue/collection-framework-class-priorityqueue.adoc[]
+include::deque/collection-framework-interface-deque.adoc[]
+include::blockingqueue/arrayblockingqueue/collection-framework-class-arrayblockingqueue.adoc[]
+include::blockingqueue/linkedblockingqueue/collection-framework-class-linkedblockingqueue.adoc[]
+include::blockingqueue/priorityblockingqueue/collection-framework-class-priorityblockingqueue.adoc[]
+include::blockingqueue/delayqueue/collection-framework-class-delayqueue.adoc[]
+include::blockingqueue/synchronousqueue/collection-framework-class-synchronousqueue.adoc[]
+include::blockingqueue/linkedtransferqueue/collection-framework-class-linkedtransferqueue.adoc[]

@@ -1,0 +1,48 @@
+ifndef::imagesdir[:imagesdir: ../../../../imgs/]
+ifndef::serverlessexampledir[:serverlessexampledir: ../../../../../../examples/?????/??????/src/main/java/kovteba]
+
+[#serverless]
+==== Serverless
+// TODO Serverless
+
+// [[serverless-definition]] Serverless — це архітектурний підхід, який дозволяє розробникам писати та запускати код, не відволікаючись на управління серверами. Сервери, які використовуються для виконання коду, повністю управляються хмарним провайдером (cloud service provider або CSP). Це означає, що розробники можуть писати код, не відволікаючись на управління серверами, а хмарний провайдер буде відповідальний за масштабування, забезпечення високої доступності та безпеки.
+//
+// Other major players in today's serverless platform market include IBM Cloud® Code Engine, Oracle Cloud Infrastructure (OCI) Functions, Cloudflare Workers and Alibaba Function Compute.
+//
+// Serverless architectures work well for event-driven and stream-processing workloads, most notably the open-source Apache Kafka event streaming platform.
+//
+// *Serverless versus PaaS, containers and VMs*
+// Because serverless, platform as a service (PaaS), containers and virtual machines (VMs) all play a critical role in the cloud application development and compute ecosystem, it's helpful to measure how serverless compares to the others across some key attributes.
+//
+// - *Provisioning time*: Measured in milliseconds for serverless versus minutes to hours for the other models.
+// - *Administrative burden*: None for serverless, compared to a continuum from light to medium to heavy for PaaS, containers and VMs, respectively.
+// - *Maintenance*: Serverless architectures are managed 100% by CSPs. The same is true for PaaS, but containers and VMs require significant maintenance, including updating and managing operating systems, container images, connections and so on.
+// - *Scaling*: Autoscaling, including autoscaling to zero, is instant and inherent for serverless. The other models offer automatic but slow scaling that requires careful tuning of autoscaling rules and no scaling to zero.
+// - *Capacity planning*: None is needed for serverless. The other models require a mix of automatic scalability and capacity planning.
+// - *Statelessness*: Inherent for serverless, which means scalability is never a problem; state is maintained in an external service or resource. PaaS, containers and VMs can use HTTP, keep an open socket or connection for long periods and store state in memory between calls.
+// - *High availability (HA) and disaster recovery (DR)*: Serverless offers both high availability and disaster recovery with no extra effort or extra cost. The other models require extra cost and management effort. Infrastructure can be restarted automatically with VMs and containers.
+// - *Resource utilization*: Serverless is 100% efficient because there is no idle capacity—it is invoked only upon request. All other models feature at least some degree of idle capacity.
+// - *Billing and savings*: Serverless is metered in units of 100 milliseconds. PaaS, containers and VMs are typically metered by the hour or the minute.
+//
+// .*Pros and cons of serverless*
+// *Pros*
+// Serverless computing offers individual developers and enterprise development teams many technical and business benefits:
+//
+// - *Improved developer productivity*: As noted, serverless enables development teams to focus on writing code, not managing infrastructure. It gives developers more time to innovate and optimize their front-end application functions and business logic.
+// - *Pay for execution only*: The meter starts when the request is made and ends when execution finishes. Compare this to the IaaS compute model, where customers pay for the physical servers, VMs and other resources required to run applications, from when they provision those resources until they explicitly decommission them.
+// - *Develop in any language*: Serverless is a polyglot environment that enables developers to code in any language or framework—Java, Python, JavaScript, node.js—that they're comfortable with.
+// - *Streamlined development or DevOps cycles*: Serverless simplifies deployment and, in a larger sense, simplifies DevOps because developers don't spend time defining the infrastructure required to integrate, test, deliver and deploy code builds into production.
+// - *Cost-effective performance*: For specific workloads (for example, embarrassingly parallel processing, stream processing, specific data processing tasks), serverless computing can be both faster and more cost-effective than other forms of compute.
+// - *Reduce latency*: In a serverless environment, code can run closer to the end user, decreasing latency.
+// - *Usage visibility*: Serverless platforms provide near-total visibility into system and user times and can aggregate usage information systematically.
+//
+// *Cons*
+// While serverless has many advantages, it's essential to consider some disadvantages:
+//
+// - *Less control*: In a serverless setting, an organization hands server control over to a third-party CSP, thus relinquishing the management of hardware and execution environments.
+// - *Vendor lock-in*: Each service provider offers unique serverless capabilities and features that are incompatible with other vendors.
+// - *Slow startup*: Also known as "cold start," slow startup can affect the performance and responsiveness of serverless applications, particularly in real-time demand environments.
+// - *Complex testing and debugging*: Debugging can be more complicated with a serverless computing model as developers lack visibility into back-end processes.
+// - *Higher cost for running long applications*: Serverless execution models are not designed to execute code for extended periods. Therefore, long-running processes can cost more than traditional dedicated server or VM environments.
+//
+// https://www.ibm.com/topics/serverless[source 1]

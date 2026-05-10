@@ -1,0 +1,5 @@
+ifndef::imagesdir[:imagesdir: ../../../imgs/]
+ifndef::architecturepatternexampledir[:architecturepatternexampledir: ../../../../../examples/??????/??????/src/main/java/kovteba]
+
+[#architecture-pattern]
+==== Architecture Pattern

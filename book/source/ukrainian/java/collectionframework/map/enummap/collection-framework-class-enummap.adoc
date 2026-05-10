@@ -1,0 +1,327 @@
+ifndef::imagesdir[:imagesdir: ../../../../../imgs/]
+
+[#java-collection-framework-enummap]
+==== EnumMap class
+`EnumMap<K extends Enum<K>, V>` — це спеціалізована реалізація `Map` де ключами є *виключно enum-константи*. Внутрішньо реалізована як *масив* індексований по `ordinal()` enum-константи. Операції виконуються за O(1) — швидше і компактніше ніж `HashMap`. Ітерується в *порядку оголошення* enum-констант. Не є потокобезпечною. Дозволяє `null`-значення але не `null`-ключ.
+
+.Ієрархія наслідування
+[source,subs="normal"]
+----
+Object
+  └── AbstractMap<K,V>
+        └── <<java-collection-framework-enummap,EnumMap<K extends Enum<K>, V>>>
+----
+
+Реалізовані інтерфейси:
+
+* `Map<K,V>` — базовий контракт
+* `Cloneable`, `Serializable`
+
+WARNING: `EnumMap` *не допускає `null`-ключів*. Спроба `put(null, value)` або `get(null)` викине `NullPointerException`. `null`-значення дозволені.
+
+NOTE: Не плутай відсутній ключ з ключем що має значення `null`! `containsKey(key)` і `get(key)` поводяться по-різному: `get` повертає `null` як для відсутніх ключів так і для ключів зі значенням `null`.
+
+[#java-collection-framework-enummap-constructors]
+.Конструктори
+
+.EnumMap(Class<K> keyType)
+[source,java]
+----
+enum Season { SPRING, SUMMER, AUTUMN, WINTER }
+
+EnumMap<Season, String> descriptions = new EnumMap<>(Season.class);
+----
+
+*Що робить:* створює порожню `EnumMap` для вказаного enum-типу. Внутрішній масив одразу виділяється розміром = кількість констант enum.
+
+*Коли використовувати:* стандартний спосіб створення `EnumMap`.
+
+.EnumMap(EnumMap<K, ? extends V> m)
+[source,java]
+----
+EnumMap<Season, String> copy = new EnumMap<>(descriptions);
+----
+
+*Що робить:* копіює всі записи з іншої `EnumMap` того самого enum-типу.
+
+.EnumMap(Map<K, ? extends V> m)
+[source,java]
+----
+Map<Season, String> regularMap = new HashMap<>();
+regularMap.put(Season.SUMMER, "hot");
+EnumMap<Season, String> enumMap = new EnumMap<>(regularMap);
+----
+
+*Що робить:* копіює записи з будь-якої `Map`. Визначає enum-тип з першого запису — якщо `m` порожня, кидає `IllegalArgumentException`.
+
+[[java-collection-framework-enummap-internal-array]]
+.EnumMap — vals[] масив, O(1) guaranteed, KeySet через bitset
+`EnumMap` зберігає значення у `Object[] vals` де `vals[key.ordinal()] = value`. Розмір масиву = кількість констант enum (фіксований). Доступ: `vals[key.ordinal()]` — один array access без хешування, без equals(), без collision. Тому O(1) є guaranteed (не amortized) — немає resize, немає probe sequence. `EnumMap.KeySet` реалізований ефективно: ітерація по `keyUniverse` (масив констант enum) з перевіркою `vals[i] != null`. Деякі реалізації оптимізують це через bitset (bit set на позиції ordinal якщо ключ присутній). `clone()` копіює `vals.clone()` (shallow copy масиву значень) + `keyUniverse` (той самий — shared між enum-константами).
+
+[#java-collection-framework-enummap-structure]
+.Внутрішній устрій — масив за ordinal
+`EnumMap` зберігає значення у простому масиві `Object[] vals` де індекс = `key.ordinal()`:
+
+[source,java]
+----
+public class EnumMap<K extends Enum<K>, V> extends AbstractMap<K,V> {
+    private final Class<K> keyType;
+    private transient K[] keyUniverse;  // всі константи enum (від EnumSet.values())
+    private transient Object[] vals;    // vals[key.ordinal()] = значення або null
+
+    // Спеціальний sentinel для "null value":
+    private static final Object NULL = new Object();
+}
+----
+
+.Як виглядає put і get:
+[source,java]
+----
+// put(Season.SUMMER, "hot"):
+vals[Season.SUMMER.ordinal()] = "hot";  // vals[1] = "hot"
+
+// get(Season.SUMMER):
+return (V) vals[Season.SUMMER.ordinal()];  // vals[1] → "hot"
+
+// containsKey(Season.WINTER):
+return vals[Season.WINTER.ordinal()] != null;  // vals[3] != null
+----
+
+.Візуалізація структури:
+[source]
+----
+enum Season { SPRING(0), SUMMER(1), AUTUMN(2), WINTER(3) }
+               ↑ ordinal
+
+EnumMap:
+keyUniverse: [SPRING, SUMMER, AUTUMN, WINTER]
+vals:        [null,   "hot",  "cool", "cold" ]
+              ↑        ↑        ↑       ↑
+           ordinal 0   1        2       3
+
+get(SUMMER) → vals[1] → "hot"   ← один array access!
+----
+
+[#java-collection-framework-enummap-big-o-notation]
+.BigO notation для `EnumMap`
+[cols="2,1,4", options="header"]
+|===
+|`get(Object key)`              |O(1)           |`vals[key.ordinal()]` — прямий доступ по індексу
+|`remove(Object key)`           |O(1)           |`vals[key.ordinal()] = null`
+|`containsKey(Object key)`      |O(1)           |`vals[key.ordinal()] != null`
+|===
+|`containsValue(Object value)`  |O(n)           |Лінійний прохід по `vals` — n = кількість констант enum
+|===
+|`size()`                       |O(1)           |Поле `size`
+|===
+|`clear()`                      |O(n)           |`Arrays.fill(vals, null)` — n = кількість констант enum
+|===
+|`keySet()`                     |O(1)           |View по `keyUniverse` — ітерація O(n)
+|===
+|`values()`                     |O(1)           |View по `vals` — ітерація O(n)
+|===
+|`entrySet()`                   |O(1)           |View — ітерація O(n)
+|===
+|`putAll(Map m)`                |O(m)           |m — кількість записів у переданій мапі
+|===
+|===
+|===
+
+NOTE: `EnumMap` є *найшвидшою* реалізацією `Map` для enum-ключів. Прямий доступ до масиву за індексом без хешування, без колізій, без порівняння через `equals()`.
+
+.Практичні застосування
+
+.Стани або фази системи
+[source,java]
+----
+enum OrderStatus { CREATED, CONFIRMED, PROCESSING, SHIPPED, DELIVERED, CANCELLED }
+
+EnumMap<OrderStatus, String> statusDescriptions = new EnumMap<>(OrderStatus.class);
+statusDescriptions.put(OrderStatus.CREATED,    "Замовлення створено");
+statusDescriptions.put(OrderStatus.CONFIRMED,  "Замовлення підтверджено");
+statusDescriptions.put(OrderStatus.PROCESSING, "В обробці");
+statusDescriptions.put(OrderStatus.SHIPPED,    "Відправлено");
+statusDescriptions.put(OrderStatus.DELIVERED,  "Доставлено");
+statusDescriptions.put(OrderStatus.CANCELLED,  "Скасовано");
+
+// Отримати опис статусу:
+String desc = statusDescriptions.get(order.getStatus());
+----
+
+.Transition table (State Machine)
+[source,java]
+----
+enum State { IDLE, RUNNING, PAUSED, STOPPED }
+
+// Дозволені переходи:
+EnumMap<State, EnumSet<State>> transitions = new EnumMap<>(State.class);
+transitions.put(State.IDLE,    EnumSet.of(State.RUNNING));
+transitions.put(State.RUNNING, EnumSet.of(State.PAUSED, State.STOPPED));
+transitions.put(State.PAUSED,  EnumSet.of(State.RUNNING, State.STOPPED));
+transitions.put(State.STOPPED, EnumSet.noneOf(State.class));
+
+// Перевірка переходу:
+boolean canTransition(State from, State to) {
+    return transitions.get(from).contains(to);
+}
+----
+
+.Підрахунок за категоріями
+[source,java]
+----
+enum Priority { LOW, MEDIUM, HIGH, CRITICAL }
+
+EnumMap<Priority, Integer> taskCounts = new EnumMap<>(Priority.class);
+// Ініціалізація:
+for (Priority p : Priority.values()) {
+    taskCounts.put(p, 0);
+}
+
+// Підрахунок задач:
+for (Task task : tasks) {
+    taskCounts.merge(task.getPriority(), 1, Integer::sum);
+}
+
+// Вивід у порядку оголошення Priority:
+taskCounts.forEach((priority, count) ->
+    System.out.println(priority + ": " + count + " tasks")
+);
+----
+
+.EnumMap vs HashMap для enum-ключів
+[cols="3,1,1", options="header"]
+|===
+|Внутрішня структура                |масив за ordinal        |хеш-таблиця
+|get/put складність                 |✅ O(1) прямий доступ  |⚠️ O(1) + хешування
+|Пам'ять                            |✅ один масив значень   |❌ Entry об'єкти + масив
+|===
+|Порядок ітерації                   |✅ enum declaration     |❌ не гарантується
+|===
+|`null` ключ                        |❌ заборонено          |✅ один null
+|===
+|Thread-safe                        |❌                     |❌
+|===
+|===
+|===
+
+[#java-collection-framework-enummap-pitfalls]
+.Підводні камені
+
+.null ключ → NullPointerException (на відміну від HashMap)
+[source,java]
+----
+enum Color { RED, GREEN, BLUE }
+
+EnumMap<Color, String> map = new EnumMap<>(Color.class);
+
+// NullPointerException при null ключі:
+map.put(null, "value");  // ❌ NullPointerException!
+map.get(null);           // ❌ NullPointerException!
+map.containsKey(null);   // ❌ NullPointerException (у деяких версіях може бути false)
+map.remove(null);        // ❌ NullPointerException!
+
+// null значення — ДОЗВОЛЕНО:
+map.put(Color.RED, null); // ✅ значення може бути null
+map.get(Color.RED);       // null (не обов'язково означає відсутність ключа!)
+map.containsKey(Color.RED); // true (ключ є, значення null)
+
+// Пастка: get() і containsKey() мають різні семантики при null-значенні:
+map.put(Color.GREEN, null);
+System.out.println(map.get(Color.GREEN));           // null
+System.out.println(map.containsKey(Color.GREEN));   // true
+System.out.println(map.get(Color.BLUE));            // null
+System.out.println(map.containsKey(Color.BLUE));    // false
+// get() повертає null і при відсутньому ключі і при null-значенні!
+----
+
+WARNING: `EnumMap` не допускає `null`-ключів — на відміну від `HashMap`. Якщо код, що раніше використовував `HashMap<EnumType, V>`, мігрується на `EnumMap`, перевір чи немає де-небудь `map.put(null, ...)` — це призведе до NPE.
+
+.Тип ключа фіксується під час конструювання
+[source,java]
+----
+enum Planet { MERCURY, VENUS, EARTH }
+enum Season { SPRING, SUMMER, AUTUMN }
+
+// ПРАВИЛЬНО — передаємо клас enum:
+EnumMap<Planet, Double> gravity = new EnumMap<>(Planet.class);
+
+// При створенні через копіювання з Map — тип визначається з першого запису:
+Map<Planet, Double> source = new HashMap<>();
+source.put(Planet.EARTH, 9.8);
+EnumMap<Planet, Double> copy = new EnumMap<>(source); // ✅ тип = Planet
+
+// ПРОБЛЕМА: порожня Map → IllegalArgumentException:
+Map<Planet, Double> empty = new HashMap<>();
+EnumMap<Planet, Double> bad = new EnumMap<>(empty); // ❌ IllegalArgumentException!
+// "Specified map is empty, and no key type is available"
+
+// Завжди передавай або непорожню Map або явний Class<K>:
+EnumMap<Planet, Double> safe = new EnumMap<>(Planet.class); // ✅ завжди безпечно
+safe.putAll(empty); // можна додати порожню Map після конструювання
+----
+
+.Порядок ітерації — порядок оголошення enum, не вставки
+[source,java]
+----
+enum Priority {
+    CRITICAL,  // ordinal = 0
+    HIGH,      // ordinal = 1
+    MEDIUM,    // ordinal = 2
+    LOW        // ordinal = 3
+}
+
+EnumMap<Priority, Integer> counts = new EnumMap<>(Priority.class);
+// Вставляємо в "зворотному" порядку:
+counts.put(Priority.LOW, 10);
+counts.put(Priority.MEDIUM, 20);
+counts.put(Priority.HIGH, 30);
+counts.put(Priority.CRITICAL, 40);
+
+// Ітерація завжди у порядку ОГОЛОШЕННЯ enum (ordinal):
+counts.forEach((p, c) -> System.out.println(p + "=" + c));
+// CRITICAL=40
+// HIGH=30
+// MEDIUM=20
+// LOW=10
+// (не у порядку вставки!)
+
+// СЮРПРИЗ: якщо хтось переставить константи в enum:
+// enum Priority { LOW, MEDIUM, HIGH, CRITICAL } — порядок ітерації зміниться!
+// Це може зламати тести що перевіряють порядок виводу
+----
+
+NOTE: Порядок ітерації `EnumMap` визначається порядком оголошення констант у `enum` (через `ordinal()`). Якщо порядок констант у `enum` змінюється (рефакторинг) — порядок ітерації `EnumMap` теж зміниться. Будь обережний з тестами що перевіряють порядок елементів.
+
+.EnumMap не є потокобезпечним
+[source,java]
+----
+enum Status { ACTIVE, INACTIVE, PENDING }
+
+// НЕ потокобезпечний:
+EnumMap<Status, Integer> counts = new EnumMap<>(Status.class);
+
+// Два потоки одночасно:
+// Thread A: counts.put(Status.ACTIVE, 1)
+// Thread B: counts.put(Status.ACTIVE, 2)
+// Результат непередбачуваний!
+
+// РІШЕННЯ 1 — Collections.synchronizedMap:
+Map<Status, Integer> syncMap = Collections.synchronizedMap(
+    new EnumMap<>(Status.class)
+);
+// Усі операції стають synchronized
+
+// РІШЕННЯ 2 — зовнішня синхронізація:
+synchronized (counts) {
+    counts.merge(Status.ACTIVE, 1, Integer::sum);
+}
+
+// РІШЕННЯ 3 — ConcurrentHashMap (якщо треба висока конкурентність):
+// Але втратимо переваги EnumMap (порядок, пам'ять, швидкість)
+ConcurrentHashMap<Status, Integer> concurrent = new ConcurrentHashMap<>();
+concurrent.merge(Status.ACTIVE, 1, Integer::sum); // ✅ атомарно
+----
+
+TIP: *Завжди обирай `EnumMap` замість `HashMap` коли ключі є enum-константами.* Переваги: (1) O(1) прямий доступ по масиву без хешування та порівнянь через `equals()`; (2) ~2-5x менше пам'яті (масив значень vs Entry-об'єкти з hash-таблицею); (3) передбачуваний порядок ітерації (enum declaration order); (4) компілятор гарантує type-safety на рівні generics. Єдина причина обрати `HashMap` — якщо потрібна конкурентність (`ConcurrentHashMap`) або null-ключі (поганий дизайн).
+
+IMPORTANT: *Завжди використовуй `EnumMap` замість `HashMap<EnumType, V>`*. `EnumMap` швидша, споживає менше пам'яті, має передбачуваний порядок ітерації та більш виразний API. Єдина причина обрати `HashMap` з enum-ключами — якщо потрібен `null`-ключ (але це погана практика).

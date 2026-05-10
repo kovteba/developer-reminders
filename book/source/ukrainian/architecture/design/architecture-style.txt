@@ -1,0 +1,36 @@
+Главный раздел.
+Разбиваю на ВНЕШНИЕ (как устроена система на уровне сервисов) и ВНУТРЕННИЕ (как устроен один модуль/сервис внутри).
+
+🟧 2.1. Внешние архитектурные стили (системные)
+Эти стили определяют как устроена вся система:
+            •	Monolithic Architecture +
+•	Modular Monolith
+            •	Microservices Architecture +
+•	SOA — Service-Oriented Architecture +
+            •	Event-Driven Architecture (EDA/EDD) +
+            •	Serverless Architecture +
+•	Distributed Architecture
+•	Client–Server Architecture
+•	N-tier Architecture
+•	Cloud-native Architecture
+•	API-First Architecture
+•	Headless Architecture
+•	Layered design
+
+
+
+
+🟦 2.2. Внутренние архитектурные стили (структура одного приложения)
+И вот здесь должен был быть Plug-in Architecture. Я добавляю его как положено:
+•	Layered Architecture
+•	Hexagonal Architecture (Ports & Adapters)
+•	Onion Architecture
+•	Clean Architecture
+•	DDD Layered Architecture
+•	Component-based Architecture
+•	Modular Architecture
+                •	✔ Microkernel Architecture (a.k.a. Plug-in Architecture) +
+•	Pipes and Filters Architecture
+•	Blackboard Architecture
+•	Micro-frontend Architecture (для UI)
+Теперь Plug-in Architecture стоит на своём правильном месте.

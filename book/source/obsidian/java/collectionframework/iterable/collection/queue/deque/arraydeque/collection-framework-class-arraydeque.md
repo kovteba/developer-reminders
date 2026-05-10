@@ -1,0 +1,362 @@
+### ArrayDeque ^java-collection-framework-arraydeque
+
+`ArrayDeque` у Java — це **двостороння черга** (double-ended queue) на основі кільцевого масиву, яка реалізує інтерфейс `Deque<E>`. Елементи можна додавати і видаляти з **обох кінців** за O(1).
+
+* `Deque<E>` — повна двостороння черга: `addFirst`, `addLast`, `pollFirst`, `pollLast`
+* `Queue<E>` — поведінка черги FIFO: `offer`, `poll`, `peek`
+* `Cloneable`, `Serializable` — підтримка клонування і серіалізації
+
+**Ієрархія наслідування**
+```text
+Object
+  └── AbstractCollection<E>
+        └── [[#java-collection-framework-arraydeque|ArrayDeque<E>]]
+```
+
+> [!WARNING]
+> `ArrayDeque` **не є потокобезпечною**. Для багатопотокового середовища використовуй `LinkedBlockingDeque` з пакету `java.util.concurrent`.
+
+> [!WARNING]
+> `ArrayDeque` **не допускає `null`**. Спроба додати `null` викине `NullPointerException`, оскільки `null` використовується внутрішньо як маркер порожньої комірки.
+
+> [!NOTE]
+> `ArrayDeque` є **рекомендованою заміною** для `Stack` і `LinkedList` у ролі стека або черги. Він швидший за `LinkedList` (немає накладних витрат на `Node`-об'єкти) і швидший за `Stack` (немає синхронізації).
+
+**Конструктор ArrayDeque()**
+```java
+ArrayDeque<String> deque = new ArrayDeque<>();
+```
+
+*Що робить:* створює порожню деку з початковою ємністю масиву **16** (не 0 — на відміну від `ArrayList`). Розмір завжди є степенем двійки — це потрібно для ефективної бітової арифметики при wrap-around.
+
+*Коли використовувати:* у більшості випадків — стандартний вибір для стека, черги або деки.
+
+```java
+ArrayDeque<Integer> deque = new ArrayDeque<>();
+deque.addLast(1);
+deque.addLast(2);
+deque.addFirst(0);
+// логічний порядок: [0, 1, 2]
+```
+
+**Конструктор ArrayDeque(int numElements)**
+```java
+ArrayDeque<String> deque = new ArrayDeque<>(100);
+```
+
+*Що робить:* створює порожню деку із початковою ємністю, що є **найменшим степенем двійки ≥ `numElements + 1`**. Наприклад, `new ArrayDeque<>(100)` → ємність 128.
+
+*Коли використовувати:* коли заздалегідь відома приблизна кількість елементів і важливо уникнути перевиділень пам'яті.
+
+```java
+// numElements=100 → внутрішній масив розміром 128 (2^7)
+ArrayDeque<Task> tasks = new ArrayDeque<>(100);
+```
+
+**Конструктор ArrayDeque(Collection<? extends E> c)**
+```java
+List<String> source = List.of("a", "b", "c");
+ArrayDeque<String> deque = new ArrayDeque<>(source);
+```
+
+*Що робить:* копіює всі елементи колекції через `addLast`, зберігаючи порядок ітерації. Ємність — найменший степінь двійки ≥ `c.size() + 1`.
+
+*Коли використовувати:* конвертація з `List`, `Set` або іншої колекції у деку/стек/чергу.
+
+```java
+// Конвертація ArrayList → ArrayDeque для ефективного addFirst/removeFirst
+List<String> list = new ArrayList<>(List.of("a", "b", "c"));
+Deque<String> deque = new ArrayDeque<>(list);
+deque.addFirst("z"); // O(1) — без зсуву елементів
+```
+
+**BigO notation для ArrayDeque** ^java-collection-framework-arraydeque-class-big-o-notation
+
+| Метод | Складність | Пояснення |
+| :--- | :--- | :--- |
+| `addFirst(E e)` | O(1)* | Переміщує `head` на одну позицію вліво (по колу), записує елемент. При заповненні масиву — O(n) через подвоєння і копіювання |
+| `addLast(E e)` | O(1)* | Записує елемент на позицію `tail`, переміщує `tail` вправо (по колу). Амортизовано O(1) |
+| `add(E e)` | O(1)* | Псевдонім `addLast` |
+| `offerFirst(E e)` | O(1)* | Те саме що `addFirst`, повертає `true` |
+| `offerLast(E e)` | O(1)* | Те саме що `addLast`, повертає `true` |
+| `offer(E e)` | O(1)* | Псевдонім `offerLast` |
+| `push(E e)` | O(1)* | Псевдонім `addFirst` (Stack-семантика: LIFO) |
+| `peekFirst()` | O(1) | Повертає `elements[head]` без видалення. `null` якщо порожня |
+| `peekLast()` | O(1) | Повертає `elements[(tail - 1) & mask]` без видалення. `null` якщо порожня |
+| `peek()` | O(1) | Псевдонім `peekFirst` |
+| `getFirst()` | O(1) | Як `peekFirst()`, але кидає `NoSuchElementException` якщо порожня |
+| `getLast()` | O(1) | Як `peekLast()`, але кидає `NoSuchElementException` якщо порожня |
+| `element()` | O(1) | Псевдонім `getFirst` |
+| `pollFirst()` | O(1) | Повертає і видаляє `elements[head]`, обнуляє комірку, зсуває `head` вправо по колу. `null` если порожня |
+| `pollLast()` | O(1) | Зсуває `tail` вліво по колу, повертає і видаляє елемент. `null` если порожня |
+| `poll()` | O(1) | Псевдонім `pollFirst` |
+| `removeFirst()` | O(1) | Як `pollFirst()`, але кидає `NoSuchElementException` якщо порожня |
+| `removeLast()` | O(1) | Як `pollLast()`, але кидає `NoSuchElementException` якщо порожня |
+| `remove()` | O(1) | Псевдонім `removeFirst` |
+| `pop()` | O(1) | Псевдонім `removeFirst` (Stack-семантика) |
+| `remove(Object o)` | O(n) | Лінійний пошук від `head` до `tail` з `equals()`, потім зсув елементів для заповнення діри |
+| `contains(Object o)` | O(n) | Лінійний перебір від `head` до `tail` з `equals()` |
+| `size()` | O(1) | Обчислюється як `(tail - head) & mask` — бітова операція над індексами |
+| `isEmpty()` | O(1) | Перевіряє `head == tail` |
+| `clear()` | O(n) | Обнуляє всі комірки між `head` і `tail` щоб GC міг зібрати об'єкти, потім `head = tail = 0` |
+| `toArray()` | O(n) | Копіює елементи від `head` до `tail` з урахуванням wrap-around (може бути 2 виклики `System.arraycopy`) |
+| `iterator()` | O(1) | Створює ітератор від `head` до `tail` (зліва направо) |
+| `descendingIterator()` | O(1) | Створює ітератор від `tail` до `head` (справа наліво) |
+| `clone()` | O(n) | Поверхнева копія: новий `ArrayDeque` зі скопійованим масивом |
+
+> [!NOTE]
+> O(1)* означає **амортизоване O(1)**. Більшість викликів — O(1), але раз на декілька сотень операцій відбувається подвоєння масиву — O(n). Середня вартість на операцію залишается O(1).
+
+**ArrayDeque — кільцевий буфер, head/tail/mask** ^java-collection-framework-arraydeque-circular-impl
+`ArrayDeque` зберігає елементи у `Object[] elements` розміром завжди степінь двійки (для бітової арифметики). `head` — індекс першого елемента, `tail` — індекс **наступної вільної позиції** після останнього. Переміщення: `(head - 1) & (elements.length - 1)` для `addFirst`. Це еквівалентно `% length` але без ділення — набагато швидше. Розмір завжди степінь двійки: `length - 1` дає маску з усіма бітами 1, що перетворює `&` на ефективний modulo. `null` заборонено: використовується як маркер порожньої комірки. Memory overhead: лише масив посилань — набагато менше ніж `LinkedList` (Node: ~48 байт кожен).
+
+**ArrayDeque — overflow detection та doubleCapacity()** ^java-collection-framework-arraydeque-overflow
+Переповнення виявляється умовою `head == tail` (після запису). `doubleCapacity()` (Java 17-) або `grow(1)` (Java 21+): `newCapacity = oldCapacity << 1`. Копіює два шматки: `System.arraycopy(elements, head, new, 0, n-head)` (від head до кінця) + `System.arraycopy(elements, 0, new, n-head, tail)` (від початку до tail). Після grow: `head=0, tail=oldSize`. Складність O(n) але амортизована O(1).
+
+**ArrayDeque.toArray() з wrap-around** ^java-collection-framework-arraydeque-toarray
+Якщо `head < tail` — один `System.arraycopy(elements, head, result, 0, size)`. Якщо `head > tail` (wrap-around) — два `System.arraycopy`: перший від `head` до кінця масиву, другий від `0` до `tail`.
+
+**ArrayDeque.DeqIterator та DescendingIterator** ^java-collection-framework-arraydeque-iterator-impl
+`DeqIterator`: `cursor = head`, `fence = tail`, рухається `(cursor+1) & mask`. `DescendingIterator`: `cursor = (tail-1) & mask`, рухається `(cursor-1) & mask`. Обидва fail-fast через перевірку `expectedModCount`. `remove()` в ітераторі делегує до `ArrayDeque.delete(lastRet)` яке розумно вибирає чи зсувати з head або tail залежно від позиції.
+
+**ArrayDeque.spliterator() для parallel streams** ^java-collection-framework-arraydeque-spliterator
+`ArrayDeque.spliterator()` має характеристики `ORDERED` і `SIZED`. `trySplit()` ділить кільцевий буфер на дві частини за індексами. При наявності wrap-around потрібна обережна арифметика для коректного split.
+
+#### Внутрішній устрій — кільцевий масив
+`ArrayDeque` всередині — це **кільцевий масив** (circular array / ring buffer):
+
+```java
+transient Object[] elements; // масив, розмір завжди степінь двійки
+transient int head;          // індекс першого елемента
+transient int tail;          // індекс наступної вільної позиції після останнього
+```
+
+Масив є **кільцевим**: коли `head` або `tail` досягає кінця масиву — вони «обертаються» на початок. Це дозволяє додавати і видаляти з обох кінців без зсуву елементів.
+
+Переміщення індексів відбувається через **бітову маску** замість операції `%`:
+
+```java
+// Замість повільного:  (head - 1) % length
+// Використовується:    (head - 1) & (elements.length - 1)
+
+// Це працює тільки якщо length є степенем двійки!
+// Наприклад, length=16, mask=15 (0b1111):
+//   15 & 15 = 15  (нормальний крок)
+//   16 & 15 = 0   (wrap-around на початок)
+```
+
+Візуалізація деки `[A, B, C]` у масиві розміром 8:
+
+```text
+індекс:  0    1    2    3    4    5    6    7
+масив: [  ][ A ][ B ][ C ][  ][  ][  ][  ]
+              ↑              ↑
+            head            tail
+
+head=1, tail=4, size=(4-1)&7 = 3
+```
+
+Після `addFirst("Z")` — head рухається вліво:
+
+```text
+індекс:  0    1    2    3    4    5    6    7
+масив: [ Z ][ A ][ B ][ C ][  ][  ][  ][  ]
+         ↑              ↑
+        head           tail
+
+head=0, tail=4
+```
+
+Wrap-around: `addFirst` коли `head=0`:
+
+```text
+індекс:  0    1    2    3    4    5    6    7
+масив: [ A ][ B ][ C ][  ][  ][  ][  ][ Z ]
+         ↑                             ↑
+        tail                          head
+
+head=7, tail=1  ← head «обернувся» на кінець масиву
+```
+
+**addFirst(E e)**
+```java
+deque.addFirst("X");
+// До:    head=2, tail=5, масив: [_][_][A][B][C][_][_][_]
+// Після: head=1, tail=5, масив: [_][X][A][B][C][_][_][_]
+```
+
+Що відбувається всередині:
+
+```java
+public void addFirst(E e) {
+    if (e == null) throw new NullPointerException();
+    final Object[] es = elements;
+    es[head = (head - 1) & (es.length - 1)] = e; // зсув head вліво по колу + запис
+    if (head == tail)
+        grow(1); // масив заповнений — подвоюємо
+}
+```
+
+> [!NOTE]
+> Жодного зсуву елементів. Лише одна бітова операція і один запис у масив → **O(1)**.
+
+**addLast(E e)**
+```java
+deque.addLast("Y");
+// До:    head=2, tail=5, масив: [_][_][A][B][C][_][_][_]
+// Після: head=2, tail=6, масив: [_][_][A][B][C][Y][_][_]
+```
+
+```java
+public void addLast(E e) {
+    if (e == null) throw new NullPointerException();
+    final Object[] es = elements;
+    es[tail] = e;
+    if ((tail = (tail + 1) & (es.length - 1)) == head)
+        grow(1); // tail наздогнав head — масив заповнений
+}
+```
+
+**pollFirst()**
+```java
+deque.pollFirst();
+// До:    head=2, tail=5, масив: [_][_][A][B][C][_][_][_]
+// Після: head=3, tail=5, масив: [_][_][_][B][C][_][_][_]
+// Повертає: "A"
+```
+
+```java
+public E pollFirst() {
+    final Object[] es = elements;
+    final int h = head;
+    E e = (E) es[h];
+    if (e != null) {
+        es[h] = null;                        // обнуляємо — допомагаємо GC
+        head = (h + 1) & (es.length - 1);   // зсув head вправо по колу
+    }
+    return e;
+}
+```
+
+**Подвоєння масиву — grow()**
+```java
+private void grow(int needed) {
+    final int oldCapacity = elements.length;
+    int newCapacity = oldCapacity << 1; // подвоюємо (завжди степінь двійки)
+    if (newCapacity < 0)
+        throw new IllegalStateException("Sorry, deque too big");
+    final Object[] newElements = new Object[newCapacity];
+    // копіюємо два шматки: від head до кінця і від початку до tail
+    System.arraycopy(elements, head, newElements, 0, oldCapacity - head);
+    System.arraycopy(elements, 0, newElements, oldCapacity - head, tail);
+    head = 0;
+    tail = oldCapacity; // старий size
+    elements = newElements;
+}
+```
+
+> [!NOTE]
+> При копіюванні кільцевого масиву може знадобитись **два виклики** `System.arraycopy` — якщо дані «обернулись» через кінець масиву. Після grow елементи завжди лежать лінійно від індексу 0.
+
+**ArrayDeque як стек (LIFO)**
+```java
+Deque<String> stack = new ArrayDeque<>();
+stack.push("first");    // addFirst → ["first"]
+stack.push("second");   // addFirst → ["second", "first"]
+stack.push("third");    // addFirst → ["third", "second", "first"]
+stack.pop();            // removeFirst → "third"
+stack.peek();           // peekFirst  → "second"
+```
+
+**ArrayDeque як черга (FIFO)**
+```java
+Queue<String> queue = new ArrayDeque<>();
+queue.offer("first");   // addLast  → ["first"]
+queue.offer("second");  // addLast  → ["first", "second"]
+queue.offer("third");   // addLast  → ["first", "second", "third"]
+queue.poll();           // pollFirst → "first"
+queue.peek();           // peekFirst → "second"
+```
+
+**ArrayDeque як двостороння черга**
+```java
+Deque<String> deque = new ArrayDeque<>();
+deque.addFirst("B");
+deque.addFirst("A");    // [A, B]
+deque.addLast("C");     // [A, B, C]
+deque.addLast("D");     // [A, B, C, D]
+deque.pollFirst();      // "A" → [B, C, D]
+deque.pollLast();       // "D" → [B, C]
+```
+
+#### ArrayDeque vs LinkedList vs Stack
+
+| Критерій | ArrayDeque | LinkedList | Stack |
+| :--- | :--- | :--- | :--- |
+| `addFirst` / `addLast` | ✅ O(1)* | ✅ O(1) | ❌ немає / O(1)* |
+| `pollFirst` / `pollLast` | ✅ O(1) | ✅ O(1) | ❌ немає / O(1) |
+| Пам'ять на елемент | ✅ мінімальна | ❌ +Node overhead (~48 байт) | ⚠️ +Vector overhead |
+| CPU cache | ✅ відмінний | ❌ поганий | ✅ хороший |
+| `null` елементи | ❌ заборонено | ✅ дозволено | ✅ дозволено |
+| Синхронізація | ❌ немає | ❌ немає | ✅ є (повільно) |
+| Доступ за індексом | ❌ немає | ❌ O(n) | ✅ O(1) через Vector |
+| Рекомендовано як стек | ✅ | ⚠️ | ❌ legacy |
+| Рекомендовано як черга | ✅ | ⚠️ | ❌ не підходить |
+
+> [!IMPORTANT]
+> `ArrayDeque` є офіційно рекомендованою JDK заміною для `Stack`. Для черги — швидший за `LinkedList` завдяки cache-friendly масиву і відсутності накладних витрат на `Node`-об'єкти. Використовуй `LinkedList` лише якщо **потрібні `null`-елементи** або **доступ до середини** списку.
+
+#### Підводні камені
+
+**null не допускається**
+```java
+ArrayDeque<String> deque = new ArrayDeque<>();
+deque.add(null); // NullPointerException!
+// На відміну від LinkedList — ArrayDeque не допускає null
+```
+
+> [!WARNING]
+> `ArrayDeque` **не допускає `null`**. `null` використовується внутрішньо як маркер порожньої комірки масиву. `LinkedList` допускає `null`-елементи — якщо це критично, лише тоді використовуй `LinkedList` замість `ArrayDeque`.
+
+**peek vs getFirst на порожньому deque**
+```java
+ArrayDeque<String> deque = new ArrayDeque<>();
+System.out.println(deque.peek());      // null — не кидає виняток
+System.out.println(deque.peekFirst()); // null — не кидає виняток
+deque.getFirst(); // NoSuchElementException!
+deque.element();  // NoSuchElementException!
+```
+
+> [!WARNING]
+> Методи `getFirst()` / `getLast()` / `element()` / `remove()` кидають `NoSuchElementException` на порожній деці. Методи `peekFirst()` / `peekLast()` / `peek()` / `poll()` повертають `null` — вибирай відповідно до потреби.
+
+**ArrayDeque як стек**
+```java
+Deque<String> stack = new ArrayDeque<>();
+stack.push("first");  // addFirst() — LIFO
+stack.push("second");
+stack.push("third");
+stack.pop(); // removeFirst() → "third"
+stack.pop(); // → "second"
+// ArrayDeque як стек швидший за Stack і LinkedList
+```
+
+> [!TIP]
+> `push()` = `addFirst()`, `pop()` = `removeFirst()`. `ArrayDeque` як стек швидший за `java.util.Stack` (немає синхронізації) і швидший за `LinkedList` (кращий cache locality кільцевого масиву).
+
+**offer/poll vs add/remove — виняткова поведінка**
+```java
+ArrayDeque<String> deque = new ArrayDeque<>();
+// ArrayDeque — unbounded! Тому offer завжди true, add ніколи не кидає.
+boolean added = deque.offer("x"); // завжди true для ArrayDeque
+deque.add("y");                   // ніколи не кидає IllegalStateException
+// Але для обмежених реалізацій BlockingDeque (наприклад LinkedBlockingDeque):
+// offer() повертає false якщо повна
+// add() кидає IllegalStateException якщо повна
+```
+
+> [!NOTE]
+> `ArrayDeque` — **необмежена** структура (зростає при потребі). Тому `offer()` завжди повертає `true`, а `add()` ніколи не кидає `IllegalStateException`. Ця різниця важлива лише для **bounded** реалізацій `Deque`, наприклад `LinkedBlockingDeque`.
+
+> [!TIP]
+> Використовуй `ArrayDeque` замість `Stack` і `LinkedList` у 99% випадків. Він швидший завдяки кільцевому масиву (кращий cache locality), не має legacy-методів `Stack`, і не синхронізований (менше overhead). `LinkedList` обирай лише при потребі `null`-елементів або операцій у середині списку.

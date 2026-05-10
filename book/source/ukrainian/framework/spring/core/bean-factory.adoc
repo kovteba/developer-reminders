@@ -1,0 +1,9 @@
+ifndef::imagesdir[:imagesdir: ../../../imgs/]
+
+[#spring-bean-factory]
+==== Bean Factory
+
+
+== FactoryBean
+__FactoryBean__ - это бин, который действует как фабрика для других бинов. Фабрики бинов конфигурируются внутри `ApplicationContext` подобно обычным бинам, но когда платформа Spring применяет интерфейс`FactoryBean` для удовлетворения запроса зависимости или поиска, она не возвращает экземпляр`FactoryBean`, а взамен вызывает метод `FactoryBean.getObject()` и возвращает результат этого вызова.
+

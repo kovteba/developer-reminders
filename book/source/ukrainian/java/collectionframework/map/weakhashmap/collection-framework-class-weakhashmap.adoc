@@ -1,0 +1,385 @@
+ifndef::imagesdir[:imagesdir: ../../../../imgs]
+
+[#java-collection-framework-weakhashmap]
+==== WeakHashMap class
+`WeakHashMap` — це реалізація інтерфейсу `Map`, яка наслідує клас `AbstractMap`. Ключова особливість `WeakHashMap` полягає в тому, що ключі зберігаються як *слабкі посилання* (`WeakReference`). Якщо на ключ не залишається жодного сильного посилання (`strong reference`) ззовні мапи — збирач сміття (GC) автоматично видалить відповідний запис під час наступного циклу збирання. `WeakHashMap` не є упорядкованою та не є потокобезпечною. Дозволяє `null` як ключ і як значення.
+
+.Ієрархія наслідування
+[source,subs="normal"]
+----
+Object
+  └── AbstractMap<K,V>
+        └── <<java-collection-framework-weakhashmap,WeakHashMap<K,V>>>
+----
+
+Реалізовані інтерфейси:
+
+* `Map<K,V>` — базовий контракт мапи
+* `Cloneable` — підтримка поверхневого клонування
+* `Serializable` — підтримка серіалізації
+
+[#java-collection-framework-weakhashmap-constructors]
+.Конструктори класу `WeakHashMap`
+
+.WeakHashMap()
+[source,java]
+----
+WeakHashMap<String, Integer> map = new WeakHashMap<>();
+----
+
+*Що робить:* створює порожню `WeakHashMap` з початковою ємністю 16 і коефіцієнтом завантаження 0.75.
+
+*Коли використовувати:* коли кількість елементів заздалегідь невідома і потрібен автоматичний кеш, що очищується GC.
+
+.WeakHashMap(int initialCapacity)
+[source,java]
+----
+WeakHashMap<MyKey, Data> map = new WeakHashMap<>(64);
+----
+
+*Що робить:* створює порожню `WeakHashMap` з вказаною початковою ємністю і коефіцієнтом завантаження 0.75.
+
+*Коли використовувати:* якщо приблизно відома кількість елементів — дозволяє уникнути зайвих `resize()` операцій.
+
+.WeakHashMap(int initialCapacity, float loadFactor)
+[source,java]
+----
+WeakHashMap<MyKey, Data> map = new WeakHashMap<>(64, 0.5f);
+----
+
+*Що робить:* дозволяє явно задати обидва параметри — ємність і коефіцієнт завантаження.
+
+.WeakHashMap(Map<? extends K,? extends V> m)
+[source,java]
+----
+Map<String, Integer> source = new HashMap<>();
+WeakHashMap<String, Integer> map = new WeakHashMap<>(source);
+----
+
+*Що робить:* створює `WeakHashMap` і копіює всі записи з переданої мапи. Ключі одразу обгортаються у `WeakReference`.
+
+WARNING: Якщо передати `null` — отримаєш `NullPointerException`.
+
+[[java-collection-framework-weakhashmap-referencequeue-impl]]
+.WeakHashMap — ReferenceQueue та expungeStaleEntries
+Кожен `Entry<K,V>` наслідує `WeakReference<Object>` — ключ передається у `super(key, queue)`. Коли GC збирає ключ — відповідний Entry потрапляє у `queue` (ReferenceQueue). `expungeStaleEntries()` викликається перед КОЖНОЮ публічною операцією (put, get, size, resize, containsKey, etc.) — лазово, не eagerly після GC. Метод читає entries з queue і видаляє їх з масиву бакетів. WeakHashMap.Entry наслідує WeakReference безпосередньо (не через поле) щоб Entry міг сам потрапити у ReferenceQueue при зборі ключа.
+
+[[java-collection-framework-weakhashmap-vs-cache]]
+.WeakHashMap vs SoftHashMap vs Caffeine Cache
+`WeakHashMap`: ключі зі слабкими посиланнями, видаляються при першій GC; немає контролю над eviction; не thread-safe. Apache Commons `ReferenceMap` з SoftReference: ключі видаляються тільки при memory pressure (OutOfMemoryError); більш передбачувана поведінка для кешів. `Caffeine Cache`: явні eviction policies (size-based, time-based, reference-based); weakKeys()/weakValues()/softValues(); thread-safe; eviction callbacks; статистика. Для продакшн кешів — Caffeine або Guava Cache.
+
+[#java-collection-framework-weakhashmap-structure]
+.Внутрішній устрій
+Всередині `WeakHashMap` є приватний статичний клас `Entry<K,V>`, який наслідує `WeakReference<Object>`:
+
+[source,java]
+----
+private static class Entry<K,V> extends WeakReference<Object> implements Map.Entry<K,V> {
+    V value;
+    final int hash;
+    Entry<K,V> next;   // наступний запис у ланцюжку (для вирішення колізій)
+
+    Entry(Object key, V value, ReferenceQueue<Object> queue, int hash, Entry<K,V> next) {
+        super(key, queue); // ключ передається у WeakReference!
+        this.value = value;
+        this.hash  = hash;
+        this.next  = next;
+    }
+}
+----
+
+Ключ передається у конструктор `WeakReference` разом із `ReferenceQueue`. Значення (`value`) зберігається звичайним полем — тобто *значення є сильним посиланням*. Це означає, що значення само по собі не видаляється GC — видаляється весь запис лише після зникнення ключа.
+
+Основні поля класу:
+
+[source,java]
+----
+Entry<K,V>[] table;              // масив бакетів
+private final ReferenceQueue<Object> queue = new ReferenceQueue<>();
+int size;
+int threshold;                   // = capacity * loadFactor
+private final float loadFactor;
+----
+
+Ключовий механізм — `ReferenceQueue`. Коли GC збирає слабко досяжний ключ, він додає відповідний `Entry` об'єкт до черги `queue`. При кожному структурному зверненні до мапи (`put`, `get`, `size`, `resize` тощо) викликається метод `expungeStaleEntries()`, який проходить через цю чергу і видаляє застарілі записи з масиву бакетів:
+
+[source,java]
+----
+private void expungeStaleEntries() {
+    for (Object x; (x = queue.poll()) != null; ) {
+        synchronized (queue) {
+            Entry<K,V> e = (Entry<K,V>) x;
+            int i = indexFor(e.hash, table.length);
+
+            Entry<K,V> prev = table[i];
+            Entry<K,V> p = prev;
+            while (p != null) {
+                Entry<K,V> next = p.next;
+                if (p == e) {
+                    if (prev == e) table[i] = next;
+                    else prev.next = next;
+                    e.value = null; // допомагаємо GC
+                    size--;
+                    break;
+                }
+                prev = p;
+                p = next;
+            }
+        }
+    }
+}
+----
+
+.Візуалізація структури пам'яті
+[source]
+----
+table[]
+ [0] ──→ Entry{ WeakRef(keyA) | valueA | hash | next }──→ null
+ [1] ──→ null
+ [2] ──→ Entry{ WeakRef(keyB) | valueB | hash | next }──→ Entry{ WeakRef(keyC) | valueC | hash | null }
+ ...
+
+ReferenceQueue<Object>:
+ [ WeakRef(keyA) ]  ← GC додав сюди після збирання keyA
+----
+
+Після виклику `expungeStaleEntries()`:
+
+[source]
+----
+table[]
+ [0] ──→ null          ← запис про keyA видалено
+ [1] ──→ null
+ [2] ──→ Entry{ WeakRef(keyB) | ... } ──→ Entry{ WeakRef(keyC) | ... }
+----
+
+[#java-collection-framework-weakhashmap-null-key]
+.Ключ null — особливий випадок
+`null`-ключ зберігається через спеціальний об'єкт-замінник `NULL_KEY`:
+
+[source,java]
+----
+private static final Object NULL_KEY = new Object();
+
+private static Object maskNull(Object key) {
+    return (key == null) ? NULL_KEY : key;
+}
+----
+
+Цей об'єкт є статичним і існує до завершення JVM — тому запис з `null`-ключем *ніколи не буде видалений GC автоматично*. Видалити його можна лише явно через `remove(null)` або `clear()`.
+
+[#java-collection-framework-weakhashmap-pitfalls]
+.Підводні камені
+
+.String-літерали як ключі — записи НІКОЛИ не видаляються GC
+[source,java]
+----
+WeakHashMap<String, String> cache = new WeakHashMap<>();
+
+// String-літерали інтернуються JVM у String Pool:
+String key1 = "hello"; // інтернований — сильне посилання з String Pool існує завжди
+
+cache.put("hello", "world");    // "hello" — інтернований → WeakReference ніколи не очиститься!
+cache.put("goodbye", "world");  // теж інтернований!
+
+// Навіть після GC:
+System.gc();
+Thread.sleep(100);
+System.out.println(cache.size()); // 2 — записи НЕ видалились! String Pool тримає strong ref
+
+// ПОРІВНЯЙ з new String():
+String key2 = new String("hello"); // НЕ інтернований — окремий об'єкт у heap
+cache.put(key2, "value");
+key2 = null; // відпускаємо strong ref
+System.gc();
+Thread.sleep(100);
+// Запис з key2 буде видалено GC (weak ref очищається)
+// Запис з "hello" literal — НЕ буде видалено!
+----
+
+WARNING: *String-літерали (`"hello"`, `"key"` тощо) є інтернованими рядками з сильним посиланням з String Pool.* Їх `WeakReference` ніколи не очиститься поки JVM жива. `WeakHashMap` з String-літеральними ключами фактично поводиться як звичайна `HashMap` — записи не видаляються автоматично, і весь сенс `WeakHashMap` втрачається.
+
+.Value містить сильне посилання на key — циклічна залежність → витік пам'яті
+[source,java]
+----
+WeakHashMap<Object, Object> map = new WeakHashMap<>();
+
+Object key = new Object();
+// Value посилається на key!
+Object value = new Object() {
+    final Object strongRefToKey = key; // ← сильне посилання на key
+};
+
+map.put(key, value);
+key = null; // відпускаємо наше посилання на key
+
+System.gc();
+Thread.sleep(100);
+System.out.println(map.size()); // 1 ← запис НЕ видалився!
+// Чому? GC chain: map.table → Entry → WeakRef(key) → key
+//                                    → value → strongRefToKey → KEY ← strong!
+// key досяжний через value → WeakReference не очищається → витік пам'яті!
+
+// ТИПОВИЙ АНТИПАТЕРН:
+class Node {
+    Object data;
+    Node parent; // parent тримає strong ref на цей Node як value
+}
+WeakHashMap<Node, Node> parentMap = new WeakHashMap<>();
+Node child = new Node();
+Node parent = new Node();
+parent.data = child; // parent сильно посилається на child (key)!
+parentMap.put(child, parent); // child ніколи не збереться GC!
+----
+
+WARNING: *Якщо value прямо або непрямо тримає сильне посилання на свій key — запис ніколи не буде видалено GC.* Це найпоширеніший витік пам'яті при роботі з `WeakHashMap`. Переконайся що value не містить посилань на key.
+
+.size() непередбачуваний між викликами
+[source,java]
+----
+WeakHashMap<Object, String> map = new WeakHashMap<>();
+Object k1 = new Object();
+Object k2 = new Object();
+Object k3 = new Object();
+map.put(k1, "one");
+map.put(k2, "two");
+map.put(k3, "three");
+
+int s1 = map.size(); // 3
+
+k1 = null; k2 = null; // відпускаємо посилання
+System.gc();           // підказуємо GC (не гарантія!)
+
+int s2 = map.size();   // може бути 1, 2, або 3 — залежить від GC!
+
+// НІКОЛИ не пиши логіку на основі розміру WeakHashMap:
+if (map.size() == 3) {
+    // Помилка! До того як виконається наступний рядок GC може зібрати ключі
+    doSomethingWithAllThreeEntries(map); // ❌ може вже не бути 3 записів!
+}
+----
+
+NOTE: `size()` у `WeakHashMap` спочатку викликає `expungeStaleEntries()` — очищає записи зі зібраними ключами. Але між `size()` та наступною операцією GC може запустися знову і видалити ще записи. Ніколи не покладайся на `size()` для прийняття логічних рішень.
+
+.Недетермінований час видалення — тест проходить, продакшн падає
+[source,java]
+----
+// Код що "працює" в тестах але ненадійний у продакшні:
+WeakHashMap<Object, String> cache = new WeakHashMap<>();
+
+void loadCache(List<Object> keys) {
+    for (Object key : keys) {
+        cache.put(key, computeExpensiveValue(key));
+    }
+}
+
+String getFromCache(Object key) {
+    return cache.get(key); // може повернути null якщо GC зібрав key!
+}
+
+// ПРОБЛЕМА: у тестах GC рідко запускається між loadCache і getFromCache
+// У продакшні під навантаженням GC запускається часто → cache.get() повертає null
+// коли ми "впевнені" що значення є!
+
+// РІШЕННЯ: не покладайся на присутність значення — завжди перевіряй:
+String value = cache.get(key);
+if (value == null) {
+    value = computeExpensiveValue(key); // перераховуємо при cache miss
+    // але НЕ кладемо назад — key може вже бути зібраний!
+}
+----
+
+.WeakHashMap і ітерація — GC може видалити записи під час ітерації
+[source,java]
+----
+WeakHashMap<Object, String> map = new WeakHashMap<>();
+// ... заповнюємо map
+
+// Ітерація через entrySet() — ітератор є "snapshot" через ReferenceQueue механізм
+// ALE записи можуть зникнути між ітераціями:
+for (Map.Entry<Object, String> entry : map.entrySet()) {
+    Object key = entry.getKey();  // може бути null якщо GC зібрав key!
+    if (key != null) {            // ← завжди перевіряй на null!
+        process(key, entry.getValue());
+    }
+}
+
+// Безпечний варіант — зробити snapshot:
+Set<Map.Entry<Object, String>> snapshot = new HashSet<>(map.entrySet());
+for (Map.Entry<Object, String> entry : snapshot) {
+    Object key = entry.getKey(); // все одно може бути null!
+    if (key != null) {
+        process(key, entry.getValue());
+    }
+}
+----
+
+WARNING: При ітерації через `WeakHashMap` завжди перевіряй `entry.getKey() != null`. Хоча `expungeStaleEntries()` виконується на початку ітерації, GC може зібрати ключі *під час* ітерації. `entry.getKey()` поверне `null` для зібраних ключів.
+
+.Коли НЕ використовувати WeakHashMap
+[source,java]
+----
+// НЕ ПІДХОДИТЬ для:
+// 1. Session кеш (ключ-сесія може бути зібраний між запитами)
+WeakHashMap<Session, UserData> sessionCache = new WeakHashMap<>(); // ❌
+
+// 2. Кеш з String-ключами
+WeakHashMap<String, Config> config = new WeakHashMap<>(); // ❌ String-літерали не збираються
+
+// 3. Будь-що де потрібна гарантія присутності запису
+// якщо ти маєш strong ref на key — можна, але навіщо WeakHashMap?
+
+// ПІДХОДИТЬ для:
+// 1. Listener registry (listener видаляється разом з його власником):
+WeakHashMap<Component, EventListener> listeners = new WeakHashMap<>(); // ✅
+
+// 2. Метадані про об'єкти (metadata живе рівно стільки скільки об'єкт):
+WeakHashMap<Object, Map<String, Object>> metadata = new WeakHashMap<>(); // ✅
+
+// 3. Кеш computed properties для об'єктів (обчислені значення зникають з об'єктом):
+WeakHashMap<MyObject, ComputedStats> statsCache = new WeakHashMap<>(); // ✅
+----
+
+NOTE: *Підходить для:* реєстрації слухачів (listener registry), кешу метаданих про об'єкти, weak canonicalization. *НЕ підходить для:* будь-якого кешу з String-ключами, session кешів, сценаріїв де потрібна передбачувана поведінка видалення. Для надійного кешу з auto-eviction використовуй Caffeine або Guava Cache (підтримують weak keys, time-based eviction, eviction callbacks).
+
+[#java-collection-framework-weakhashmap-use-cases]
+.Коли використовувати `WeakHashMap`
+
+.Кеш метаданих
+[source,java]
+----
+// Метадані про об'єкти зникають разом з ними
+WeakHashMap<Object, Map<String, Object>> metadataCache = new WeakHashMap<>();
+metadataCache.put(myObject, Map.of("type", "user", "created", now));
+// Коли myObject стане недосяжним — запис видалиться автоматично
+----
+
+.Реєстрація listeners без витоку пам'яті
+[source,java]
+----
+WeakHashMap<Component, ActionListener> listeners = new WeakHashMap<>();
+listeners.put(button, event -> handleClick());
+// Коли button видаляється з UI — listener також зникає
+----
+
+[#java-collection-framework-weakhashmap-big-o-notation]
+.BigO notation для методів `WeakHashMap`
+[cols="2,1,4", options="header"]
+|===
+|`get(Object key)`                  |O(1)       |Пошук за хешем; може повернути `null` якщо ключ зібраний GC
+|`remove(Object key)`               |O(1)       |Видалення запису за хешем ключа
+|`containsKey(Object key)`          |O(1)       |Пошук за хешем
+|===
+|`containsValue(Object value)`      |O(n)       |Лінійний перебір всіх бакетів і ланцюжків
+|===
+|`size()`                           |O(n)       |Викликає `expungeStaleEntries()` перед поверненням `size`
+|===
+|`isEmpty()`                        |O(n)       |Викликає `size()` → `expungeStaleEntries()`
+|===
+|`clear()`                          |O(n)       |Обнуляє всі бакети та очищує чергу
+|===
+|`entrySet()` / `keySet()`          |O(1)       |Повертає view; ітерація по ньому — O(n)
+|===
+|`putAll(Map m)`                    |O(m)       |m — кількість елементів у переданій мапі
+|===
+|===

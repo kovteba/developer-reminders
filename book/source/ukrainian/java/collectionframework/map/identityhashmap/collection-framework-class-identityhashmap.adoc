@@ -1,0 +1,306 @@
+ifndef::imagesdir[:imagesdir: ../../../../../imgs/]
+
+[#java-collection-framework-identityhashmap]
+==== IdentityHashMap class
+`IdentityHashMap<K,V>` — це реалізація `Map` яка використовує *посилкову рівність* (`==`) замість `equals()` для порівняння ключів, і `System.identityHashCode()` замість `hashCode()`. Таким чином два різних об'єкти що є "рівними" за `equals()` вважаються різними ключами якщо вони не є буквально одним і тим самим об'єктом у пам'яті. Не є потокобезпечним. Дозволяє `null` ключ і значення.
+
+.Ієрархія наслідування
+[source,subs="normal"]
+----
+Object
+  └── AbstractMap<K,V>
+        └── <<java-collection-framework-identityhashmap,IdentityHashMap<K,V>>>
+----
+
+Реалізовані інтерфейси:
+
+* `Map<K,V>` — базовий контракт
+* `Cloneable`, `Serializable`
+
+WARNING: `IdentityHashMap` *навмисно порушує загальний контракт `Map`*, який вимагає використання `equals()` для порівняння ключів. Використовуй лише в специфічних випадках де потрібна саме *посилкова* рівність.
+
+[#java-collection-framework-identityhashmap-constructors]
+.Конструктори
+
+.IdentityHashMap()
+[source,java]
+----
+IdentityHashMap<Object, String> map = new IdentityHashMap<>();
+----
+
+*Що робить:* створює порожню `IdentityHashMap` з розрахунковою ємністю 21 (зберігає ~32 ключі до resize).
+
+.IdentityHashMap(int expectedMaxSize)
+[source,java]
+----
+IdentityHashMap<Object, String> map = new IdentityHashMap<>(100);
+----
+
+*Що робить:* розмір масиву підбирається щоб вмістити `expectedMaxSize` записів без resize. Внутрішній масив завжди має розмір = наступний ступінь двійки ≥ `2 * expectedMaxSize`.
+
+.IdentityHashMap(Map<? extends K, ? extends V> m)
+[source,java]
+----
+Map<Object, String> source = new IdentityHashMap<>();
+IdentityHashMap<Object, String> copy = new IdentityHashMap<>(source);
+----
+
+[[java-collection-framework-identityhashmap-internal-array]]
+.IdentityHashMap — Object[] замість Entry[], open addressing, linear probing
+`IdentityHashMap` зберігає ключі і значення ПОЧЕРГОВО в одному масиві `Object[] table`: `table[2i] = key`, `table[2i+1] = value`. Немає Entry об'єктів — менше GC pressure. Open addressing: при collision вузол не додається до ланцюжка, а шукається наступна вільна комірка (`i = (i + 2) % length`). Linear probing: якщо `table[i]` зайнято → `table[i+2]` → `table[i+4]` і т.д. Це швидко для CPU cache (sequential access) але утворює кластери при high load factor. `IdentityHashMap` вирішує probe sequence через `nextIndex(i, len) = (i + 2) & (len - 1)` (wrapped linear scan). Load factor IdentityHashMap = 2/3 (замість 0.75) — resize відбувається раніше щоб зменшити кластеризацію. Найгірший випадок get(): O(n) якщо всі ключі утворюють один кластер.
+
+[#java-collection-framework-identityhashmap-structure]
+.Внутрішній устрій — лінійне зондування
+На відміну від `HashMap` (ланцюжки), `IdentityHashMap` використовує *відкриту адресацію з лінійним зондуванням* (open addressing with linear probing). Ключі і значення зберігаються *почергово* в одному масиві:
+
+[source,java]
+----
+// Внутрішній масив: [key0, value0, key1, value1, key2, value2, ...]
+Object[] table;  // розмір завжди = 2 * capacity
+
+// Розрахунок індексу (без хешування — System.identityHashCode + маска):
+int hash   = System.identityHashCode(key);
+int length = table.length;
+int i      = ((hash << 1) % length) & ~1; // завжди парний індекс
+
+// Лінійне зондування: якщо table[i] зайнято — переходимо до table[i+2]
+while (table[i] != null && table[i] != key) {
+    i = nextIndex(i, length);  // i = (i + 2) % length
+}
+----
+
+.Чому == а не equals():
+[source,java]
+----
+String a = new String("hello");
+String b = new String("hello");
+
+// Звичайний HashMap:
+HashMap<String, Integer> hashMap = new HashMap<>();
+hashMap.put(a, 1);
+hashMap.get(b); // → 1  (a.equals(b) == true → один і той самий ключ)
+
+// IdentityHashMap:
+IdentityHashMap<String, Integer> idMap = new IdentityHashMap<>();
+idMap.put(a, 1);
+idMap.put(b, 2);  // b != a (різні об'єкти) → різні ключі!
+idMap.size();     // → 2 (два різних ключа!)
+idMap.get(a);     // → 1
+idMap.get(b);     // → 2
+----
+
+.System.identityHashCode vs hashCode():
+[source,java]
+----
+String s = "hello";
+s.hashCode();                   // → 99162322 (обчислюється з символів рядка)
+System.identityHashCode(s);     // → 123456789 (адреса об'єкта в пам'яті, не залежить від вмісту)
+
+// Навіть якщо об'єкт перевизначив hashCode — identityHashCode не змінюється
+// і завжди відображає "справжній" ідентифікатор об'єкта в JVM
+----
+
+[#java-collection-framework-identityhashmap-big-o-notation]
+.BigO notation для `IdentityHashMap`
+[cols="2,1,4", options="header"]
+|===
+|`get(Object key)`              |O(1)*          |Пошук через `==` замість `equals()` — швидше!
+|`remove(Object key)`           |O(1)*          |Пошук + видалення + перебудова ланцюжка зондування
+|`containsKey(Object key)`      |O(1)*          |Пошук через `==`
+|===
+|`containsValue(Object value)`  |O(n)           |Лінійний перебір всіх значень (через `==`!)
+|===
+|`size()`                       |O(1)           |Поле `size`
+|===
+|`clear()`                      |O(n)           |Обнуляє всі комірки масиву
+|===
+|===
+|===
+
+NOTE: `get()` у `IdentityHashMap` може бути *швидшим* ніж у `HashMap` для деяких типів ключів, бо `==` — одна інструкція процесора, тоді як `equals()` може виконувати складну логіку (порівняння полів, рядків тощо).
+
+.Практичні застосування
+
+.Серіалізація та обхід об'єктного графу
+[source,java]
+----
+// Класичний use case: уникнення повторного відвідування об'єктів
+// при обході графу (наприклад, при серіалізації)
+
+class ObjectSerializer {
+    // Відстежуємо вже відвідані об'єкти за їх ідентичністю (адресою)
+    private final IdentityHashMap<Object, Integer> visited = new IdentityHashMap<>();
+    private int nextId = 0;
+
+    public int getOrAssignId(Object obj) {
+        return visited.computeIfAbsent(obj, k -> nextId++);
+    }
+
+    public boolean isVisited(Object obj) {
+        return visited.containsKey(obj);  // порівняння через ==
+    }
+}
+
+// Чому не HashMap?
+// Якщо два об'єкти Node мають однакові дані (node.equals(other) == true)
+// але є різними об'єктами у пам'яті — HashMap вважатиме їх одним ключем!
+// IdentityHashMap правильно розрізнить їх.
+----
+
+.Proxy та AOP frameworks
+[source,java]
+----
+// Mapping original object → proxy object
+// Важливо використовувати == бо proxy і original можуть мати однаковий equals()
+IdentityHashMap<Object, Object> proxyRegistry = new IdentityHashMap<>();
+
+Object original = new Service();
+Object proxy = Proxy.newProxyInstance(...);
+proxyRegistry.put(original, proxy);
+
+// Пізніше:
+Object p = proxyRegistry.get(original); // знаходить за посиланням, не за equals()
+----
+
+.Weak canonicalization / interning
+[source,java]
+----
+// Перевірити чи два рядки є буквально одним об'єктом (наприклад після intern()):
+IdentityHashMap<String, String> internedStrings = new IdentityHashMap<>();
+String s1 = "hello";
+String s2 = s1.intern();
+
+internedStrings.put(s1, "original");
+internedStrings.get(s2); // → "original" якщо s1 == s2 (обидва інтерновані)
+                          // → null якщо s1 != s2 (різні об'єкти)
+----
+
+.IdentityHashMap vs HashMap
+[cols="3,1,1", options="header"]
+|===
+|Хеш-функція                        |`System.identityHashCode()` |`hashCode()`
+|Внутрішня структура                |масив + лінійне зондування |масив + ланцюжки/дерева
+|Два рівних obj → один ключ?        |❌ (якщо різні ref) |✅
+|===
+|`null` ключ                        |✅                 |✅ (один null)
+|===
+|Thread-safe                        |❌                 |❌
+|===
+|Коли використовувати               |graph traversal, serialization, proxy, AOP |загального призначення
+|===
+|===
+|===
+
+TIP: Використовуй `IdentityHashMap` коли: (1) потрібно відстежувати конкретні *екземпляри* об'єктів а не їх *значення*; (2) реалізуєш алгоритм обходу графу або серіалізацію; (3) будуєш proxy/AOP систему де важливо відрізняти proxy від оригіналу. Валідні сценарії: обхід об'єктного графу для визначення циклів, frameworks серіалізації (Java ObjectOutputStream), proxy/weaving frameworks (Spring AOP, ByteBuddy).
+
+[#java-collection-framework-identityhashmap-pitfalls]
+.Підводні камені
+
+.Порушення контракту Map — два "рівних" об'єкти є різними ключами
+[source,java]
+----
+IdentityHashMap<String, Integer> map = new IdentityHashMap<>();
+
+String a = new String("hello"); // новий об'єкт у heap
+String b = new String("hello"); // інший новий об'єкт у heap
+
+// a.equals(b) == true, але a != b (різні посилання)
+map.put(a, 1);
+map.put(b, 2); // b != a → вставляється як ОКРЕМИЙ ключ!
+
+System.out.println(map.size());   // 2! (не 1 як у звичайній HashMap)
+System.out.println(map.get(a));   // 1
+System.out.println(map.get(b));   // 2
+System.out.println(map.get(new String("hello"))); // null! ← новий об'єкт != a і != b
+
+// Типова помилка: передати IdentityHashMap туди де очікується звичайна Map семантика
+Map<String, Integer> m = new IdentityHashMap<>();
+m.put(new String("key"), 1);
+m.containsKey("key");    // false! ← "key" literal != new String("key")
+m.containsKey(new String("key")); // false! ← ще один новий об'єкт
+----
+
+WARNING: `IdentityHashMap` *навмисно порушує контракт `Map`*, який вимагає: якщо `k1.equals(k2)` — то `map.get(k1)` і `map.get(k2)` повертають одне і те ж значення. В `IdentityHashMap` це не так. Не передавай `IdentityHashMap` туди де очікується стандартна Map-семантика рівності.
+
+.String-літерали vs new String() — несподівана поведінка
+[source,java]
+----
+IdentityHashMap<String, Integer> map = new IdentityHashMap<>();
+
+// String-літерали інтернуються — завжди один і той самий об'єкт:
+String s1 = "hello";
+String s2 = "hello"; // s1 == s2 → TRUE (обидва вказують на один об'єкт у String Pool)
+
+map.put(s1, 1);
+map.put(s2, 2); // s2 == s1 → перезаписує! (не додає новий запис)
+System.out.println(map.size()); // 1 (очікувано для літералів)
+System.out.println(map.get(s1)); // 2
+
+// new String() — завжди новий об'єкт у heap:
+String n1 = new String("hello");
+String n2 = new String("hello"); // n1 != n2 → FALSE
+
+map.put(n1, 10);
+map.put(n2, 20); // n2 != n1 → новий ключ!
+System.out.println(map.size()); // 3 (s1/s2, n1, n2 — три різних об'єкти)
+
+// Після intern() — поведінка змінюється:
+String n3 = n1.intern(); // повертає об'єкт з String Pool
+map.put(n3, 30); // n3 == s1 (обидва з Pool) → перезаписує запис s1!
+System.out.println(map.size()); // 3 (не 4!)
+----
+
+.Серіалізація — ідентичності змінюються після десеріалізації
+[source,java]
+----
+IdentityHashMap<Object, String> map = new IdentityHashMap<>();
+MyObject original = new MyObject("data");
+map.put(original, "metadata");
+
+// Серіалізація:
+ByteArrayOutputStream baos = new ByteArrayOutputStream();
+ObjectOutputStream oos = new ObjectOutputStream(baos);
+oos.writeObject(original);
+oos.writeObject(map);
+
+// Десеріалізація:
+ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(baos.toByteArray()));
+MyObject restored = (MyObject) ois.readObject();
+IdentityHashMap<Object, String> restoredMap = (IdentityHashMap) ois.readObject();
+
+// ПРОБЛЕМА: restored != original (різні об'єкти у пам'яті після десеріалізації)
+System.out.println(original == restored); // false!
+System.out.println(restoredMap.get(original)); // null! ← оригінальний ключ не знайдений
+System.out.println(restoredMap.get(restored)); // "metadata" ✅ ← відновлений ключ
+
+// Тобто: після серіалізації/десеріалізації старі strong ref на ключі
+// більше не працюватимуть з відновленою IdentityHashMap
+----
+
+WARNING: Після серіалізації та десеріалізації `IdentityHashMap` всі зв'язки між зовнішніми посиланнями та ключами в мапі *розриваються*, бо десеріалізовані об'єкти — нові екземпляри. Якщо `IdentityHashMap` серіалізується разом з її ключами (в одному потоці) — внутрішня узгодженість зберігається, але зовнішні посилання на старі об'єкти вже не знайдуть записи.
+
+.Початкова ємність — формула відрізняється від HashMap
+[source,java]
+----
+// IdentityHashMap: internal array size = 2 * capacity (key і value почергово)
+// IdentityHashMap(expectedMaxSize) — розмір масиву ≥ 2 * expectedMaxSize
+
+// Щоб вмістити 100 записів без resize:
+IdentityHashMap<Object, String> map = new IdentityHashMap<>(100);
+// Внутрішній масив: розмір ≥ 200 (наступний степінь 2 ≥ 200 = 256)
+// Реальний поріг resize: при 2/3 заповнення → resize при ~84 записах
+
+// Для HashMap 100 записів: capacity = 100/0.75+1 ≈ 134, масив = 256
+// Для IdentityHashMap 100 записів: масив = 256, resize при ~85 записах
+
+// ВАЖЛИВО: якщо не передати expectedMaxSize або передати замале значення →
+// resize відбудеться раніше ніж у HashMap при тій самій кількості записів!
+
+IdentityHashMap<Object, String> small = new IdentityHashMap<>(10);
+// При 7-8 записах вже відбудеться resize (2/3 від 10 = ~6.7)
+for (int i = 0; i < 10; i++) {
+    small.put(new Object(), "v" + i); // resize станеться під час вставки!
+}
+----
+
+NOTE: `IdentityHashMap` використовує load factor *2/3* (а не 0.75 як `HashMap`). Resize відбувається коли кількість записів перевищує `capacity * 2/3`. При `expectedMaxSize=n` внутрішній масив = `2 * nextPowerOf2(3*n/2 + 1)`. Для уникнення resize при точно відомій кількості записів: `new IdentityHashMap<>(n * 3 / 2 + 1)`.
