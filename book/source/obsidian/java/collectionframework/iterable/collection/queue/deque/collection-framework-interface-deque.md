@@ -1,0 +1,67 @@
+##### Deque ^java-collection-framework-deque
+
+**Deque vs Queue — перекриваючі методи** ^java-collection-framework-deque-vs-queue
+`Queue` методи у `Deque`: `add(e)` = `addLast(e)`, `offer(e)` = `offerLast(e)`, `remove()` = `removeFirst()`, `poll()` = `pollFirst()`, `element()` = `getFirst()`, `peek()` = `peekFirst()`. `Deque` додає: `addFirst/Last`, `offerFirst/Last`, `removeFirst/Last`, `pollFirst/Last`, `getFirst/Last`, `peekFirst/Last`, `push/pop` (Stack API), `descendingIterator()`, `removeFirstOccurrence/removeLastOccurrence`.
+
+`Deque<E>` (double-ended queue, «дек») — інтерфейс, який розширює `Queue` і визначає поведінку **двонаправленої черги**. Елементи можна додавати і видаляти як з початку, так і з кінця. Може використовуватись як звичайна черга `FIFO`, як стек `LIFO`, або як двонаправлена черга.
+
+```text
+[I] [[#java-collection-framework-deque|Deque<E>]]
+├── [C] [[#java-collection-framework-arraydeque|ArrayDeque<E>]]
+└── [C] [[#java-collection-framework-linkedlist|LinkedList<E>]]
+```
+
+**Методи інтерфейсу `Deque`** ^java-collection-framework-deque-interface-methods
+
+Кожна операція має два варіанти — з винятком і зі спеціальним значенням:
+
+| Операція | З початку (кидає виняток) | З початку (повертає значення) | Аналог Stack |
+| :--- | :--- | :--- | :--- |
+| Вставка на початок | `addFirst(E e)` | `offerFirst(E e)` | `push(E e)` |
+| Вставка в кінець | `addLast(E e)` | `offerLast(E e)` | — |
+| Видалення з початку | `removeFirst()` | `pollFirst()` | `pop()` |
+| Видалення з кінця | `removeLast()` | `pollLast()` | — |
+| Перегляд початку | `getFirst()` | `peekFirst()` | `peek()` |
+| Перегляд кінця | `getLast()` | `peekLast()` | — |
+
+**Повний список методів:**
+* `void addFirst(E e)` — додає елемент на початок; кидає `IllegalStateException` якщо черга заповнена;
+* `void addLast(E e)` — додає елемент в кінець; кидає `IllegalStateException` якщо черга заповнена;
+* `boolean offerFirst(E e)` — додає елемент на початок; повертає `false` якщо черга заповнена;
+* `boolean offerLast(E e)` — додає елемент в кінець; повертає `false` якщо черга заповнена;
+* `E removeFirst()` — видаляє і повертає перший елемент; кидає `NoSuchElementException` якщо порожній;
+* `E removeLast()` — видаляє і повертає останній елемент; кидає `NoSuchElementException` якщо порожній;
+* `E pollFirst()` — видаляє і повертає перший елемент; `null` якщо порожній;
+* `E pollLast()` — видаляє і повертає останній елемент; `null` якщо порожній;
+* `E getFirst()` — повертає (не видаляє) перший елемент; кидає `NoSuchElementException` якщо порожній;
+* `E getLast()` — повертає (не видаляє) останній елемент; кидає `NoSuchElementException` якщо порожній;
+* `E peekFirst()` — повертає (не видаляє) перший елемент; `null` якщо порожній;
+* `E peekLast()` — повертає (не видаляє) останній елемент; `null` якщо порожній;
+* `boolean removeFirstOccurrence(Object o)` — видаляє перше входження об'єкта `o`; `false` якщо не знайдено;
+* `boolean removeLastOccurrence(Object o)` — видаляє останнє входження об'єкта `o`; `false` якщо не знайдено;
+* `void push(E e)` — псевдонім `addFirst(e)` — поведінка стека: кидає `NoSuchElementException` якщо повний;
+* `E pop()` — псевдонім `removeFirst()` — поведінка стека: кидає `NoSuchElementException` якщо порожній;
+* `Iterator<E> descendingIterator()` — ітератор у зворотному порядку (від хвоста до голови).
+
+**Використання як Queue (FIFO)**
+```java
+Deque<String> queue = new ArrayDeque<>();
+queue.offerLast("first");   // додати в кінець
+queue.offerLast("second");
+queue.pollFirst();           // видалити з початку → "first"
+```
+
+**Використання як Stack (LIFO)**
+```java
+Deque<String> stack = new ArrayDeque<>();
+stack.push("bottom");    // addFirst
+stack.push("middle");    // addFirst
+stack.push("top");       // addFirst
+stack.pop();             // removeFirst → "top"
+stack.pop();             // → "middle"
+```
+
+> [!NOTE]
+> `Deque` є **рекомендованою заміною** застарілому класу `Stack`. `ArrayDeque` реалізує `Deque` і є швидшою за `Stack` і `LinkedList` для використання як стек.
+
+![[arraydeque/collection-framework-class-arraydeque.md]]

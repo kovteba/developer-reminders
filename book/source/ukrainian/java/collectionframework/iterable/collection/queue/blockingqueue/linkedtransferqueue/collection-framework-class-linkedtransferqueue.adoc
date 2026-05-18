@@ -1,0 +1,269 @@
+ifndef::imagesdir[:imagesdir: ../../../../../../../imgs/]
+
+[#java-collection-framework-linkedtransferqueue]
+=== LinkedTransferQueue
+`LinkedTransferQueue<E>` — це *необмежена потокобезпечна черга* з пакету `java.util.concurrent`, яка реалізує інтерфейс `TransferQueue<E>`. Розширює можливості `LinkedBlockingQueue` додаючи метод `transfer()` — *синхронна передача* елементу напряму consumer-у. Якщо consumer готовий — прямий handoff, якщо ні — елемент буферизується у FIFO черзі. Не допускає `null`. Lock-free реалізація на базі CAS.
+
+.Ієрархія наслідування
+[source,subs="normal"]
+----
+Object
+  └── AbstractCollection<E>
+        └── AbstractQueue<E>
+              └── <<java-collection-framework-linkedtransferqueue,LinkedTransferQueue<E>>>
+----
+
+Реалізовані інтерфейси:
+
+* `TransferQueue<E>` → `BlockingQueue<E>` — додаткові методи transfer
+* `Queue<E>`, `Collection<E>`, `Iterable<E>`, `Serializable`
+
+[[java-collection-framework-transferqueue-interface]]
+.TransferQueue інтерфейс — додаткові методи
+`TransferQueue` розширює `BlockingQueue`: `transfer(e)` — синхронна передача (блокує поки consumer не отримає); `tryTransfer(e)` — non-blocking (false якщо немає waiting consumer, елемент НЕ буферизується); `tryTransfer(e, timeout, unit)` — з таймаутом; `hasWaitingConsumer()` — O(1) перевірка REQUEST вузлів; `getWaitingConsumerCount()` — O(n).
+
+[[java-collection-framework-linkedtransferqueue-transfer-impl]]
+.LinkedTransferQueue.transfer() — QNode, slack, direct handoff vs buffering
+Внутрішній `QNode` має поле `boolean isData`: DATA вузол (producer поклав елемент), REQUEST вузол (consumer чекає). `transfer(e)`: якщо є REQUEST вузол → CAS на `item` → unpark consumer (direct handoff, O(1)). Якщо немає → додає DATA вузол → park. Slack — оптимізація: не оновлює `head`/`tail` при кожній операції (використовує "lazy" pointer updates). Зменшує кількість CAS операцій у ~2x при high throughput. `offer(e)`: якщо є REQUEST → handoff; інакше додає DATA без блокування.
+
+[#java-collection-framework-linkedtransferqueue-transferqueue]
+.Інтерфейс TransferQueue
+`TransferQueue` розширює `BlockingQueue` трьома ключовими методами:
+
+[source,java]
+----
+public interface TransferQueue<E> extends BlockingQueue<E> {
+    // Передає елемент споживачу якщо є готовий, інакше — false (не блокує)
+    boolean tryTransfer(E e);
+
+    // Передає елемент споживачу. Якщо споживача немає — чекає поки він з'явиться
+    // (на відміну від put() — не буферизує, а саме передає!)
+    void transfer(E e) throws InterruptedException;
+
+    // Як transfer(), але чекає не довше ніж timeout
+    boolean tryTransfer(E e, long timeout, TimeUnit unit) throws InterruptedException;
+
+    // Чи є очікуючі споживачі?
+    boolean hasWaitingConsumer();
+
+    // Кількість очікуючих споживачів
+    int getWaitingConsumerCount();
+}
+----
+
+[#java-collection-framework-linkedtransferqueue-constructors]
+.Конструктори
+
+.LinkedTransferQueue()
+[source,java]
+----
+LinkedTransferQueue<String> queue = new LinkedTransferQueue<>();
+----
+
+.LinkedTransferQueue(Collection<? extends E> c)
+[source,java]
+----
+LinkedTransferQueue<String> queue = new LinkedTransferQueue<>(List.of("a", "b", "c"));
+----
+
+[#java-collection-framework-linkedtransferqueue-structure]
+.Внутрішній устрій — Dual Queue
+`LinkedTransferQueue` реалізує *Dual Queue* — черга може містити два типи вузлів:
+
+[source]
+----
+Тип вузла 1: DATA node — producer поклав елемент і чекає consumer
+Тип вузла 2: REQUEST node — consumer чекає елемент від producer
+----
+
+[source]
+----
+Стан черги при різних операціях:
+
+1. offer("X") без waiting consumers:
+   Queue: [DATA("X")] → null
+   (елемент буферизовано)
+
+2. Приходить consumer, take():
+   Queue: [] (порожня)
+   "X" → передається consumer напряму
+
+3. Приходить consumer першим (take() без елементів):
+   Queue: [REQUEST(consumer1)] → null
+   consumer1 чекає
+
+4. producer приходить, transfer("Y"):
+   Queue: [] (порожня)
+   "Y" → передається consumer1 напряму; обидва продовжуються
+----
+
+.Порівняння offer vs transfer:
+[source,java]
+----
+// offer() — поводиться як LinkedBlockingQueue.put():
+// Якщо є waiting consumer → прямий handoff
+// Якщо немає → буферизує в чергу, НЕ чекає consumer
+queue.offer("item");  // одразу повертається
+
+// transfer() — чекає поки consumer РЕАЛЬНО отримає елемент:
+// Якщо є waiting consumer → прямий handoff, обидва продовжуються
+// Якщо немає → БЛОКУЄТЬСЯ поки не прийде consumer і не забере елемент
+queue.transfer("item");  // блокується поки consumer не отримає!
+----
+
+NOTE: Ключова різниця `transfer()` vs `put()`/`offer()`: `transfer()` гарантує що елемент *реально отриманий* consumer-ом до того як метод повернеться. `put()` просто кладе в чергу і повертається — consumer може взяти елемент пізніше.
+
+[#java-collection-framework-linkedtransferqueue-big-o-notation]
+.BigO notation для `LinkedTransferQueue`
+[cols="2,1,4", options="header"]
+|===
+|`transfer(E e)`                |O(1)*          |Прямий handoff якщо є consumer (O(1)). Блокує якщо немає — чекає REQUEST вузла
+|`tryTransfer(E e)`             |O(1)           |Прямий handoff або `false`. Не блокує
+|`tryTransfer(E e, time, unit)` |O(1)*          |Як `transfer` але з таймаутом
+|`take()`                       |O(1)*          |Прямий handoff від DATA вузла або блокує (REQUEST вузол)
+|`poll()`                       |O(1)           |DATA вузол або `null` без блокування
+|`poll(time, unit)`             |O(1)*          |Як `take` з таймаутом
+|`peek()`                       |O(1)           |Перший DATA вузол або `null`
+|`size()`                       |O(n)           |Підраховує лише DATA вузли — O(n) прохід
+|`hasWaitingConsumer()`         |O(1)           |Перевіряє чи є REQUEST вузли
+|`getWaitingConsumerCount()`    |O(n)           |Підраховує REQUEST вузли
+|`remove(Object o)`             |O(n)           |Лінійний пошук
+|`contains(Object o)`           |O(n)           |Лінійний пошук
+|===
+
+.Практичні застосування
+
+.Підтвердження доставки (Delivery Acknowledgement)
+[source,java]
+----
+LinkedTransferQueue<Request> queue = new LinkedTransferQueue<>();
+
+// Producer знає що consumer РЕАЛЬНО отримав запит перед тим як продовжити:
+Thread producer = new Thread(() -> {
+    try {
+        Request req = new Request("process this");
+        System.out.println("Sending request...");
+        queue.transfer(req);  // блокується поки consumer не отримає req
+        System.out.println("Request confirmed received by consumer!");
+        // Тепер безпечно звільнити ресурси req
+    } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+    }
+});
+
+Thread consumer = new Thread(() -> {
+    try {
+        Thread.sleep(500);
+        Request req = queue.take();
+        System.out.println("Processing: " + req);
+        // Після take() - producer продовжується
+    } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+    }
+});
+----
+
+.Non-blocking спроба передачі (tryTransfer)
+[source,java]
+----
+LinkedTransferQueue<Task> queue = new LinkedTransferQueue<>();
+
+// Спроба передати задачу idle worker-у без буферизації:
+boolean delivered = queue.tryTransfer(task);
+if (delivered) {
+    // Задача вже обробляється — worker прийняв її негайно
+} else {
+    // Всі workers зайняті — задача відхилена або відкладена
+    fallbackQueue.offer(task);
+}
+----
+
+.Publish-Subscribe з гарантованою доставкою
+[source,java]
+----
+// Наприклад: відправник email хоче знати що повідомлення взяте в обробку
+public class GuaranteedDelivery {
+    private final LinkedTransferQueue<Message> queue = new LinkedTransferQueue<>();
+
+    // Відправити і чекати підтвердження від worker:
+    public void sendAndWait(Message msg) throws InterruptedException {
+        queue.transfer(msg);  // повернеться лише після queue.take() у worker
+        log.info("Message {} delivered to worker", msg.id());
+    }
+
+    // Відправити і не чекати (fire-and-forget):
+    public void sendAsync(Message msg) {
+        queue.offer(msg);  // повертається одразу, незалежно від worker
+    }
+}
+----
+
+.LinkedTransferQueue vs LinkedBlockingQueue vs SynchronousQueue
+[cols="3,1,1,1", options="header"]
+|===
+|Буферизація                        |✅ є                   |✅ є                   |❌ немає
+|Пряма передача (transfer)          |✅ transfer()          |❌                     |✅ put() (тільки прямо)
+|Lock-free                          |✅ CAS                 |❌ два ReentrantLock    |✅ CAS
+|===
+|Throughput                         |✅ дуже високий        |✅ високий             |✅ максимальний
+|===
+|Гарантія доставки                  |✅ через transfer()    |❌                     |✅ завжди
+|===
+|`hasWaitingConsumer()`             |✅                     |❌                     |❌
+|===
+|Підходить для                      |гарантована доставка + буфер |загального призначення |тільки прямий handoff
+|===
+|===
+|===
+
+TIP: Використовуй `LinkedTransferQueue` коли потрібна *комбінація*: і буферизація (як `LinkedBlockingQueue`), і можливість прямої синхронної передачі (як `SynchronousQueue`). Метод `transfer()` — унікальна можливість знати що consumer реально взяв елемент.
+
+[[java-collection-framework-linkedtransferqueue-pitfalls]]
+.Підводні камені
+
+.transfer() синхронна передача
+[source,java]
+----
+LinkedTransferQueue<String> q = new LinkedTransferQueue<>();
+
+// put() — додає в буфер, не чекає consumer:
+q.put("buffered"); // повертається негайно
+
+// transfer() — блокується поки consumer не прийме:
+q.transfer("direct"); // блокується до виклику take() в іншому потоці
+// Якщо consumer готовий → direct handoff (обходить буфер)
+// Якщо consumer не готовий → чекає
+----
+
+NOTE: Ключова відмінність: `put()` / `offer()` повертаються одразу після додавання в буфер — consumer може взяти елемент пізніше. `transfer()` блокується до моменту коли consumer *реально отримає* елемент через `take()`. Це гарантія доставки, а не просто збереження у черзі.
+
+.tryTransfer без блокування
+[source,java]
+----
+LinkedTransferQueue<String> q = new LinkedTransferQueue<>();
+boolean transferred = q.tryTransfer("data");
+// true  — якщо consumer був готовий і прийняв елемент
+// false — якщо нікого немає (елемент НЕ додається в буфер!)
+
+// З timeout:
+boolean ok = q.tryTransfer("data", 100, TimeUnit.MILLISECONDS);
+// true  — якщо consumer з'явився протягом 100мс
+// false — якщо 100мс минули і consumer так і не прийшов
+----
+
+WARNING: `tryTransfer()` без таймауту при невдачі *не додає елемент у буфер* — він просто повертає `false`. Якщо потрібно щоб елемент залишився у черзі при відсутності consumer — використовуй `offer()` або `put()` замість `tryTransfer()`.
+
+WARNING: `size()` у `LinkedTransferQueue` є *O(n)* — обходить весь зв'язний список підраховуючи лише DATA-вузли (ігноруючи REQUEST-вузли waiting consumers). Уникай частих викликів `size()` у hot-path коді — це значно дорожче ніж `size()` у `LinkedBlockingQueue` (де це O(1) через `AtomicInteger`).
+
+.Перевірка наявності waiting consumer
+[source,java]
+----
+LinkedTransferQueue<String> q = new LinkedTransferQueue<>();
+if (q.hasWaitingConsumer()) {
+    q.transfer(item); // гарантовано швидка пряма передача — consumer вже чекає
+} else {
+    q.put(item); // немає waiting consumer — буферизуємо для майбутньої обробки
+}
+----
+
+TIP: Комбінація `hasWaitingConsumer()` + `transfer()` або `put()` дозволяє будувати адаптивні producer стратегії — прямий handoff коли можливо, буферизація коли потрібно. `getWaitingConsumerCount()` дає точну кількість очікуючих consumers (теж O(n)).

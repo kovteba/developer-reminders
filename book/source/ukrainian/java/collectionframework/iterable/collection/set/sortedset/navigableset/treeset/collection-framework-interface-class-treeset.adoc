@@ -1,0 +1,168 @@
+ifndef::imagesdir[:imagesdir: ../../../../../../../../../imgs/]
+ifndef::treesetdir[:treesetdir: ../../../../../../../../../../../examples/java/src/main/java/kovteba/collectionframework/iterable/collection/set/sortedset/navigableset/treeset]
+ifndef::treesettestdir[:treesettestdir: ../../../../../../../../../../../examples/java/src/main/java/kovteba/collectionframework/iterable/collection/set/sortedset/navigableset/treeset]
+
+[[java-collection-framework-treeset-treemap-delegation]]
+[#java-collection-framework-treeset]
+====== TreeSet
+`TreeSet<E>` — це реалізація інтерфейсу `NavigableSet`. TreeSet — впорядкована колекція яка не допускає дублікатів. Зберігає елементи у *відсортованому порядку* за натуральним порядком (`Comparable`) або `Comparator`, переданим у конструктор. Не є потокобезпечним. Заснований на *Red-Black Tree* (через `TreeMap`) — самобалансуюче дерево, що гарантує O(log n) для всіх основних операцій.
+
+.Ієрархія наслідування
+[source,subs="normal"]
+----
+Object
+  └── AbstractCollection<E>
+        └── AbstractSet<E>
+              └── <<java-collection-framework-treeset,TreeSet<E>>>
+----
+
+Реалізовані інтерфейси: `NavigableSet<E>`, `SortedSet<E>`, `Set<E>`, `Cloneable`, `Serializable`.
+
+WARNING: `TreeSet` *не є потокобезпечним*. Для потокобезпечного відсортованого `Set` → `ConcurrentSkipListSet`.
+
+[[java-collection-framework-treeset-submaps-impl]]
+.Внутрішній устрій — TreeMap під капотом
+[source,java]
+----
+public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
+    private transient NavigableMap<E, Object> m;
+    private static final Object PRESENT = new Object(); // sentinel
+
+    public TreeSet() {
+        this(new TreeMap<>()); // RedBlack Tree всередині
+    }
+
+    public boolean add(E e) {
+        return m.put(e, PRESENT) == null;
+    }
+}
+----
+
+Кожна операція `add`/`remove`/`contains` є O(log n) — обхід або перебалансування Red-Black Tree.
+
+[[java-collection-framework-treeset-big-o-notation]]
+[#java-collection-framework-tree-set-big-o-notation]
+.BigO notation для `TreeSet`
+[cols="2,1,4", options="header"]
+|===
+|`remove(Object o)`                 |O(log n)           |Видалення + перебалансування
+|`contains(Object o)`               |O(log n)           |Пошук у збалансованому дереві
+|`first()` / `last()`               |O(log n)           |Лівий/правий крайній вузол
+|`ceiling(e)` / `floor(e)`          |O(log n)           |Навігаційний пошук
+|`higher(e)` / `lower(e)`           |O(log n)           |Строго більший/менший
+|`pollFirst()` / `pollLast()`       |O(log n)           |Видалення + повернення min/max
+|`headSet(to)` / `tailSet(from)`    |O(log n)           |Live view — створення, не копія
+|`subSet(from, to)`                 |O(log n)           |Live view діапазону
+|`size()`                           |O(1)               |Поле TreeMap.size
+|`toArray()`                        |O(n)               |Копіювання у масив через ітерацію
+|`iterator()`                       |O(1)               |Ітерація O(n) — in-order traversal
+|===
+
+[[java-collection-framework-treeset-pitfalls]]
+.Підводні камені
+
+.ClassCastException при додаванні непорівнюваного типу
+[source,java]
+----
+class Point { int x, y; } // не реалізує Comparable!
+
+TreeSet<Point> set = new TreeSet<>();
+set.add(new Point()); // OK — перший елемент
+set.add(new Point()); // ClassCastException! — Point cannot be cast to Comparable
+// РІШЕННЯ: передай Comparator у конструктор
+TreeSet<Point> set2 = new TreeSet<>(Comparator.comparingInt(p -> p.x));
+----
+
+WARNING: Якщо тип елементів не реалізує `Comparable` і `Comparator` не переданий у конструктор — перший `add` успішний, але *другий кидає `ClassCastException`*. Завжди або реалізуй `Comparable`, або передавай `Comparator(Comparator<? super E>)` у конструктор.
+
+.null не допускається
+[source,java]
+----
+TreeSet<String> set = new TreeSet<>();
+set.add(null); // NullPointerException!
+// HashSet дозволяє один null, TreeSet — ніколи (compareTo(null) кидає NPE)
+// ВИНЯТОК: якщо Comparator явно обробляє null:
+TreeSet<String> withNull = new TreeSet<>(
+    Comparator.nullsFirst(Comparator.naturalOrder())
+);
+withNull.add(null); // OK
+----
+
+WARNING: `TreeSet` не допускає `null` при використанні натурального порядку (`Comparable`), оскільки виклик `null.compareTo(x)` кидає `NullPointerException`. Якщо `null` потрібен — передай `Comparator.nullsFirst(...)` або `Comparator.nullsLast(...)` у конструктор.
+
+.Comparator несумісний з equals
+[source,java]
+----
+// Comparator порівнює тільки за довжиною рядка:
+TreeSet<String> set = new TreeSet<>(Comparator.comparingInt(String::length));
+set.add("abc");
+set.add("def"); // compareTo повертає 0 (однакова довжина) → "def" НЕ додається!
+set.add("xy");  // довжина 2 → додається
+System.out.println(set); // [xy, abc] — "def" відкинуто як "дублікат"
+----
+
+WARNING: `TreeSet` визначає "рівність" виключно через `Comparator` (або `Comparable`) — *не* через `equals()`. Якщо `Comparator` повертає 0 для двох різних об'єктів — вони вважаються дублікатами і другий не додається. `Comparator` *повинен* бути консистентним з `equals()` для коректної роботи `Set`.
+
+.Live view — зміни видно в оригіналі
+[source,java]
+----
+TreeSet<Integer> set = new TreeSet<>(Set.of(1,2,3,4,5));
+SortedSet<Integer> head = set.headSet(4); // {1, 2, 3}
+head.add(0); // додає в ОРИГІНАЛЬНИЙ set теж!
+System.out.println(set); // {0, 1, 2, 3, 4, 5}
+
+// Додавання за межами діапазону:
+head.add(5); // IllegalArgumentException! — 5 >= toElement (4)
+----
+
+NOTE: `headSet()`, `tailSet()` та `subSet()` повертають *live view* — не копію, а "вікно" в оригінальний `TreeSet`. Зміни в view відображаються в оригіналі і навпаки. Спроба додати елемент за межами діапазону view кидає `IllegalArgumentException`. Для незалежної копії використовуй `new TreeSet<>(set.headSet(4))`.
+
+.Not thread-safe
+WARNING: `TreeSet` не є потокобезпечним. Паралельна модифікація з кількох потоків може призвести до `ConcurrentModificationException` або пошкодження структури Red-Black Tree. Для потокобезпечного відсортованого `Set` → `ConcurrentSkipListSet` (lock-free, O(log n)).
+
+[[java-collection-framework-treeset-addall-optimized]]
+[[java-collection-framework-treeset-spliterator]]
+[#java-collection-framework-tree-set-constructors]
+.Конструктори:
+- `TreeSet()`: створює порожнє дерево;
+- `TreeSet(Collection<? extends E> col)`: створює дерево, в яке додає всі елементи колекції col;
+- `TreeSet(SortedSet <E> set)`: створює дерево, в яке додає всі елементи відсортованого набору set;
+- `TreeSet(Comparator<? super E> comparator)`: створює порожнє дерево, в яке всі додані елементи в подальшому будуть відсортовані компаратором.
+
+[#java-collection-framework-tree-set-methods]
+.Методи:
+
+- `boolean add(E e)`: додає елемент e в TreeSet;
+- `boolean addAll(Collection<? extends E> col)`: додає всі елементи колекції col в TreeSet;
+- `void clear()`: видаляє всі елементи з TreeSet;
+- `Object clone()`: створює копію TreeSet;
+- `boolean contains(Object obj)`: повертає true, якщо TreeSet містить об'єкт obj;
+- `boolean isEmpty()`: повертає true, якщо TreeSet порожній;
+- `Iterator iterator()`: повертає ітератор для TreeSet;
+- `boolean remove(Object obj)`: видаляє об'єкт obj з TreeSet;
+- `int size()`: повертає кількість елементів в TreeSet;
+- `NavigableSet<E> descendingSet()`: повертає TreeSet в оберненому порядку;
+- `E ceiling(E e)`: повертає найменший елемент, який більше або рівний e;
+- `E floor(E e)`: повертає найбільший елемент, який менше або рівний e;
+- `E higher(E e)`: повертає найменший елемент, який більше e;
+- `E lower(E e)`: повертає найбільший елемент, який менше e;
+- `E pollFirst()`: видаляє і повертає перший елемент TreeSet;
+- `E pollLast()`: видаляє і повертає останній елемент TreeSet;
+- `NavigableSet<E> subSet(E fromElement, boolean fromInclusive, E toElement, boolean toInclusive)`: повертає TreeSet, який містить всі елементи від fromElement до toElement;
+- `NavigableSet<E> headSet(E toElement, boolean inclusive)`: повертає TreeSet, який містить всі елементи менше toElement;
+- `NavigableSet<E> tailSet(E fromElement, boolean inclusive)`: повертає TreeSet, який містить всі елементи більше fromElement;
+- `E first()`: повертає перший елемент TreeSet;
+- `E last()`: повертає останній елемент TreeSet.
+
+Далі преведемо приклади використання класу `TreeSet`.
+
+[source,java]
+----
+include::{treesetdir}/TreeSetExample1.java[tag=TreeSetExample1]
+----
+
+Результат виконання програми:
+
+----
+include::{treesetdir}/TreeSetExample1.java[tag=TreeSetExample1Result]
+----

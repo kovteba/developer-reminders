@@ -1,0 +1,188 @@
+ifndef::imagesdir[:imagesdir: ../../../../../../imgs/]
+
+[#java-collection-framework-copyonwritearrayset]
+====== CopyOnWriteArraySet class
+`CopyOnWriteArraySet<E>` — це *потокобезпечна* реалізація інтерфейсу `Set` з пакету `java.util.concurrent`. Всередині використовує `CopyOnWriteArrayList` — кожна операція що змінює множину (*write*) створює *нову копію* внутрішнього масиву. Операції читання (read) відбуваються без lock і бачать *snapshot* даних. Порядок ітерації — порядок вставки. Дозволяє `null`.
+
+.Ієрархія наслідування
+[source,subs="normal"]
+----
+Object
+  └── AbstractCollection<E>
+        └── AbstractSet<E>
+              └── <<java-collection-framework-copyonwritearrayset,CopyOnWriteArraySet<E>>>
+                    (внутрішньо: <<java-collection-framework-copyonwritearraylist,CopyOnWriteArrayList<E>>>)
+----
+
+Реалізовані інтерфейси:
+
+* `Set<E>` — унікальні елементи
+* `Serializable` — підтримка серіалізації
+
+WARNING: `CopyOnWriteArraySet` *підходить лише для малих множин з рідкими write-операціями*. Кожен `add` або `remove` копіює весь масив — при великих розмірах або частих записах це призводить до великого overhead по пам'яті та GC-тиску.
+
+NOTE: `CopyOnWriteArraySet` не використовує хеш-таблицю. Перевірка унікальності через `equals()` — *лінійний пошук* O(n). Це набагато повільніше ніж `HashSet.contains()` O(1).
+
+[#java-collection-framework-copyonwritearrayset-constructors]
+.Конструктори
+
+.CopyOnWriteArraySet()
+[source,java]
+----
+CopyOnWriteArraySet<String> set = new CopyOnWriteArraySet<>();
+----
+
+*Що робить:* створює порожню множину.
+
+.CopyOnWriteArraySet(Collection<? extends E> c)
+[source,java]
+----
+List<String> list = List.of("a", "b", "a", "c");
+CopyOnWriteArraySet<String> set = new CopyOnWriteArraySet<>(list);
+// set: ["a", "b", "c"]  — дублікати видалено
+----
+
+*Що робить:* копіює елементи з колекції, видаляючи дублікати.
+
+[[java-collection-framework-copyonwritearrayset-add-impl]]
+[#java-collection-framework-copyonwritearrayset-structure]
+.Внутрішній устрій
+`CopyOnWriteArraySet` є *тонкою обгорткою* над `CopyOnWriteArrayList`:
+
+[source,java]
+----
+public class CopyOnWriteArraySet<E> extends AbstractSet<E> {
+    private final CopyOnWriteArrayList<E> al;
+
+    public boolean add(E e) {
+        return al.addIfAbsent(e);  // лінійний пошук + copy-on-write
+    }
+
+    public boolean contains(Object o) {
+        return al.contains(o);    // лінійний пошук по масиву
+    }
+}
+----
+
+.Як виглядає copy-on-write при add:
+[source]
+----
+Поточний масив (volatile ref):  ["a", "b", "c"]
+                                       ↓
+add("d") → перевіряємо чи є "d" (лінійний пошук) → немає
+         → копіюємо масив: ["a", "b", "c", "d"]
+         → атомарно замінюємо volatile ref на нову копію
+         → старий масив виходить з scope → GC збирає
+
+Читачі що тримали old ref:  ["a", "b", "c"]   ← snapshot, не бачать "d"
+Нові читачі:                 ["a", "b", "c", "d"]
+----
+
+[#java-collection-framework-copyonwritearrayset-big-o-notation]
+.BigO notation для `CopyOnWriteArraySet`
+[cols="2,1,4", options="header"]
+|===
+|`remove(Object o)`             |O(n)           |Лінійний пошук + O(n) копіювання масиву
+|`contains(Object o)`           |O(n)           |Лінійний пошук по масиву через `equals()` — без lock!
+|`size()`                       |O(1)           |Повертає `array.length` поточного snapshot
+|`isEmpty()`                    |O(1)           |`array.length == 0`
+|`iterator()`                   |O(1)           |Повертає ітератор по поточному snapshot — fail-safe, не кидає `ConcurrentModificationException`
+|`clear()`                      |O(1)           |Атомарно замінює ref на порожній масив
+|`addAll(Collection c)`         |O(n*m)         |n — поточний розмір, m — розмір переданої колекції; по одному add для кожного елемента
+|`retainAll(Collection c)`      |O(n*m)         |Для кожного елемента множини перевіряє наявність в c
+|===
+
+NOTE: `contains()` — O(n), а не O(1) як у `HashSet`. При розмірі 10 000 елементів кожен `contains` вимагає до 10 000 порівнянь `equals()`. *Не використовуй `CopyOnWriteArraySet` для великих множин де важливий пошук.*
+
+.Ітератор — fail-safe snapshot
+[source,java]
+----
+CopyOnWriteArraySet<String> set = new CopyOnWriteArraySet<>(List.of("a", "b", "c"));
+
+for (String s : set) {
+    set.add("d");  // модифікація під час ітерації — НЕ кидає ConcurrentModificationException!
+    System.out.println(s);
+}
+// Виводить: a, b, c  (ітератор бачить snapshot до add("d"))
+----
+
+NOTE: Ітератор `CopyOnWriteArraySet` — *fail-safe*. Він працює зі знімком масиву на момент створення ітератора. Модифікації що відбуваються паралельно — ітератору невидимі. На відміну від `HashSet`, ітератор не підтримує метод `remove()`.
+
+.Практичне застосування — реєстр listeners
+[source,java]
+----
+// Класичний use case: реєстр слухачів подій
+// Bagато потоків читають (ітерують), рідко додають/видаляють
+
+public class EventBus {
+    private final CopyOnWriteArraySet<EventListener> listeners =
+        new CopyOnWriteArraySet<>();
+
+    public void subscribe(EventListener listener) {
+        listeners.add(listener);    // рідко, копіює масив
+    }
+
+    public void unsubscribe(EventListener listener) {
+        listeners.remove(listener); // рідко, копіює масив
+    }
+
+    public void publish(Event event) {
+        for (EventListener listener : listeners) {  // часто, без lock!
+            listener.onEvent(event);
+        }
+    }
+}
+----
+
+.CopyOnWriteArraySet vs HashSet vs ConcurrentHashMap.newKeySet()
+[cols="3,1,1,1", options="header"]
+|===
+|`contains()` складність        |❌ O(n)                |✅ O(1)*           |✅ O(1)*
+|Write складність               |❌ O(n) + копія        |✅ O(1)*           |✅ O(1)*
+|Ітератор                       |✅ fail-safe snapshot  |❌ fail-fast       |✅ weakly consistent
+|Порядок                        |insertion-order        |не гарантується    |не гарантується
+|`null` елементи                |✅                     |✅ (один null)     |❌
+|Підходить для                  |малі sets, read-heavy  |загального використання |великі concurrent sets
+|===
+
+TIP: *Використовуй `CopyOnWriteArraySet` коли:* потрібен потокобезпечний Set для реєстрації listeners або observers; множина *маленька* (до ~100 елементів); операції читання/ітерації переважають над записом; важлива fail-safe ітерація без `ConcurrentModificationException`.
+
+TIP: Для великого потокобезпечного `Set` використовуй `Collections.newSetFromMap(new ConcurrentHashMap<>())` або `ConcurrentHashMap.newKeySet()`.
+
+[[java-collection-framework-copyonwritearrayset-pitfalls]]
+.Підводні камені
+
+.add() — O(n), не O(1)
+WARNING: `CopyOnWriteArraySet.add()` є O(n) на відміну від `HashSet.add()` O(1)*. Перш ніж додати елемент, виконується *лінійний пошук* по всьому масиву щоб перевірити унікальність, а потім — копіювання всього масиву. Для великих наборів (> 100 елементів) краще `Collections.newSetFromMap(new ConcurrentHashMap<>())`.
+
+.Продуктивність залежить від розміру
+[source,java]
+----
+// CopyOnWriteArraySet: add() — O(n) через лінійний пошук дублікатів
+// Ефективний лише для МАЛИХ наборів (десятки елементів)
+
+// Для великого thread-safe Set:
+Set<String> largeSet = Collections.newSetFromMap(new ConcurrentHashMap<>());
+// або для відсортованого thread-safe Set:
+Set<String> sortedSet = new ConcurrentSkipListSet<>();
+----
+
+.Iterator не бачить змін
+[source,java]
+----
+CopyOnWriteArraySet<String> set = new CopyOnWriteArraySet<>(Set.of("a","b"));
+Iterator<String> it = set.iterator(); // snapshot зафіксовано тут
+set.add("c");
+// it ітерує тільки {a, b} — "c" не видно
+// Після завершення ітерації set.contains("c") == true
+----
+
+NOTE: Ітератор `CopyOnWriteArraySet` працює зі *snapshot* масиву на момент його створення. Елементи, додані або видалені після створення ітератора, не видимі через нього. Це *by design* — гарантує відсутність `ConcurrentModificationException`, але означає що ітерація відображає "минуле" стану множини.
+
+[[java-collection-framework-gc-weakhashmap]]
+.WeakHashMap та GC — взаємодія зі слабкими посиланнями
+`WeakHashMap` використовує `WeakReference` для ключів. GC може зібрати ключ у будь-який момент (після того як зникнуть strong references). Після збору ключа відповідний Entry потрапляє до `ReferenceQueue`, і при наступній операції з map він видаляється. Це дозволяє реалізувати автоматичний cache eviction та уникнути memory leaks для "lapsed listener" проблеми. `SoftReference` збирається лише при нестачі пам'яті, що робить її кращою для cache; `WeakReference` — для метаданих та listeners.
+
+[[java-collection-framework-gc-cow-floating]]
+.CopyOnWriteArrayList/Set — "floating garbage" після write операцій
+Кожна write-операція (`add`, `remove`) в `CopyOnWriteArraySet` створює новий масив і відкидає старий. Старий масив стає "плаваючим сміттям" (floating garbage): він ще може утримуватися ітераторами що тримають snapshot-посилання, але врешті збирається GC. При частих write-операціях на великих наборах це спричиняє суттєвий GC-тиск.

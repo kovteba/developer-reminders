@@ -1,0 +1,15 @@
+ifndef::imagesdir[:imagesdir: ../../../imgs/]
+ifndef::architecturedesignexampledir[:architecturedesignexampledir: ../../../../../examples/??????/??????/src/main/java/kovteba]
+
+[#architecture-design]
+==== Architecture/Design
+
+// Architecture/Design - the same
+
+include::item/event-driven-design.adoc[]
+
+include::item/microservices-design.adoc[]
+
+include::item/monolithic-design.adoc[]
+
+include::item/service-oriented-design.adoc[]

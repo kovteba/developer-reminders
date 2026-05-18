@@ -1,0 +1,191 @@
+ifndef::imagesdir[:imagesdir: ../../../../imgs/]
+ifndef::eddexampledir[:eddexampledir: ../../../../../../examples/?????/??????/src/main/java/kovteba]
+
+[#event-driven-design]
+==== EDD (Event Driven Design) / EDA (Event Driven Architecture)
+// TODO EDD
+
+// [[event-driven-design-definition]]*EDD (Model Driven Design)* - це шаблон асінхронної архітектури, який використовується для створення масштабованих додатків. Цей підхід полягає в тому, що компоненти системи спілкуються один з одним за допомогою подій. Коли в системі відбувається якась подія (наприклад, створення замовлення), система генерує подію, яку можуть обробляти інші компоненти.
+//
+// Подія - це модна визначити як «суттєве змінення стану».
+//
+// Архитектура, управляемая событиями, соответствует сервисно-ориентированной архитектуре (<<service-oriented-architecture, SOA>>), поскольку сервисы могут активироваться триггерами, срабатывающими от входящих событий.
+//
+// Компоненти:
+//
+// 1. Події (Events)
+// 2. Видавці (Producers)
+// 3. Споживачі (Consumers)
+// 4. Подієвий Шлюз (Event Bus/Event Broker)
+//
+// Далі розберемо реалізацію EDD на прикладі.
+//
+// .Події (Events)
+// Події описують те, що відбулося в системі. Наприклад, подія OrderCreated буде містити інформацію про нове замовлення.
+//
+// [source,java]
+// ----
+// import java.time.LocalDateTime;
+// import java.util.UUID;
+//
+// public class OrderCreatedEvent {
+//     private UUID orderId;
+//     private UUID customerId;
+//     private LocalDateTime timestamp;
+//
+//     public OrderCreatedEvent(UUID orderId, UUID customerId) {
+//         this.orderId = orderId;
+//         this.customerId = customerId;
+//         this.timestamp = LocalDateTime.now();
+//     }
+//
+//     public UUID getOrderId() {
+//         return orderId;
+//     }
+//
+//     public UUID getCustomerId() {
+//         return customerId;
+//     }
+//
+//     public LocalDateTime getTimestamp() {
+//         return timestamp;
+//     }
+// }
+// ----
+//
+// .Видавці (Producers)
+// Видавець генерує подію, коли відбувається певна дія. У нашому випадку видавцем буде служба замовлень.
+//
+// [source,java]
+// ----
+// import java.util.List;
+// import java.util.UUID;
+//
+// public class OrderService {
+//     private OrderRepository orderRepository;
+//     private EventBus eventBus;
+//
+//     public OrderService(OrderRepository orderRepository, EventBus eventBus) {
+//         this.orderRepository = orderRepository;
+//         this.eventBus = eventBus;
+//     }
+//
+//     public Order createOrder(UUID customerId, List<OrderItem> items) {
+//         Order order = new Order(UUID.randomUUID(), customerId, items);
+//         orderRepository.save(order);
+//         OrderCreatedEvent event = new OrderCreatedEvent(order.getOrderId(), customerId);
+//         eventBus.publish(event);
+//         return order;
+//     }
+// }
+// ----
+//
+// .Споживачі (Consumers)
+// Споживач підписується на події та обробляє їх. Наприклад, служба сповіщень може споживати подію OrderCreatedEvent для відправки підтвердження електронною поштою.
+//
+// [source,java]
+// ----
+// public class NotificationService {
+//     public void onOrderCreated(OrderCreatedEvent event) {
+//         System.out.println("Sending notification for order: " + event.getOrderId());
+//         // Логіка відправки сповіщення
+//     }
+// }
+// ----
+//
+// .Подієвий Шлюз (Event Bus/Event Broker)
+// Подієвий шлюз відповідає за доставку подій від видавців до споживачів. Це може бути простий внутрішній механізм або стороння система, наприклад, Kafka або RabbitMQ.
+//
+// [source,java]
+// ----
+// import java.util.HashMap;
+// import java.util.HashSet;
+// import java.util.Map;
+// import java.util.Set;
+//
+// public class EventBus {
+//     private Map<Class<?>, Set<EventListener<?>>> listeners = new HashMap<>();
+//
+//     public <T> void subscribe(Class<T> eventType, EventListener<T> listener) {
+//         listeners.computeIfAbsent(eventType, k -> new HashSet<>()).add(listener);
+//     }
+//
+//     public void publish(Object event) {
+//         Set<EventListener<?>> eventListeners = listeners.get(event.getClass());
+//         if (eventListeners != null) {
+//             for (EventListener listener : eventListeners) {
+//                 listener.handle(event);
+//             }
+//         }
+//     }
+// }
+//
+// @FunctionalInterface
+// public interface EventListener<T> {
+//     void handle(T event);
+// }
+// ----
+//
+// Приклад Використання
+//
+// [source,java]
+// ----
+// public class Main {
+//     public static void main(String[] args) {
+//         EventBus eventBus = new EventBus();
+//         OrderRepository orderRepository = new OrderRepository();
+//         OrderService orderService = new OrderService(orderRepository, eventBus);
+//         NotificationService notificationService = new NotificationService();
+//
+//         // Підписка споживача на подію
+//         eventBus.subscribe(OrderCreatedEvent.class, notificationService::onOrderCreated);
+//
+//         // Створення нового замовлення
+//         List<OrderItem> items = List.of(new OrderItem("product1", 2, 20.0));
+//         UUID customerId = UUID.randomUUID();
+//         orderService.createOrder(customerId, items);
+//     }
+// }
+// ----
+//
+// Пояснення
+//
+// 1. OrderService створює нове замовлення та генерує подію OrderCreatedEvent.
+// 2. EventBus публікує цю подію.
+// 3. NotificationService підписаний на події типу OrderCreatedEvent і отримує повідомлення про нове замовлення, виконує свою логіку (наприклад, відправка електронної пошти).
+//
+// Висновок
+//
+// Цей приклад показує, як використовувати підхід Event-Driven Design для створення модульної та масштабованої системи. Використання подій дозволяє компонентам бути слабо зв’язаними, що покращує гнучкість системи та полегшує її масштабування і підтримку.
+//
+// Приклади використання EDD:
+//
+// * Системи моніторингу та аналізу даних
+// * Системи обробки транзакцій
+// * Системи обробки повідомлень
+// * Системи обробки даних в реальному часі
+//
+// [#event-driven-design-advantages]
+// Преимущества event-driven-архитектуры:
+//
+// * <<event-driven-design-weak-binding, Слабка пов'язаність та масштабованість>>
+// * Обробка подій у реальному часі
+// * <<event-driven-design-reliability-and-fault-tolerance, Надійність та відмовостійкість>>
+// * <<event-driven-design-integration, Безшовна інтеграція з різнорідними системами>>
+//
+// [[event-driven-design-weak-binding]] EDA сприяє слабій зв'язності між компонентами системи, відокремлюючи їх за допомогою подій. У event-driven-архітектурі компоненти взаємодіють за допомогою асинхронних повідомлень про події, що дозволяє розробляти, розгортати та масштабувати їх незалежно один від одного.
+//
+// [[event-driven-design-reliability-and-fault-tolerance]] Підвищення надійності та стійкості до відмов систем за рахунок використання event-driven-комунікації. Події можуть реєструватися та зберігатися в довгостроковому сховищі, що дозволяє обробляти помилки, відновлювати та відтворювати події.
+//
+// [[event-driven-design-integration]] EDA забезпечує безшовну інтеграцію, забезпечує обмін даними та взаємодію між системами, оскільки події можуть споживатися та створюватися різними системами незалежно від їх базових технологій та мов програмування.
+//
+// [#event-driven-design-disadvantages]
+// Недоліки event-driven-архитектуры:
+//
+// * Сложность (У порівнянні наприклад з монолітом)
+// * Упорядкування подій (У деяких випадках важливо зберігати порядок подій, наприклад для фінансових транзакцій)
+// * Узгодженість подій (Злагодженість подій мій декількома сервісами6 також підтримання цілостності даних і оновленя всіх систем як відповідь на подію)
+// * Налагодження та усунення несправностей (У порівнянні з системою «запит - відповідь» пошук проблем більш складний, так як подія може одночасно викликати ряд реакцій у різних компонентах)
+//
+// // source
+// // https://learn.microsoft.com/en-us/azure/architecture/guide/architecture-styles/event-driven

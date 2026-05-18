@@ -1,0 +1,339 @@
+ifndef::imagesdir[:imagesdir: ../../../../../../../imgs/]
+ifndef::linkedlistdir[:linkedlistdir: ../../../../../../../../../examples/java/src/main/java/kovteba/collectionframework/iterable/collection/list/linkedlist]
+ifndef::linkedlisttestdir[:linkedlisttestdir: ../../../../../../../../../examples/java/src/main/java/kovteba/collectionframework/iterable/collection/list/linkedlist]
+
+[#java-collection-framework-arrayblockingqueue]
+=== ArrayBlockingQueue
+`ArrayBlockingQueue` у Java — це *потокобезпечна обмежена черга* (bounded blocking queue) з пакету `java.util.concurrent`, побудована на масиві фіксованого розміру. Реалізує інтерфейс `BlockingQueue<E>`.
+
+Головна ідея: якщо черга *заповнена* — потік-письменник *блокується* до появи місця. Якщо черга *порожня* — потік-читач *блокується* до появи елемента.
+
+* `BlockingQueue<E>` — блокуючі операції `put` / `take`
+* `Queue<E>` — неблокуючі операції `offer` / `poll`
+* `Collection<E>` — базові операції колекції
+
+.Ієрархія наслідування
+[source,subs="normal"]
+----
+Object
+  └── AbstractCollection<E>
+        └── AbstractQueue<E>
+              └── <<java-collection-framework-arrayblockingqueue,ArrayBlockingQueue<E>>>
+----
+
+NOTE: `ArrayBlockingQueue` знаходиться у пакеті `java.util.concurrent`. На відміну від `LinkedBlockingQueue` — має *фіксований* розмір, заданий при створенні. Динамічне розширення неможливе.
+
+WARNING: `ArrayBlockingQueue` *не допускає `null`*. Спроба додати `null` викине `NullPointerException`, оскільки `null` повертається як сигнал порожньої черги у неблокуючих методах (`poll`, `peek`).
+
+.Конструктор ArrayBlockingQueue(int capacity)
+[source,java]
+----
+ArrayBlockingQueue<String> queue = new ArrayBlockingQueue<>(10);
+----
+
+*Що робить:* створює порожню чергу з масивом фіксованого розміру `capacity`. Ємність не може бути змінена після створення. `fair = false` — без гарантії порядку очікування потоків.
+
+*Коли використовувати:* стандартний вибір для producer-consumer паттерну коли потрібно обмежити кількість елементів у черзі і не важливий точний порядок очікування потоків.
+
+[source,java]
+----
+ArrayBlockingQueue<Task> queue = new ArrayBlockingQueue<>(100);
+// producer:
+queue.put(new Task());    // блокується якщо черга повна
+// consumer:
+Task t = queue.take();    // блокується якщо черга порожня
+----
+
+.Конструктор ArrayBlockingQueue(int capacity, boolean fair)
+[source,java]
+----
+ArrayBlockingQueue<String> queue = new ArrayBlockingQueue<>(10, true);
+----
+
+*Що робить:* створює чергу з *fair* (справедливим) режимом. При `fair=true` — потоки що чекають на `put`/`take` обслуговуються у порядку FIFO (найдовше очікуючий перший). Реалізується через `ReentrantLock(true)`.
+
+*Коли використовувати:* коли важливо уникнути *starvation* — ситуації коли окремі потоки чекають нескінченно довго поки інші постійно проскакують вперед.
+
+WARNING: Fair режим *знижує пропускну здатність* через додаткові накладні витрати на підтримку порядку черги потоків. Використовуй тільки якщо starvation є реальною проблемою.
+
+.Конструктор ArrayBlockingQueue(int capacity, boolean fair, Collection<? extends E> c)
+[source,java]
+----
+List<String> initial = List.of("a", "b", "c");
+ArrayBlockingQueue<String> queue = new ArrayBlockingQueue<>(10, false, initial);
+----
+
+*Що робить:* створює чергу із заданою ємністю і заповнює її елементами з колекції `c`. Якщо `c.size() > capacity` — кидає `IllegalArgumentException`.
+
+*Коли використовувати:* коли потрібно передати початковий набір завдань у чергу при старті системи.
+
+[[java-collection-framework-arrayblockingqueue-big-o-notation]]
+[#java-collection-framework-arrayblockingqueue-class-big-o-notation]
+.BigO notation для ArrayBlockingQueue:
+[cols="2,1,4", options="header"]
+|===
+|`take()`                   |O(1)           |Читає елемент з позиції `takeIndex`. Якщо черга порожня — блокує потік на `Condition notEmpty` до появи елемента
+|`offer(E e)`               |O(1)           |Як `put`, але повертає `false` замість блокування якщо черга повна
+|`offer(E e, time, unit)`   |O(1)           |Як `put`, але блокує не довше ніж `time`. Повертає `false` при таймауті
+|`poll()`                   |O(1)           |Як `take`, але повертає `null` замість блокування якщо черга порожня
+|`poll(time, unit)`         |O(1)           |Як `take`, але блокує не довше ніж `time`. Повертає `null` при таймауті
+|`peek()`                   |O(1)           |Повертає елемент з `takeIndex` без видалення і без блокування. `null` якщо порожня
+|`add(E e)`                 |O(1)           |Як `offer`, але кидає `IllegalStateException` якщо черга повна
+|`remove()`                 |O(1)           |Як `poll`, але кидає `NoSuchElementException` якщо черга порожня
+|`remove(Object o)`         |O(n)           |Лінійний пошук з `equals()` + зсув елементів для заповнення діри. Захоплює lock на весь час
+|`contains(Object o)`       |O(n)           |Лінійний перебір масиву з `equals()` під lock
+|`size()`                   |O(1)           |Повертає поле `count` — лічильник елементів під lock
+|`isEmpty()`                |O(1)           |Перевіряє `count == 0` під lock
+|`remainingCapacity()`      |O(1)           |Повертає `capacity - count` — скільки ще можна додати без блокування
+|`clear()`                  |O(n)           |Обнуляє всі елементи масиву між `takeIndex` і `putIndex`, `count = 0`. Сигналізує `notFull`
+|`drainTo(Collection c)`    |O(n)           |Атомарно переміщує всі елементи у колекцію `c` під lock. Ефективніше ніж n разів `poll`
+|`drainTo(Collection c, n)` |O(n)           |Як `drainTo`, але максимум `n` елементів
+|`toArray()`                |O(n)           |Копіює елементи від `takeIndex` до `putIndex` з урахуванням wrap-around
+|`iterator()`               |O(1)           |Створює ітератор під lock. *Може* кинути `ConcurrentModificationException` на відміну від `CopyOnWriteArrayList`
+|`forEach(Consumer)`        |O(n)           |Ітерує під lock — блокує інші потоки на весь час ітерації
+|===
+
+[[java-collection-framework-arrayblockingqueue-lock-condition]]
+.ArrayBlockingQueue — ReentrantLock, Condition, await/signal
+`ArrayBlockingQueue` використовує один `ReentrantLock lock` і два `Condition`: `notFull` (producer чекає місця) та `notEmpty` (consumer чекає елемента). `put()`: захоплює lock → `while(count==length) notFull.await()` → `enqueue(e)` → `notEmpty.signal()`. `await()` атомарно звільняє lock і паркує потік. `while` замість `if` захищає від spurious wakeup. `InterruptedException` propagates з `await()` — коректна відповідь на `Thread.interrupt()`.
+
+[[java-collection-framework-blockingqueue-aqs]]
+.AQS — AbstractQueuedSynchronizer, основа ReentrantLock
+AQS (AbstractQueuedSynchronizer) — базовий клас для синхронізаторів у `java.util.concurrent`. Зберігає `volatile int state` і CLH-queue (doubly-linked list) очікуючих потоків. `ReentrantLock` використовує AQS: `state=0` → не заблокований, `state=n` → заблокований n разів (reentrant). `lock()` → CAS на state → при невдачі → enqueue до CLH → park(). `unlock()` → decrement state → якщо 0 → unpark наступного в черзі.
+
+[[java-collection-framework-arrayblockingqueue-circular]]
+.ArrayBlockingQueue — кільцевий буфер (putIndex, takeIndex)
+`items[putIndex]` — місце запису, `items[takeIndex]` — місце читання. Після кожного запису: `if (++putIndex == items.length) putIndex = 0`. Аналогічно для `takeIndex`. `count` — кількість елементів (не обчислюється з індексів). Черга повна: `count == items.length`. Черга порожня: `count == 0`.
+
+.Внутрішній устрій
+`ArrayBlockingQueue` використовує *один ReentrantLock* і *два Condition* об'єкти:
+
+[source,java]
+----
+final Object[] items;           // масив фіксованого розміру
+int takeIndex;                  // індекс наступного елемента для читання
+int putIndex;                   // індекс наступної позиції для запису
+int count;                      // кількість елементів у черзі
+
+final ReentrantLock lock;       // один lock для читачів і письменників
+private final Condition notEmpty; // сигнал: з'явився елемент → розбудити читача
+private final Condition notFull;  // сигнал: з'явилось місце → розбудити письменника
+----
+
+NOTE: На відміну від `LinkedBlockingQueue`, `ArrayBlockingQueue` використовує *один спільний lock* для `put` і `take`. Це означає що producer і consumer *не можуть працювати одночасно* — один завжди чекає на другого. `LinkedBlockingQueue` має два окремих lock і вищу пропускну здатність при високому навантаженні.
+
+.Кільцевий масив — той самий принцип що у ArrayDeque
+`ArrayBlockingQueue` зберігає елементи у *кільцевому масиві*. `takeIndex` і `putIndex` рухаються по колу:
+
+[source]
+----
+capacity=8, count=4, takeIndex=2, putIndex=6
+
+індекс:  0    1    2    3    4    5    6    7
+масив: [  ][  ][ A ][ B ][ C ][ D ][  ][  ]
+                 ↑                   ↑
+            takeIndex             putIndex
+----
+
+Після `take()` — `takeIndex` рухається вправо:
+
+[source]
+----
+індекс:  0    1    2    3    4    5    6    7
+масив: [  ][  ][   ][ B ][ C ][ D ][  ][  ]
+                      ↑              ↑
+                 takeIndex        putIndex
+----
+
+Wrap-around: `putIndex` досягає кінця масиву і обертається на початок:
+
+[source]
+----
+capacity=8, count=6, takeIndex=3, putIndex=1 (після wrap-around)
+
+індекс:  0    1    2    3    4    5    6    7
+масив: [ F ][  ][  ][ B ][ C ][ D ][ E ][ F ]... (умовно)
+              ↑         ↑
+          putIndex  takeIndex
+----
+
+.Як працює put(E e) — блокування при повній черзі
+[source,java]
+----
+queue.put("X");
+// Якщо count < capacity → записує і повертається
+// Якщо count == capacity → блокується до появи місця
+----
+
+[source,java]
+----
+public void put(E e) throws InterruptedException {
+    Objects.requireNonNull(e);
+    final ReentrantLock lock = this.lock;
+    lock.lockInterruptibly();           // захоплює lock, але реагує на interrupt
+    try {
+        while (count == items.length)
+            notFull.await();            // звільняє lock і засинає на Condition
+        enqueue(e);                     // записує елемент
+    } finally {
+        lock.unlock();
+    }
+}
+
+private void enqueue(E e) {
+    final Object[] items = this.items;
+    items[putIndex] = e;
+    if (++putIndex == items.length)
+        putIndex = 0;                   // wrap-around
+    count++;
+    notEmpty.signal();                  // будить один потік що чекає на take()
+}
+----
+
+NOTE: `notFull.await()` атомарно *звільняє lock* і засинає. Коли `notEmpty.signal()` з `dequeue` розбудить цей потік — він знову захопить lock і перевірить умову `while`. `while` замість `if` — захист від *spurious wakeup* (помилкового пробудження).
+
+.Як працює take() — блокування при порожній черзі
+[source,java]
+----
+String x = queue.take();
+// Якщо count > 0 → читає і повертає елемент
+// Якщо count == 0 → блокується до появи елемента
+----
+
+[source,java]
+----
+public E take() throws InterruptedException {
+    final ReentrantLock lock = this.lock;
+    lock.lockInterruptibly();
+    try {
+        while (count == 0)
+            notEmpty.await();           // звільняє lock і засинає
+        return dequeue();
+    } finally {
+        lock.unlock();
+    }
+}
+
+private E dequeue() {
+    final Object[] items = this.items;
+    E e = (E) items[takeIndex];
+    items[takeIndex] = null;            // допомагаємо GC
+    if (++takeIndex == items.length)
+        takeIndex = 0;                  // wrap-around
+    count--;
+    notFull.signal();                   // будить один потік що чекає на put()
+    return e;
+}
+----
+
+.Чотири групи методів — поведінка при повній/порожній черзі
+[cols="2,2,2,2,2", options="header"]
+|===
+|Черга *порожня* (remove)|`remove` → `NoSuchElementException` |`poll` → `null` |`take` → блокує |`poll(t,u)` → `null`
+|Черга *порожня* (examine)|`element` → `NoSuchElementException` |`peek` → `null` | — | —
+|===
+
+.Producer-Consumer паттерн
+[source,java]
+----
+ArrayBlockingQueue<String> queue = new ArrayBlockingQueue<>(5);
+
+// Producer потік
+Thread producer = new Thread(() -> {
+    try {
+        for (int i = 0; i < 10; i++) {
+            queue.put("Task-" + i);     // блокується якщо черга повна (5 елементів)
+            System.out.println("Produced: Task-" + i);
+        }
+    } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+    }
+});
+
+// Consumer потік
+Thread consumer = new Thread(() -> {
+    try {
+        while (true) {
+            String task = queue.take();  // блокується якщо черга порожня
+            System.out.println("Consumed: " + task);
+            Thread.sleep(100);           // імітація обробки
+        }
+    } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+    }
+});
+
+producer.start();
+consumer.start();
+----
+
+.drainTo — атомарне спустошення черги
+[source,java]
+----
+List<String> batch = new ArrayList<>();
+int count = queue.drainTo(batch, 10); // забирає до 10 елементів атомарно
+// count — скільки реально забрано
+----
+
+NOTE: `drainTo` ефективніший ніж `n` разів `poll` — один захват lock замість `n`. Корисно для *batch processing*: накопичувати задачі у черзі і обробляти пачками.
+
+.ArrayBlockingQueue vs LinkedBlockingQueue
+[cols="3,1,1", options="header"]
+|===
+|Пам'ять                        |✅ передбачувана       |❌ +Node overhead на елемент
+|Lock архітектура               |⚠️ один lock           |✅ два lock (put/take незалежні)
+|Пропускна здатність            |⚠️ нижча при contention|✅ вища при high throughput
+|Fair режим                     |✅ є                   |❌ немає
+|CPU cache                      |✅ хороший (масив)     |❌ поганий (Node розкидані)
+|Підходить для                  |обмежений буфер, fair  |high-throughput pipeline
+|===
+
+IMPORTANT: Обирай `ArrayBlockingQueue` коли: (1) потрібен *жорсткий ліміт* на кількість елементів у черзі (back-pressure), (2) важлива *передбачувана пам'ять*, (3) потрібен *fair* режим. Обирай `LinkedBlockingQueue` коли важлива максимальна пропускна здатність у high-throughput системах з великою кількістю producer/consumer потоків.
+
+[[java-collection-framework-arrayblockingqueue-pitfalls]]
+.Підводні камені
+
+.Deadlock якщо put() і take() в одному потоці
+[source,java]
+----
+ArrayBlockingQueue<String> queue = new ArrayBlockingQueue<>(1);
+queue.put("first"); // OK — місце є
+queue.put("second"); // БЛОКУЄТЬСЯ НАЗАВЖДИ! — черга повна, нікого нема хто прийме
+// Завжди put() і take() в РІЗНИХ потоках
+----
+
+WARNING: Виклик `put()` і `take()` в *одному й тому самому потоці* при повній черзі призведе до deadlock — потік заблокується назавжди сам на собі. `put()` і `take()` завжди повинні виконуватись у *різних потоках*.
+
+.Три способи вставки з різною поведінкою
+[source,java]
+----
+ArrayBlockingQueue<String> q = new ArrayBlockingQueue<>(2);
+q.add("a");    // кидає IllegalStateException якщо повна
+q.offer("b");  // повертає false якщо повна (не блокується)
+q.offer("c", 100, TimeUnit.MILLISECONDS); // чекає до 100мс, потім false
+q.put("d");    // блокується до появи місця (InterruptedException)
+----
+
+NOTE: Чотири способи вставки — чотири різні поведінки при повній черзі: `add()` кидає виняток, `offer()` повертає `false`, `offer(e,t,u)` чекає з таймаутом, `put()` блокується необмежено. Обирай залежно від вимог до back-pressure у своїй системі.
+
+.fair=true vs fair=false
+[source,java]
+----
+// fair=false (default) — FIFO не гарантовано між потоками:
+ArrayBlockingQueue<String> unfair = new ArrayBlockingQueue<>(10, false);
+// fair=true — FIFO між потоками, але значно повільніша:
+ArrayBlockingQueue<String> fair = new ArrayBlockingQueue<>(10, true);
+----
+
+NOTE: `fair=true` гарантує що потоки, що очікують на `put()`/`take()`, обслуговуються у порядку FIFO (найдовше очікуючий — першим). Це знижує throughput через додаткові витрати на підтримку порядку, але запобігає *thread starvation* — ситуації коли окремий потік чекає нескінченно довго.
+
+.Ефективне вилучення кількох елементів
+[source,java]
+----
+ArrayBlockingQueue<String> queue = new ArrayBlockingQueue<>(1000);
+List<String> batch = new ArrayList<>();
+queue.drainTo(batch, 100); // бере до 100 елементів одночасно — ефективніше ніж 100 poll()
+// drainTo виконує один захват lock замість 100 окремих захватів
+----
+
+TIP: Використовуй `drainTo(collection, maxElements)` для *batch processing* — один захват lock замість N окремих викликів `poll()`. Значно ефективніше при необхідності вилучити багато елементів одночасно.

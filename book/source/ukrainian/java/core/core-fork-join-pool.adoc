@@ -1,0 +1,16 @@
+ifndef::imagesdir[:imagesdir: ../../imgs]
+ifndef::forkjoinpooldir[:forkjoinpooldir: ../../../../../examples/java/src/main/java/kovteba/core]
+ifndef::forkjoinpooltestdir[:forkjoinpooltestdir: ../../../../examples/java/src/test/java/kovteba/stream]
+
+[#java-core-fork-join-pool]
+=== ForkJoinPool
+ForkJoinPool використовується усім додатком, тому якщо є довгограючі операції такі як спілкування по сітці то краще дя них створити окрємий,`ForkJoinPool` тому що такі операції можуть вплинути на весь застосунок. Також після використання кастомного пулу треба виконати `forkJoinPool.shutdown()`, тому що після обчислення кастомний пул не буде прибиратися <<jvm-garbage-collector,Garbage collector>>.
+
+ForkJoinPool представлений в `JDK 7`, призначений для паралельного виконання задач з розподілом на більш малі задачі та об'єднаням результатів. Задачі є спадкоємцями класу `RecursiveTask` який повертає результат або `RecursiveAction` який не повертає рузультат. Головна концепція цього підходу у тому щоб розбивати задачу на більш дрібні які вже і виконуються. Після виконання усіх маленьких задач йде об'еднаня результатів. ForkJoinPool заснован на концепції <<work-stealing, Work-Stealing>>.
+
+[source,java]
+----
+include::{forkjoinpooldir}/ForkJoinPoolImplementation.java[tags=ForkJoinPoolImplementation]
+----
+
+// https://habr.com/ru/articles/565924/

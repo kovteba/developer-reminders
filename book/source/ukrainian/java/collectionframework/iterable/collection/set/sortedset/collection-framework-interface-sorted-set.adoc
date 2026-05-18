@@ -1,0 +1,22 @@
+ifndef::imagesdir[:imagesdir: ../../../../../../../imgs/]
+ifndef::sortedsetdir[:sortedsetdir: ../../../../../../../../../examples/java/src/main/java/kovteba/collectionframework/iterable/collection/set/sortedset]
+ifndef::sortedsettestdir[:sortedsettestdir: ../../../../../../../../../examples/java/src/main/java/kovteba/collectionframework/iterable/collection/set/sortedset]
+
+[#java-collection-framework-sorted-set]
+====== SortedSet
+Інтерфейс `SortedSet` розширює інтерфейс `Set` і використовується для створення колекцій, які зберігають елементи в відсортованому вигляді (сортування за зростанням). `SortedSet` розширює інтерфейс `Set`, тому така колекція знову ж таки зберігає тільки унікальні значення.
+
+
+[[java-collection-framework-sortedset-comparator]]
+[#java-collection-framework-sorted-set-interface-methods]
+.Методы класса SortedSet
+Интерфейс SortedSet определяет наступні методи:
+
+- `Comparator<? super E> comparator()`: повертає компаратор, який використовується для сортування елементів в наборі. Якщо набір використовує компаратор за замовчуванням, то повертає null;
+- `E first()`: повертає перший елемент набору;
+- `E last()`: повертає останній елемент набору;
+- `SortedSet<E> headSet(E end)`: повертає набір, який містить всі елементи вихідного набору до елемента end;
+- `SortedSet<E> subSet(E start, E end)`: повертає набір, який містить всі елементи вихідного набору між елементами start і end;
+- `SortedSet<E> tailSet(E start)`: повертає набір, який містить всі елементи вихідного набору, починаючи з елемента start.
+
+include::navigableset/collection-framework-interface-navigable-set.adoc[]

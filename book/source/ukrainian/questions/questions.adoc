@@ -471,3 +471,1143 @@
 //- Как проверить, что контейнер с Java-приложением корректно «живой»? (Healthcheck) <<docker-container-healthcheck, Answer>>
 //- Как подгрузить внешние конфигурационные файлы (application.yml) в контейнер? <<docker-container-config-files, Answer>>
 //- Что такое Testcontainers в Java? <<docker-testcontainer-for-java, Answer>>
+
+[#java]
+.Java
+
+[#java-core]
+.Java Core
+!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!
+[#question-java-collections]
+.Java Collections
+- Розкажіть про ітератори та їх застосування. <<java-collection-framework-iterable,Answer>>
+- Яка ієрархія колекцій в Java Collection Framework? <<java-collection-framework,Answer>>
+- Яка внутрішня будова ArrayList? <<java-collection-framework-arraylist,Answer>>
+- Яка внутрішня будова LinkedList? <<java-collection-framework-linkedlist,Answer>>
+- Яка внутрішня будова HashMap? <<java-collection-framework-hash-map-methods-structure,Answer>>
+- Чим відрізняється ArrayList від LinkedList? <<java-collection-framework-list,Answer>>
+- Чим відрізняється ArrayList від HashSet? <<java-collection-framework-arraylist-class-big-o-notation,Answer>>
+- Для чого в Java така різноманітність реалізацій динамічного масиву? <<java-collection-framework-list,Answer>>
+- Для чого в Java така різноманітність реалізацій key-value storage? <<java-collection-framework-map-interface-methods,Answer>>
+- Як відсортувати колекцію елементів? <<java-collection-framework-treemap,Answer>>
+- Чим відрізняється List від Set? <<java-collection-framework-list,Answer>>
+- В чому різниця між HashSet, LinkedHashSet і TreeSet? <<java-collection-framework-hashset-linkedhashset-treeset-diff,Answer>>
+- Яка внутрішня структура HashMap? <<java-collection-framework-hash-map-methods-structure,Answer>>
+- Який час пошуку елементу в ArrayList, HashSet? <<java-collection-framework-arraylist-class-big-o-notation,Answer>>
+- Як реалізувати свій Stack? <<java-collection-framework-stack,Answer>>
+- Як працює метод put в HashMap? Чому потрібно вираховувати позицію бакета? Які переваги? <<java-collection-framework-hash-map-class-put-method,Answer>>
+- В чому різниця між HashMap і TreeMap? Коли і де їх використовувати? <<java-collection-framework-hashmap,Answer>>
+- Яка внутрішня будова TreeMap? Розкажіть про Red-Black Tree. <<java-collection-framework-treemap,Answer>>
+- Що таке LinkedHashMap? <<java-collection-framework-linkedhashmap,Answer>>
+- Що таке EnumSet? Для чого використовувати? Як реалізований? <<java-collection-framework-enumset,Answer>>
+- Необхідно додати 1млн. єлементів, яку страктуру треба використовувати? Чому? <<java-collection-framework-add-1-million-of-rows, Answer>>
+- Максимальне значення hashCode()? <<java-class-object-hashcode, Answer>>
+- Різниця між fail-fast та fail-safe? <<java-collection-framework-fail-fast-fail-safe, Answer>>
+- Приклади ітераторів які реалізують поведінку fail-safe? <<java-collection-framework-fail-safe-example, Answer>>
+- Приклади ітераторів які реалізують поведінку fail-fast? <<java-collection-framework-fail-fast-example, Answer>>
+- Enumeration и Iterator? <<java-collection-framework-enumeration-iterator, Answer>>
+- В яких випадках використовувати `HashMap` и `HashSet`? <<java-collection-framework-hashmap-hashset,Answer>>
+- Як пов'язані між собою Iterable та Iterator? <<java-collection-framework-iterable-iterator,Answer>>
+- Які колекції можна використовувати в «for-each»? <<java-collection-framework-iterable-iterator-for-each,Answer>>
+- Що буде якщо викликати `Iterator.next()` без попереднього виклику `Iterator.hasNext()`? <<java-collection-framework-iterator-next-without-has-next,Answer>>
+- Скільки елементів буде пропущено при виклику `Iterator.next()` якщо попередньо буде викликано 10 разів метод `Iterator.hasNext()`? <<java-collection-framework-iterator-next-has-next-10-times,Answer>>
+- Порівняйте `Iterator` та `ListIterator`? <<java-collection-frameworl-listiterator-interface,Answer>>
+- Як поводить себе колекція при виклику методу `remove()`? <<java-collection-framework-remove-method,Answer>>
+
+[#question-java-collections-advanced]
+.Java Collections — Advanced
+- Як вибрати між ArrayList, LinkedList, HashMap та ConcurrentHashMap для high-load production? <<java-collections-choice,Answer>>
+- Що відбувається під час resize HashMap, як мінімізувати його вплив? <<java-collections-resize,Answer>>
+- Як працює ConcurrentHashMap в JDK8+ (rehash, CAS, слабкоструктурні ітератори)? <<java-collections-chm,Answer>>
+- Як уникнути hash-flooding DoS і які є підходи захисту? <<java-collections-hash-flood,Answer>>
+- Коли використовувати WeakHashMap / SoftReference для кешів — ризики та альтернативи? <<java-collections-weak-soft,Answer>>
+- Як правильно розробити LRU-кеш для concurrent access (striping vs Caffeine)? <<java-collections-lru-cache,Answer>>
+- Які метрики і інструменти використовувати для профілювання колекцій під навантаженням? <<java-collections-benchmarking,Answer>>
+- Які best-practices для hashCode()/equals() в high-performance code? <<java-collections-hashcode-best,Answer>>
+- Які trade-offs між memory footprint та throughput при виборі реалізації колекцій? <<java-collections-memory-vs-throughput,Answer>>
+
+
+//TODO - Яка колекція реалізує FIFO? <<,Answer>>FIFO, First-In-First-Out («первым пришел-первым ушел») - по этому принципу построена коллекция Queue.
+//TODO - Яка колекція реалізує FILO? <<,Answer>>FILO, First-In-Last-Out («первым пришел, последним ушел») - по этому принципу построена коллекция Stack.
+
+[#question-java-collections-hash-map]
+.HashMap
+- Початкова кількість бакетів у `HashMap`? <<java-collection-framework-hash-map-buckets-default-amount,Answer>>
+- В якому випадку може бути втрачений елемент у `HashMap`? <<java-collection-framework-hash-map-element-lost,Answer>>
+- Чому не можна використовувати `byte[]` як ключ у `HashMap`? <<java-collection-framework-hash-map-array-as-key,Answer>>
+- Коли відбувається збільшення кількості бакетів у `HashMap`? <<java-collection-framework-hash-map-buckets-amount,Answer>>
+- Як влаштована `HashMap`? <<java-collection-framework-hash-map-methods-structure,Answer>>
+- Яка складність вибірки елементу `HashMap`? <<java-collection-framework-hash-map-big-o-natation,Answer>>
+- Чи гарантує `HashMap` збереження складності вибірки елементу? <<java-collection-framework-hash-map-big-o-get-element,Answer>>
+- Як працює хеш-функція `spread()` у `HashMap`? Навіщо XOR з `h >>> 16`? <<java-collection-framework-hashmap-hash,Answer>>
+- Коли `HashMap` перетворює ланцюжок у Red-Black Tree? <<java-collection-framework-hashmap-internal-structure,Answer>>
+- Що таке `TREEIFY_THRESHOLD`, `UNTREEIFY_THRESHOLD`, `MIN_TREEIFY_CAPACITY`? <<java-collection-framework-hashmap-internal-structure,Answer>>
+- Як відбувається resize у `HashMap`? Як перерозподіляються елементи? <<java-collection-framework-hashmap-resize,Answer>>
+- Які підводні камені при використанні мутабельних об'єктів як ключів? <<java-collection-framework-hashmap-pitfalls,Answer>>
+- Як правильно розрахувати `initialCapacity` щоб уникнути resize? <<java-collection-framework-hash-map-constructors,Answer>>
+- Чому `HashMap` вимагає, щоб розмір таблиці завжди був степенем двійки? <<java-collection-framework-hashmap-power-of-two,Answer>>
+- Що таке bit trick `(n-1) & hash` і як він замінює операцію `%`? <<java-collection-framework-hashmap-power-of-two,Answer>>
+- Як `spread()` розподіляє хеші рівномірніше? Поясніть XOR верхніх і нижніх 16 біт. <<java-collection-framework-hashmap-spread-detail,Answer>>
+- Чому без `spread()` HashMap деградував би при ключах з hashCode що відрізняється лише у старших бітах? <<java-collection-framework-hashmap-spread-detail,Answer>>
+- Що відбувається з `TreeNode` під час `resize()`? Як він знає в який з двох нових бакетів перейти? <<java-collection-framework-hashmap-resize-treenode,Answer>>
+- Поясніть bit trick під час resize: чому елемент йде в `oldIndex` або `oldIndex + oldCapacity`? <<java-collection-framework-hashmap-resize-treenode,Answer>>
+- Чому `TREEIFY_THRESHOLD=8`? Яке статистичне обґрунтування цього числа (Poisson distribution)? <<java-collection-framework-hashmap-treeify-stats,Answer>>
+- Чому `UNTREEIFY_THRESHOLD=6` а не 8? Навіщо гістерезис? <<java-collection-framework-hashmap-treeify-stats,Answer>>
+- Чому `MIN_TREEIFY_CAPACITY=64`? Що відбудеться якщо capacity < 64 але бакет має 8+ елементів? <<java-collection-framework-hashmap-treeify-stats,Answer>>
+- Яка різниця в обробці collision у treeified bucket vs linked list bucket? <<java-collection-framework-hashmap-tree-vs-list-collision,Answer>>
+- Як `HashMap.putVal()` визначає позицію нового вузла в дереві без `Comparable`? <<java-collection-framework-hashmap-tree-vs-list-collision,Answer>>
+- Чому `HashMap` в Java 7 міг входити в нескінченний цикл при concurrent resize? Яка структура даних спричиняла це? <<java-collection-framework-hashmap-java7-infinite-loop,Answer>>
+- Чим Java 8 HashMap відрізняється від Java 7 в плані thread-safety при concurrent puts? <<java-collection-framework-hashmap-java7-infinite-loop,Answer>>
+- Що таке live view у `entrySet()`, `keySet()`, `values()`? Чому вони не є snapshot? <<java-collection-framework-hashmap-live-views,Answer>>
+- Чому `HashMap.values()` повертає `Collection` а не `Set`? <<java-collection-framework-hashmap-live-views,Answer>>
+- Як `HashMap` серіалізує свій стан? Чому `table` є `transient`? <<java-collection-framework-hashmap-serialization,Answer>>
+- Що таке `loadFactor` і як він впливає на memory-performance trade-off? Чому default 0.75? <<java-collection-framework-hashmap-loadfactor-analysis,Answer>>
+- Як правильно розрахувати `initialCapacity` якщо відомо що буде N елементів? Яка формула? <<java-collection-framework-hashmap-loadfactor-analysis,Answer>>
+- Що станеться якщо `hashCode()` завжди повертає 0? Яка деградація? <<java-collection-framework-hashmap-worst-case-hashcode,Answer>>
+- Чим відрізняється `HashMap.get()` коли бакет є linked list vs Red-Black Tree? BigO? <<java-collection-framework-hashmap-worst-case-hashcode,Answer>>
+- Як `HashMap.compute()` відрізняється від `computeIfAbsent()` та `computeIfPresent()`? <<java-collection-framework-hashmap-compute-methods,Answer>>
+- Чому рекурсивний виклик `computeIfAbsent()` з тим самим ключем є небезпечним? <<java-collection-framework-hashmap-compute-methods,Answer>>
+- Як `HashMap.merge()` об'єднує значення? Коли видаляє запис? <<java-collection-framework-hashmap-compute-methods,Answer>>
+- Що таке `HashMap.Node` vs `HashMap.TreeNode`? Яке memory overhead кожного? <<java-collection-framework-hashmap-node-memory,Answer>>
+- Чому `TreeNode` наслідує від `Node` а не є окремою структурою? <<java-collection-framework-hashmap-node-memory,Answer>>
+- Як `HashMap` обробляє `null`-ключ? Де він зберігається? <<java-collection-framework-hashmap-null-key-impl,Answer>>
+- Що таке `HashMap.afterNodeAccess()` та `afterNodeInsertion()`? Навіщо вони в `HashMap` якщо порожні? <<java-collection-framework-hashmap-hook-methods,Answer>>
+- Чому `LinkedHashMap` перевизначає `afterNodeAccess()` та `afterNodeInsertion()`? <<java-collection-framework-hashmap-hook-methods,Answer>>
+- Як `HashMap.forEach()` відрізняється від `entrySet().iterator()`? Який швидший? <<java-collection-framework-hashmap-foreach-vs-iterator,Answer>>
+- Що таке `modCount` в `HashMap`? Як fail-fast detection відбувається точно? <<java-collection-framework-hashmap-modcount,Answer>>
+- При якій операції `modCount` НЕ збільшується в `HashMap`? <<java-collection-framework-hashmap-modcount,Answer>>
+- Як `HashMap.putAll()` відрізняється від послідовних `put()`? Чи може він тригерити менше resize? <<java-collection-framework-hashmap-putall,Answer>>
+- Як `HashMap` порівнює ключі? Яка послідовність перевірок у `putVal()`? <<java-collection-framework-hashmap-key-comparison,Answer>>
+- Чому перевіряється `hash == hash` перед `equals()`? <<java-collection-framework-hashmap-key-comparison,Answer>>
+- Що таке `HashMap.getOrDefault()` і чи є воно atomic? <<java-collection-framework-hashmap-getordefault,Answer>>
+- Чому `HashMap` не підтримує thread-safety навіть для read-only операцій? <<java-collection-framework-hashmap-read-thread-safety,Answer>>
+- Як JMM (Java Memory Model) впливає на видимість змін у `HashMap` між потоками? <<java-collection-framework-hashmap-read-thread-safety,Answer>>
+- Що таке структурна модифікація `HashMap`? Які операції є структурними? <<java-collection-framework-hashmap-modcount,Answer>>
+- Як `HashMap` поводиться при `Integer.MIN_VALUE` як ключ? Чи є edge case? <<java-collection-framework-hashmap-integer-edge-cases,Answer>>
+- Яка найгірша можлива послідовність ключів для `HashMap` до Java 8? <<java-collection-framework-hashmap-worst-case-hashcode,Answer>>
+- Як `HashMap` реалізує `remove(Object key, Object value)` — atomic чи ні? <<java-collection-framework-hashmap-remove-conditional,Answer>>
+- Що станеться якщо `equals()` не рефлексивний (не `a.equals(a) == true`)? Як HashMap поводиться? <<java-collection-framework-hashmap-equals-contract,Answer>>
+- Що таке амортизована складність `put()` у `HashMap`? Коли амортизація не застосовується? <<java-collection-framework-hashmap-amortized,Answer>>
+- Як `HashMap` реалізує `clone()`? Чому це shallow copy? <<java-collection-framework-hashmap-clone,Answer>>
+- Які операції `HashMap` є O(1) guaranteed, а які лише amortized O(1)? <<java-collection-framework-hashmap-amortized,Answer>>
+- Як `HashMap.replaceAll()` обходить таблицю? Чи тригерить він modCount? <<java-collection-framework-hashmap-replaceall,Answer>>
+- Чому `HashMap` не використовує `equals()` для порівняння при наявності identity equality (`==`)? <<java-collection-framework-hashmap-key-comparison,Answer>>
+- Що відбувається з порожнім `HashMap` при `entrySet().iterator()`? Чи створюється внутрішній масив? <<java-collection-framework-hashmap-lazy-table,Answer>>
+- Яка різниця між `HashMap` з `initialCapacity=1` та `initialCapacity=16`? <<java-collection-framework-hashmap-loadfactor-analysis,Answer>>
+- Як `HashMap` обробляє хеш-колізію де два ключі мають однаковий hash І `equals() == true` одночасно? <<java-collection-framework-hashmap-key-comparison,Answer>>
+
+[#question-java-collections-array-list]
+.ArrayList
+- При видаленні елементів з ArrayList як змінюється його місткість? <<java-collection-framework-arraylist-class-delete-element-capacity-change,Answer>>
+- Алгоритм видалення кількох елементів поряд з ArrayList? <<java-collection-framework-arraylist-class-delete-multiple-elements-algorithm,Answer>>
+- Чи завжди додавання в ArrayList має складність O(1)? <<java-collection-framework-arraylist-class-add-big-o,Answer>>
+- Як відбувається збільшення ємності ArrayList? Яка формула? <<java-collection-framework-arraylist-class-add-big-o,Answer>>
+
+[#question-java-collections-hash-set]
+.HashSet
+- Можливо отримати доступ до елементу по ключу? <<java-collection-framework-hash-set-access-by-key,Answer>>
+- Яка внутрішня структура HashSet? Що зберігається як значення? <<java-collection-framework-hash-set-internal,Answer>>
+- Чому важливо перевизначати і `hashCode()`, і `equals()` для елементів HashSet? <<java-collection-framework-hash-set-internal,Answer>>
+- В чому різниця між HashSet, LinkedHashSet і TreeSet? <<java-collection-framework-hashset-linkedhashset-treeset-diff,Answer>>
+
+[#question-java-collections-concurrent]
+.Concurrent Collections
+- Чим відрізняється `ConcurrentHashMap` від `Collections.synchronizedMap`? <<java-collection-framework-concurrenthashmap,Answer>>
+- Чому `get()` у `ConcurrentHashMap` не потребує lock? <<java-collection-framework-concurrenthashmap-class-big-o-notation,Answer>>
+- Що таке `CopyOnWriteArrayList` і коли її використовувати? <<java-collection-framework-copyonwritearraylist,Answer>>
+- Чим `LinkedBlockingQueue` відрізняється від `ArrayBlockingQueue`? <<java-collection-framework-arrayblockingqueue,Answer>>
+- Що таке `SynchronousQueue` і де вона використовується? <<java-collection-framework-synchronousqueue,Answer>>
+- Що таке `DelayQueue` і як реалізований Leader-Follower pattern? <<java-collection-framework-delayqueue,Answer>>
+- Чим `LinkedTransferQueue` відрізняється від `LinkedBlockingQueue`? <<java-collection-framework-linkedtransferqueue,Answer>>
+- Що таке `ConcurrentSkipListMap`? Чим відрізняється від `Collections.synchronizedSortedMap`? <<java-collection-framework-concurrentskiplistmap,Answer>>
+
+[#question-java-collections-specialized]
+.Спеціалізовані колекції
+- Що таке `EnumSet`? Як він реалізований внутрішньо? Чому він швидший за `HashSet`? <<java-collection-framework-enumset,Answer>>
+- Що таке `EnumMap`? Чому краще використовувати його замість `HashMap<EnumType, V>`? <<java-collection-framework-enummap,Answer>>
+- Що таке `WeakHashMap`? Як GC взаємодіє з його ключами? <<java-collection-framework-weakhashmap,Answer>>
+- Що таке `IdentityHashMap`? Де і навіщо його використовувати? <<java-collection-framework-identityhashmap,Answer>>
+- Що таке `Properties`? Чим відрізняється від `Map<String,String>`? <<java-collection-framework-properties,Answer>>
+
+[#question-java-collections-linked-list]
+.LinkedList
+- Яка внутрішня структура `LinkedList`? Що таке `Node`? <<java-collection-framework-linkedlist-node,Answer>>
+- Яку роль відіграють поля `first` і `last` у `LinkedList`? <<java-collection-framework-linkedlist-node,Answer>>
+- Яка складність `get(int index)` у `LinkedList` і чому? <<java-collection-framework-linkedlist-pitfalls,Answer>>
+- Чому ітерація по `LinkedList` через `get(i)` у циклі є O(n²)? <<java-collection-framework-linkedlist-pitfalls,Answer>>
+- Чому `LinkedList` споживає у ~14 разів більше пам'яті ніж `ArrayList`? <<java-collection-framework-linkedlist-pitfalls,Answer>>
+- Чому `LinkedList` реалізує одночасно `List`, `Deque` і `Queue`? <<java-collection-framework-linkedlist,Answer>>
+- Яка складність `addFirst()` та `addLast()` у `LinkedList`? <<java-collection-framework-linkedlist-big-o-notation,Answer>>
+- Яка складність `removeFirst()` та `removeLast()` у `LinkedList`? <<java-collection-framework-linkedlist-big-o-notation,Answer>>
+- Коли `LinkedList` переважає `ArrayList`? <<java-collection-framework-linkedlist,Answer>>
+- Як правильно видаляти елементи з `LinkedList` під час ітерації? <<java-collection-framework-linkedlist-pitfalls,Answer>>
+- Яка альтернатива `LinkedList` для реалізації `Deque`? <<java-collection-framework-linkedlist-pitfalls,Answer>>
+- Що таке cache miss і чому це проблема для `LinkedList`? <<java-collection-framework-linkedlist-pitfalls,Answer>>
+- Чи є `LinkedList` потокобезпечним? <<java-collection-framework-linkedlist,Answer>>
+- Як `LinkedList` реалізує методи `peek()`, `poll()`, `offer()`? <<java-collection-framework-linkedlist,Answer>>
+- Порівняйте `LinkedList` та `ArrayDeque` як реалізацію `Deque`. <<java-collection-framework-linkedlist-pitfalls,Answer>>
+
+[#question-java-collections-vector-stack]
+.Vector та Stack
+- Чому `Vector` вважається legacy класом? <<java-collection-framework-vector,Answer>>
+- Яка різниця між `Vector` та `ArrayList`? <<java-collection-framework-vector,Answer>>
+- Як `Vector` розширює свій внутрішній масив? Яка формула? <<java-collection-framework-vector-pitfalls,Answer>>
+- Що таке `capacityIncrement` у `Vector`? <<java-collection-framework-vector-pitfalls,Answer>>
+- Чому `synchronized` на рівні методу `Vector` не гарантує thread-safety для складних операцій? <<java-collection-framework-vector-pitfalls,Answer>>
+- Чому `Stack` вважається поганим дизайном? <<java-collection-framework-stack,Answer>>
+- Які зайві методи успадковує `Stack` від `Vector`? <<java-collection-framework-stack-pitfalls,Answer>>
+- Яка 1-based індексація у `Stack.search()` і як це може заплутати? <<java-collection-framework-stack-pitfalls,Answer>>
+- Чим `ArrayDeque` кращий за `Stack`? <<java-collection-framework-stack-pitfalls,Answer>>
+- Яка сучасна заміна для `Vector` у потокобезпечному коді? <<java-collection-framework-vector,Answer>>
+
+[#question-java-collections-copyonwritearraylist]
+.CopyOnWriteArrayList
+- Яка ідея `CopyOnWriteArrayList` — навіщо копіювати масив? <<java-collection-framework-copyonwritearraylist,Answer>>
+- Яка складність `add()` у `CopyOnWriteArrayList` і чому? <<java-collection-framework-copyonwritearraylist-big-o-notation,Answer>>
+- Чому ітератор `CopyOnWriteArrayList` ніколи не кидає `ConcurrentModificationException`? <<java-collection-framework-copyonwritearraylist-pitfalls,Answer>>
+- Чому `Iterator.remove()` кидає `UnsupportedOperationException` у `CopyOnWriteArrayList`? <<java-collection-framework-copyonwritearraylist-pitfalls,Answer>>
+- Коли `CopyOnWriteArrayList` доцільна? Коли ні? <<java-collection-framework-copyonwritearraylist-pitfalls,Answer>>
+- Як оптимізувати bulk inserts у `CopyOnWriteArrayList`? <<java-collection-framework-copyonwritearraylist-pitfalls,Answer>>
+- Чи бачить ітератор `CopyOnWriteArrayList` нові елементи додані після його створення? <<java-collection-framework-copyonwritearraylist-pitfalls,Answer>>
+- Яка різниця між `CopyOnWriteArrayList` та `Collections.synchronizedList()`? <<java-collection-framework-copyonwritearraylist,Answer>>
+- Чи підтримує `CopyOnWriteArrayList` метод `removeIf()`? <<java-collection-framework-copyonwritearraylist,Answer>>
+- Яке застосування `CopyOnWriteArrayList` у реальних проєктах? <<java-collection-framework-copyonwritearraylist,Answer>>
+
+[#question-java-collections-linked-hash-map]
+.LinkedHashMap
+- Яка різниця між `HashMap` та `LinkedHashMap`? <<java-collection-framework-linkedhashmap,Answer>>
+- Як `LinkedHashMap` зберігає порядок вставки? <<java-collection-framework-linkedhashmap,Answer>>
+- Що таке access-order у `LinkedHashMap`? <<java-collection-framework-linkedhashmap-access-order,Answer>>
+- Як реалізувати LRU cache за допомогою `LinkedHashMap`? <<java-collection-framework-linkedhashmap-lru,Answer>>
+- Що таке `removeEldestEntry()` і як його перевизначити? <<java-collection-framework-linkedhashmap-lru,Answer>>
+- Яке memory overhead у `LinkedHashMap` порівняно з `HashMap`? <<java-collection-framework-linkedhashmap-pitfalls,Answer>>
+- Чому доступ через `get()` може кинути `ConcurrentModificationException` у `LinkedHashMap` з access-order? <<java-collection-framework-linkedhashmap-pitfalls,Answer>>
+- Чи є `LinkedHashMap` потокобезпечним? <<java-collection-framework-linkedhashmap,Answer>>
+- Яка складність операцій `get()`, `put()`, `remove()` у `LinkedHashMap`? <<java-collection-framework-linkedhashmap-big-o-notation,Answer>>
+- Як `LinkedHashMap` порівняно з `TreeMap` при необхідності впорядкованої ітерації? <<java-collection-framework-linkedhashmap,Answer>>
+- Чи дозволяє `LinkedHashMap` `null`-ключ? <<java-collection-framework-linkedhashmap,Answer>>
+- Що відбудеться якщо звернутися до елемента у insertion-order `LinkedHashMap` через `get()`? <<java-collection-framework-linkedhashmap-pitfalls,Answer>>
+
+[#question-java-collections-hashtable]
+.Hashtable
+- Чому `Hashtable` вважається legacy класом? <<java-collection-framework-hashtable,Answer>>
+- Яка різниця між `Hashtable` та `HashMap`? <<java-collection-framework-hashtable,Answer>>
+- Чому `Hashtable` не приймає `null` ні для ключів ні для значень? <<java-collection-framework-hashtable-pitfalls,Answer>>
+- Чому `Hashtable` повільніший за `ConcurrentHashMap` у багатопотоковому коді? <<java-collection-framework-hashtable-pitfalls,Answer>>
+- Яку альтернативу `Hashtable` використовувати в новому коді? <<java-collection-framework-hashtable,Answer>>
+- Як `Hashtable` пов'язаний з класом `Properties`? <<java-collection-framework-hashtable-pitfalls,Answer>>
+- Що таке `Enumeration` у `Hashtable` і чим відрізняється від `Iterator`? <<java-collection-framework-hashtable-pitfalls,Answer>>
+- Чи підтримує `Hashtable` `null`-значення? <<java-collection-framework-hashtable-pitfalls,Answer>>
+- Як `Hashtable` синхронізує доступ до даних? <<java-collection-framework-hashtable,Answer>>
+- Чи успадковує `Properties` від `Hashtable`? Які наслідки? <<java-collection-framework-hashtable-pitfalls,Answer>>
+
+[#question-java-collections-weakhashmap]
+.WeakHashMap
+- Що таке `WeakHashMap`? Яка ключова особливість? <<java-collection-framework-weakhashmap,Answer>>
+- Що таке `WeakReference`? Як GC обробляє слабкі посилання? <<java-collection-framework-weakhashmap,Answer>>
+- Чому String literals не підходять як ключі `WeakHashMap`? <<java-collection-framework-weakhashmap-pitfalls,Answer>>
+- Що відбудеться якщо значення `WeakHashMap` тримає strong reference на ключ? <<java-collection-framework-weakhashmap-pitfalls,Answer>>
+- Чому `size()` у `WeakHashMap` непередбачуваний? <<java-collection-framework-weakhashmap-pitfalls,Answer>>
+- Для яких задач підходить `WeakHashMap`? <<java-collection-framework-weakhashmap,Answer>>
+- Чи є `WeakHashMap` потокобезпечним? <<java-collection-framework-weakhashmap,Answer>>
+- Як `WeakHashMap` дізнається що ключ зібраний GC? <<java-collection-framework-weakhashmap,Answer>>
+- Яка різниця між `WeakHashMap` та `SoftReference`-based кешем? <<java-collection-framework-weakhashmap,Answer>>
+- Коли НЕ слід використовувати `WeakHashMap`? <<java-collection-framework-weakhashmap-pitfalls,Answer>>
+- Що таке `ReferenceQueue` і як `WeakHashMap` її використовує? <<java-collection-framework-weakhashmap,Answer>>
+- Яке типове застосування `WeakHashMap` у фреймворках? <<java-collection-framework-weakhashmap,Answer>>
+
+[#question-java-collections-identityhashmap]
+.IdentityHashMap
+- Що таке `IdentityHashMap`? Чим відрізняється від `HashMap`? <<java-collection-framework-identityhashmap,Answer>>
+- Яке правило рівності використовує `IdentityHashMap` (`==` чи `equals()`)? <<java-collection-framework-identityhashmap,Answer>>
+- Чому `IdentityHashMap` навмисно порушує загальний контракт `Map`? <<java-collection-framework-identityhashmap-pitfalls,Answer>>
+- Що станеться якщо помістити два `new String("a")` як різні ключі у `IdentityHashMap`? <<java-collection-framework-identityhashmap-pitfalls,Answer>>
+- Яке практичне застосування `IdentityHashMap` у Java? <<java-collection-framework-identityhashmap,Answer>>
+- Як серіалізація впливає на `IdentityHashMap`? <<java-collection-framework-identityhashmap-pitfalls,Answer>>
+- Чим відрізняється `System.identityHashCode()` від `hashCode()`? <<java-collection-framework-identityhashmap,Answer>>
+- Яка внутрішня структура `IdentityHashMap`? Чим відрізняється від `HashMap`? <<java-collection-framework-identityhashmap,Answer>>
+- Де `IdentityHashMap` використовується у JDK і фреймворках? <<java-collection-framework-identityhashmap,Answer>>
+- Чи дозволяє `IdentityHashMap` `null`-ключ? <<java-collection-framework-identityhashmap,Answer>>
+
+[#question-java-collections-enummap]
+.EnumMap
+- Що таке `EnumMap`? Яка його внутрішня структура? <<java-collection-framework-enummap,Answer>>
+- Чому `EnumMap` швидший за `HashMap` коли ключі — enum? <<java-collection-framework-enummap,Answer>>
+- Чи дозволяє `EnumMap` `null`-ключ? <<java-collection-framework-enummap-pitfalls,Answer>>
+- Яка гарантія порядку ітерації `EnumMap`? <<java-collection-framework-enummap-pitfalls,Answer>>
+- Що станеться якщо порядок enum-констант зміниться? <<java-collection-framework-enummap-pitfalls,Answer>>
+- Як ключовий тип фіксується при створенні `EnumMap`? <<java-collection-framework-enummap,Answer>>
+- Яка складність операцій `get()`, `put()` у `EnumMap`? <<java-collection-framework-enummap,Answer>>
+- Чи є `EnumMap` потокобезпечним? <<java-collection-framework-enummap-pitfalls,Answer>>
+- Порівняйте `EnumMap` та `EnumSet` — коли що використовувати? <<java-collection-framework-enummap,Answer>>
+- Яке реальне застосування `EnumMap` у типовому бізнес-коді? <<java-collection-framework-enummap,Answer>>
+
+[#question-java-collections-treemap]
+.TreeMap
+- Яка внутрішня структура `TreeMap`? Що таке Red-Black Tree? <<java-collection-framework-treemap,Answer>>
+- Яка складність основних операцій `TreeMap`? <<java-collection-framework-treemap-big-o-notation,Answer>>
+- Чому `TreeMap` не допускає `null`-ключ (без Comparator)? <<java-collection-framework-treemap-pitfalls,Answer>>
+- Що таке Red-Black Tree і як він самобалансується? <<java-collection-framework-treemap,Answer>>
+- Яка різниця між `TreeMap` та `HashMap`? <<java-collection-framework-treemap,Answer>>
+- Яка різниця між `TreeMap` та `ConcurrentSkipListMap`? <<java-collection-framework-treemap,Answer>>
+- Що станеться якщо `Comparator` не консистентний з `equals()`? <<java-collection-framework-treemap-pitfalls,Answer>>
+- Як `subMap()`, `headMap()`, `tailMap()` повертають live views? <<java-collection-framework-treemap-pitfalls,Answer>>
+- Що викине `tailMap()` якщо додати елемент за межами діапазону? <<java-collection-framework-treemap-pitfalls,Answer>>
+- Чи є `TreeMap` потокобезпечним? <<java-collection-framework-treemap-pitfalls,Answer>>
+- Як `TreeMap` реалізує методи `firstKey()`, `lastKey()`, `floorKey()`, `ceilingKey()`? <<java-collection-framework-treemap,Answer>>
+- Що таке `descendingMap()`? <<java-collection-framework-treemap,Answer>>
+- Яка різниця між `SortedMap` та `NavigableMap`? <<java-collection-framework-treemap,Answer>>
+- Чи можна зберігати `null`-значення (не ключі) у `TreeMap`? <<java-collection-framework-treemap,Answer>>
+- Як реалізувати кастомне сортування у `TreeMap`? <<java-collection-framework-treemap,Answer>>
+
+[#question-java-collections-concurrentskiplistmap]
+.ConcurrentSkipListMap
+- Що таке `ConcurrentSkipListMap`? Яка його внутрішня структура? <<java-collection-framework-concurrentskiplistmap,Answer>>
+- Що таке skip list? Як він забезпечує O(log n)? <<java-collection-framework-concurrentskiplistmap,Answer>>
+- Чим `ConcurrentSkipListMap` відрізняється від `ConcurrentHashMap`? <<java-collection-framework-concurrentskiplistmap,Answer>>
+- Чому `size()` у `ConcurrentSkipListMap` є O(n)? <<java-collection-framework-concurrentskiplistmap-pitfalls,Answer>>
+- Чому `ConcurrentSkipListMap` не приймає `null`? <<java-collection-framework-concurrentskiplistmap-pitfalls,Answer>>
+- Що таке lock-free через CAS у `ConcurrentSkipListMap`? <<java-collection-framework-concurrentskiplistmap,Answer>>
+- Чи гарантує `ConcurrentSkipListMap` weakly consistent ітерацію? <<java-collection-framework-concurrentskiplistmap-pitfalls,Answer>>
+- Коли обирати `ConcurrentSkipListMap` замість `Collections.synchronizedSortedMap()`? <<java-collection-framework-concurrentskiplistmap,Answer>>
+- Які навігаційні методи надає `ConcurrentSkipListMap`? <<java-collection-framework-concurrentskiplistmap,Answer>>
+- Яке реальне застосування `ConcurrentSkipListMap`? <<java-collection-framework-concurrentskiplistmap,Answer>>
+
+[#question-java-collections-properties]
+.Properties
+- Що таке `Properties`? Від якого класу наслідує? <<java-collection-framework-properties,Answer>>
+- Яка різниця між `getProperty()` та `get()` у `Properties`? <<java-collection-framework-properties-pitfalls,Answer>>
+- Чому небезпечно викликати `put(key, value)` замість `setProperty()`? <<java-collection-framework-properties-pitfalls,Answer>>
+- Яке кодування за замовчуванням використовує `load(InputStream)`? <<java-collection-framework-properties-pitfalls,Answer>>
+- Як правильно завантажити `.properties` файл з UTF-8? <<java-collection-framework-properties-pitfalls,Answer>>
+- Що таке ланцюжок `defaults` у `Properties`? <<java-collection-framework-properties-pitfalls,Answer>>
+- Яка різниця між `load()` та `loadFromXML()`? <<java-collection-framework-properties-pitfalls,Answer>>
+- Чи є `Properties` потокобезпечним? <<java-collection-framework-properties,Answer>>
+- Як прочитати системні властивості JVM через `Properties`? <<java-collection-framework-properties,Answer>>
+- Яка сучасна альтернатива `Properties` для конфігурації? <<java-collection-framework-properties-pitfalls,Answer>>
+
+[#question-java-collections-linked-hash-set]
+.LinkedHashSet
+- Що таке `LinkedHashSet`? Яка його внутрішня структура? <<java-collection-framework-linkedhashset,Answer>>
+- Яку гарантію порядку надає `LinkedHashSet`? <<java-collection-framework-linkedhashset,Answer>>
+- Чи є `LinkedHashSet` відсортованим? <<java-collection-framework-linkedhashset-pitfalls,Answer>>
+- Чи оновлює `LinkedHashSet` позицію елемента при повторному `add()`? <<java-collection-framework-linkedhashset-pitfalls,Answer>>
+- Яке memory overhead у `LinkedHashSet` порівняно з `HashSet`? <<java-collection-framework-linkedhashset-pitfalls,Answer>>
+- Яка складність `add()`, `remove()`, `contains()` у `LinkedHashSet`? <<java-collection-framework-linkedhashset-big-o-notation,Answer>>
+- Чи є `LinkedHashSet` потокобезпечним? <<java-collection-framework-linkedhashset,Answer>>
+- Чи дозволяє `LinkedHashSet` `null`-елемент? <<java-collection-framework-linkedhashset,Answer>>
+- Коли обирати `LinkedHashSet` замість `HashSet` або `TreeSet`? <<java-collection-framework-linkedhashset,Answer>>
+- Яка ієрархія наслідування `LinkedHashSet`? <<java-collection-framework-linkedhashset,Answer>>
+
+[#question-java-collections-treeset]
+.TreeSet
+- Яка внутрішня структура `TreeSet`? <<java-collection-framework-treeset,Answer>>
+- Яка складність `add()`, `remove()`, `contains()` у `TreeSet`? <<java-collection-framework-treeset-big-o-notation,Answer>>
+- Що викине `TreeSet` якщо елемент не реалізує `Comparable`? <<java-collection-framework-treeset-pitfalls,Answer>>
+- Чому `TreeSet` не допускає `null` без Comparator? <<java-collection-framework-treeset-pitfalls,Answer>>
+- Що таке `SortedSet` і `NavigableSet`? <<java-collection-framework-treeset,Answer>>
+- Як `headSet()`, `tailSet()`, `subSet()` повертають live views? <<java-collection-framework-treeset-pitfalls,Answer>>
+- Що таке IllegalArgumentException при додаванні поза діапазоном view? <<java-collection-framework-treeset-pitfalls,Answer>>
+- Що станеться якщо `Comparator` не консистентний з `equals()`? <<java-collection-framework-treeset-pitfalls,Answer>>
+- Яка різниця між `TreeSet` та `ConcurrentSkipListSet`? <<java-collection-framework-treeset,Answer>>
+- Чи є `TreeSet` потокобезпечним? <<java-collection-framework-treeset-pitfalls,Answer>>
+- Як реалізувати `TreeSet` з кастомним Comparator? <<java-collection-framework-treeset,Answer>>
+- Яка різниця між `first()` та `pollFirst()` у `TreeSet`? <<java-collection-framework-treeset,Answer>>
+- Що таке `descendingSet()`? <<java-collection-framework-treeset,Answer>>
+- Які методи надає `NavigableSet` понад `SortedSet`? <<java-collection-framework-treeset,Answer>>
+- Яке реальне застосування `TreeSet`? <<java-collection-framework-treeset,Answer>>
+
+[#question-java-collections-enumset]
+.EnumSet
+- Що таке `EnumSet`? Яка його внутрішня реалізація? <<java-collection-framework-enumset,Answer>>
+- Чому `EnumSet` швидший за `HashSet` для enum-типів? <<java-collection-framework-enumset,Answer>>
+- Що таке `RegularEnumSet` і `JumboEnumSet`? <<java-collection-framework-enumset-pitfalls,Answer>>
+- Чи дозволяє `EnumSet` `null`? <<java-collection-framework-enumset-pitfalls,Answer>>
+- Яка гарантія порядку ітерації `EnumSet`? <<java-collection-framework-enumset,Answer>>
+- Як правильно створити `EnumSet` через factory методи? <<java-collection-framework-enumset-pitfalls,Answer>>
+- Що таке `EnumSet.of()`, `EnumSet.allOf()`, `EnumSet.range()`, `EnumSet.complementOf()`? <<java-collection-framework-enumset-pitfalls,Answer>>
+- Чи можна змішувати різні enum-типи в одному `EnumSet`? <<java-collection-framework-enumset-pitfalls,Answer>>
+- Чи є `EnumSet` потокобезпечним? <<java-collection-framework-enumset,Answer>>
+- Яке реальне застосування `EnumSet` у бізнес-коді? <<java-collection-framework-enumset,Answer>>
+
+[#question-java-collections-copyonwritearrayset]
+.CopyOnWriteArraySet
+- Що таке `CopyOnWriteArraySet`? Яка його внутрішня реалізація? <<java-collection-framework-copyonwritearrayset,Answer>>
+- Чому `add()` у `CopyOnWriteArraySet` є O(n) а не O(1)? <<java-collection-framework-copyonwritearrayset-pitfalls,Answer>>
+- Коли доцільно використовувати `CopyOnWriteArraySet`? <<java-collection-framework-copyonwritearrayset,Answer>>
+- Чи бачить ітератор `CopyOnWriteArraySet` нові елементи? <<java-collection-framework-copyonwritearrayset-pitfalls,Answer>>
+- Яка альтернатива `CopyOnWriteArraySet` для великих потокобезпечних множин? <<java-collection-framework-copyonwritearrayset-pitfalls,Answer>>
+- Яка різниця між `CopyOnWriteArraySet` та `Collections.synchronizedSet()`? <<java-collection-framework-copyonwritearrayset,Answer>>
+- Гарантує чи ні `CopyOnWriteArraySet` порядок ітерації? <<java-collection-framework-copyonwritearrayset,Answer>>
+- Чи підтримує `CopyOnWriteArraySet` `null`-елементи? <<java-collection-framework-copyonwritearrayset,Answer>>
+
+[#question-java-collections-concurrentskiplistset]
+.ConcurrentSkipListSet
+- Що таке `ConcurrentSkipListSet`? На чому базується? <<java-collection-framework-concurrentskiplistset,Answer>>
+- Яка складність `add()`, `remove()`, `contains()` у `ConcurrentSkipListSet`? <<java-collection-framework-concurrentskiplistset-big-o-notation,Answer>>
+- Чому `size()` у `ConcurrentSkipListSet` є O(n)? <<java-collection-framework-concurrentskiplistset-pitfalls,Answer>>
+- Що таке weakly consistent ітерація? <<java-collection-framework-concurrentskiplistset-pitfalls,Answer>>
+- Чи допускає `ConcurrentSkipListSet` `null`? <<java-collection-framework-concurrentskiplistset-pitfalls,Answer>>
+- Яка різниця між `ConcurrentSkipListSet` та `TreeSet`? <<java-collection-framework-concurrentskiplistset,Answer>>
+- Чому Comparator має бути консистентним з `equals()` у `ConcurrentSkipListSet`? <<java-collection-framework-concurrentskiplistset-pitfalls,Answer>>
+- Яке реальне застосування `ConcurrentSkipListSet`? <<java-collection-framework-concurrentskiplistset,Answer>>
+- Яка гарантія порядку ітерації `ConcurrentSkipListSet`? <<java-collection-framework-concurrentskiplistset,Answer>>
+- Чи є `ConcurrentSkipListSet` lock-free? <<java-collection-framework-concurrentskiplistset,Answer>>
+
+[#question-java-collections-priority-queue]
+.PriorityQueue
+- Що таке `PriorityQueue`? Яка його внутрішня структура? <<java-collection-framework-priorityqueue,Answer>>
+- Що таке min-heap і як він реалізований у `PriorityQueue`? <<java-collection-framework-priorityqueue,Answer>>
+- Яка складність `offer()`, `poll()`, `peek()` у `PriorityQueue`? <<java-collection-framework-priorityqueue-big-o-notation,Answer>>
+- Чому `iterator()` у `PriorityQueue` не ітерує в пріоритетному порядку? <<java-collection-framework-priorityqueue-pitfalls,Answer>>
+- Як правильно вивести всі елементи `PriorityQueue` у відсортованому порядку? <<java-collection-framework-priorityqueue-pitfalls,Answer>>
+- Чи гарантує `PriorityQueue` FIFO для елементів з однаковим пріоритетом? <<java-collection-framework-priorityqueue-pitfalls,Answer>>
+- Чи допускає `PriorityQueue` `null`? <<java-collection-framework-priorityqueue-pitfalls,Answer>>
+- Яка різниця між `remove()` та `poll()` у `PriorityQueue`? <<java-collection-framework-priorityqueue,Answer>>
+- Як реалізувати max-heap на основі `PriorityQueue`? <<java-collection-framework-priorityqueue,Answer>>
+- Яка різниця між `PriorityQueue` та `PriorityBlockingQueue`? <<java-collection-framework-priorityqueue,Answer>>
+- Чи є `PriorityQueue` потокобезпечним? <<java-collection-framework-priorityqueue-pitfalls,Answer>>
+- Що таке sift-up і sift-down операції у `PriorityQueue`? <<java-collection-framework-priorityqueue,Answer>>
+
+[#question-java-collections-arraydeque]
+.ArrayDeque
+- Що таке `ArrayDeque`? Яка його внутрішня структура? <<java-collection-framework-arraydeque,Answer>>
+- Що таке кільцевий масив (circular array)? <<java-collection-framework-arraydeque,Answer>>
+- Яка складність `addFirst()`, `addLast()`, `removeFirst()`, `removeLast()` у `ArrayDeque`? <<java-collection-framework-arraydeque-big-o-notation,Answer>>
+- Чому `ArrayDeque` кращий за `Stack` і `LinkedList`? <<java-collection-framework-arraydeque-pitfalls,Answer>>
+- Чи допускає `ArrayDeque` `null`? <<java-collection-framework-arraydeque-pitfalls,Answer>>
+- Яка різниця між `peek()` та `getFirst()` на порожньому `ArrayDeque`? <<java-collection-framework-arraydeque-pitfalls,Answer>>
+- Як `ArrayDeque` розширює свій масив при переповненні? <<java-collection-framework-arraydeque,Answer>>
+- Як `ArrayDeque` реалізує Stack семантику через `push()`/`pop()`? <<java-collection-framework-arraydeque-pitfalls,Answer>>
+- Яка різниця між `offer()` та `add()` у `ArrayDeque`? <<java-collection-framework-arraydeque-pitfalls,Answer>>
+- Чи є `ArrayDeque` потокобезпечним? <<java-collection-framework-arraydeque,Answer>>
+- Коли використовувати `ArrayDeque` замість `LinkedList`? <<java-collection-framework-arraydeque-pitfalls,Answer>>
+- Яке реальне застосування `ArrayDeque`? <<java-collection-framework-arraydeque,Answer>>
+
+[#question-java-collections-arrayblockingqueue]
+.ArrayBlockingQueue
+- Що таке `ArrayBlockingQueue`? Яка його внутрішня структура? <<java-collection-framework-arrayblockingqueue,Answer>>
+- Яка різниця між `put()`, `offer()`, `add()` у `ArrayBlockingQueue`? <<java-collection-framework-arrayblockingqueue-pitfalls,Answer>>
+- Яка різниця між `take()`, `poll()`, `remove()` у `ArrayBlockingQueue`? <<java-collection-framework-arrayblockingqueue,Answer>>
+- Що таке fairness параметр у `ArrayBlockingQueue`? <<java-collection-framework-arrayblockingqueue-pitfalls,Answer>>
+- Чому `put()` у одному потоці що і `take()` призводить до deadlock? <<java-collection-framework-arrayblockingqueue-pitfalls,Answer>>
+- Яка різниця між `ArrayBlockingQueue` та `LinkedBlockingQueue`? <<java-collection-framework-arrayblockingqueue,Answer>>
+- Що таке `drainTo()` і коли його використовувати? <<java-collection-framework-arrayblockingqueue-pitfalls,Answer>>
+- Чи є `ArrayBlockingQueue` обмеженим (bounded)? <<java-collection-framework-arrayblockingqueue,Answer>>
+- Як `ArrayBlockingQueue` використовує `ReentrantLock`? <<java-collection-framework-arrayblockingqueue,Answer>>
+- Яке реальне застосування `ArrayBlockingQueue`? <<java-collection-framework-arrayblockingqueue,Answer>>
+
+[#question-java-collections-linkedblockingqueue]
+.LinkedBlockingQueue
+- Що таке `LinkedBlockingQueue`? Чим відрізняється від `ArrayBlockingQueue`? <<java-collection-framework-linkedblockingqueue,Answer>>
+- Що таке dual-lock архітектура у `LinkedBlockingQueue`? <<java-collection-framework-linkedblockingqueue-pitfalls,Answer>>
+- Чи є `LinkedBlockingQueue` обмеженим або необмеженим? <<java-collection-framework-linkedblockingqueue,Answer>>
+- Чому необмежена `LinkedBlockingQueue` може призвести до OOM? <<java-collection-framework-linkedblockingqueue-pitfalls,Answer>>
+- Чому `LinkedBlockingQueue` має вищий throughput ніж `ArrayBlockingQueue`? <<java-collection-framework-linkedblockingqueue-pitfalls,Answer>>
+- Яке memory overhead `LinkedBlockingQueue` через Node objects? <<java-collection-framework-linkedblockingqueue-pitfalls,Answer>>
+- Чи є `size()` `LinkedBlockingQueue` точним? <<java-collection-framework-linkedblockingqueue-pitfalls,Answer>>
+- Яке реальне застосування `LinkedBlockingQueue` у ThreadPoolExecutor? <<java-collection-framework-linkedblockingqueue,Answer>>
+- Яка різниця між `LinkedBlockingQueue` та `LinkedTransferQueue`? <<java-collection-framework-linkedblockingqueue,Answer>>
+- Чи допускає `LinkedBlockingQueue` `null`? <<java-collection-framework-linkedblockingqueue,Answer>>
+
+[#question-java-collections-priorityblockingqueue]
+.PriorityBlockingQueue
+- Що таке `PriorityBlockingQueue`? Яка ключова особливість? <<java-collection-framework-priorityblockingqueue,Answer>>
+- Чому `put()` у `PriorityBlockingQueue` ніколи не блокується? <<java-collection-framework-priorityblockingqueue-pitfalls,Answer>>
+- Чи гарантує `PriorityBlockingQueue` FIFO для рівних пріоритетів? <<java-collection-framework-priorityblockingqueue-pitfalls,Answer>>
+- Як реалізувати FIFO серед рівнопріоритетних завдань? <<java-collection-framework-priorityblockingqueue-pitfalls,Answer>>
+- Чи допускає `PriorityBlockingQueue` `null`? <<java-collection-framework-priorityblockingqueue-pitfalls,Answer>>
+- Яка різниця між `PriorityBlockingQueue` та `PriorityQueue`? <<java-collection-framework-priorityblockingqueue,Answer>>
+- Яке реальне застосування `PriorityBlockingQueue`? <<java-collection-framework-priorityblockingqueue,Answer>>
+- Чому необмежена `PriorityBlockingQueue` може призвести до OOM? <<java-collection-framework-priorityblockingqueue-pitfalls,Answer>>
+
+[#question-java-collections-delayqueue]
+.DelayQueue
+- Що таке `DelayQueue`? Що таке інтерфейс `Delayed`? <<java-collection-framework-delayqueue,Answer>>
+- Як правильно реалізувати `Delayed` з `System.nanoTime()`? <<java-collection-framework-delayqueue-pitfalls,Answer>>
+- Чому `take()` блокується навіть якщо черга непорожня? <<java-collection-framework-delayqueue-pitfalls,Answer>>
+- Яка різниця між `take()` та `poll()` у `DelayQueue`? <<java-collection-framework-delayqueue,Answer>>
+- Яке реальне застосування `DelayQueue`? <<java-collection-framework-delayqueue,Answer>>
+- Чи допускає `DelayQueue` `null`? <<java-collection-framework-delayqueue-pitfalls,Answer>>
+- Яка внутрішня структура `DelayQueue` (PriorityQueue під капотом)? <<java-collection-framework-delayqueue,Answer>>
+- Що таке Leader-Follower патерн у `DelayQueue`? <<java-collection-framework-delayqueue,Answer>>
+
+[#question-java-collections-synchronousqueue]
+.SynchronousQueue
+- Що таке `SynchronousQueue`? Яка його ємність? <<java-collection-framework-synchronousqueue,Answer>>
+- Чому `offer()` у `SynchronousQueue` завжди повертає `false` без waiting consumer? <<java-collection-framework-synchronousqueue-pitfalls,Answer>>
+- Що таке "точка рандеву" (rendezvous point) у `SynchronousQueue`? <<java-collection-framework-synchronousqueue,Answer>>
+- Яка різниця між fair та unfair режимами `SynchronousQueue`? <<java-collection-framework-synchronousqueue-pitfalls,Answer>>
+- Чому `peek()`, `size()`, `isEmpty()` завжди повертають порожній результат? <<java-collection-framework-synchronousqueue-pitfalls,Answer>>
+- Як `SynchronousQueue` використовується у `Executors.newCachedThreadPool()`? <<java-collection-framework-synchronousqueue-pitfalls,Answer>>
+- Яка різниця між `SynchronousQueue` та `LinkedTransferQueue`? <<java-collection-framework-synchronousqueue,Answer>>
+- Яке реальне застосування `SynchronousQueue`? <<java-collection-framework-synchronousqueue,Answer>>
+- Чи допускає `SynchronousQueue` `null`? <<java-collection-framework-synchronousqueue,Answer>>
+- Який Thread Pool найкраще підходить разом із `SynchronousQueue`? <<java-collection-framework-synchronousqueue-pitfalls,Answer>>
+
+[#question-java-collections-linkedtransferqueue]
+.LinkedTransferQueue
+- Що таке `LinkedTransferQueue`? Яка різниця між `transfer()` та `put()`? <<java-collection-framework-linkedtransferqueue,Answer>>
+- Що таке `tryTransfer()` і що відбувається якщо consumer не готовий? <<java-collection-framework-linkedtransferqueue-pitfalls,Answer>>
+- Чому `size()` у `LinkedTransferQueue` є O(n)? <<java-collection-framework-linkedtransferqueue-pitfalls,Answer>>
+- Що таке `hasWaitingConsumer()` і як його використовувати? <<java-collection-framework-linkedtransferqueue-pitfalls,Answer>>
+- Яка різниця між `LinkedTransferQueue` та `LinkedBlockingQueue`? <<java-collection-framework-linkedtransferqueue,Answer>>
+- Яка різниця між `LinkedTransferQueue` та `SynchronousQueue`? <<java-collection-framework-linkedtransferqueue,Answer>>
+- Чи є `LinkedTransferQueue` lock-free? <<java-collection-framework-linkedtransferqueue,Answer>>
+- Яке реальне застосування `LinkedTransferQueue`? <<java-collection-framework-linkedtransferqueue,Answer>>
+- Чи допускає `LinkedTransferQueue` `null`? <<java-collection-framework-linkedtransferqueue,Answer>>
+- Що таке `TransferQueue` інтерфейс? <<java-collection-framework-linkedtransferqueue,Answer>>
+
+
+
+[#question-java-collections-concurrenthashmap-deep]
+.ConcurrentHashMap — глибокі internals
+- Що таке `sizeCtl` у `ConcurrentHashMap`? Як одне поле кодує capacity, resizing threshold і resize counter? <<java-collection-framework-concurrenthashmap-sizectl,Answer>>
+- Як `ConcurrentHashMap` використовує `Unsafe.compareAndSwapObject` для lock-free вставки в порожній бакет? <<java-collection-framework-concurrenthashmap-cas-insert,Answer>>
+- Що таке `ForwardingNode` у `ConcurrentHashMap`? Як він повідомляє інші потоки що resize відбувається? <<java-collection-framework-concurrenthashmap-forwarding-node,Answer>>
+- Як `ConcurrentHashMap.helpTransfer()` дозволяє кільком потокам допомагати з resize одночасно? <<java-collection-framework-concurrenthashmap-forwarding-node,Answer>>
+- Що таке `transfer()` у `ConcurrentHashMap`? Як він розподіляє stride між потоками? <<java-collection-framework-concurrenthashmap-transfer,Answer>>
+- Як `baseCount` та `counterCells` (LongAdder-inspired) дозволяють scalable підрахунок без глобального lock? <<java-collection-framework-concurrenthashmap-count,Answer>>
+- Що таке `resizeStamp()` і як він захищає від race condition при одночасному ініціюванні resize кількома потоками? <<java-collection-framework-concurrenthashmap-transfer,Answer>>
+- Чому `computeIfAbsent()` у `ConcurrentHashMap` може призвести до deadlock при рекурсивному виклику з тим самим ключем? <<java-collection-framework-concurrenthashmap-computeifabsent-deadlock,Answer>>
+- Яка різниця між `compute()` та `merge()` у `ConcurrentHashMap`? Яка з них приймає `null`-remapping? <<java-collection-framework-concurrenthashmap-compute-vs-merge,Answer>>
+- Чому `ConcurrentHashMap` не допускає `null`? Яка фундаментальна причина пов'язана з `containsKey()`? <<java-collection-framework-concurrenthashmap-no-null-reason,Answer>>
+- Як `ConcurrentHashMap.get()` читає значення без lock? Яка роль `volatile` у полі `val` Node? <<java-collection-framework-concurrenthashmap-volatile-read,Answer>>
+- Що таке weakly consistent ітератор у `ConcurrentHashMap`? Що він гарантує і що ні? <<java-collection-framework-concurrenthashmap-weakly-consistent,Answer>>
+- Чому `ConcurrentHashMap.size()` може бути неточним? Яка альтернатива? <<java-collection-framework-concurrenthashmap-size-accuracy,Answer>>
+- Як `ConcurrentHashMap` реалізує `putIfAbsent()` атомарно? <<java-collection-framework-concurrenthashmap-putifabsent-atomic,Answer>>
+- Яка різниця між `putIfAbsent(k, expensiveValue())` та `computeIfAbsent(k, k -> expensiveCompute(k))`? <<java-collection-framework-concurrenthashmap-putifabsent-atomic,Answer>>
+- Як `ConcurrentHashMap.forEach()` відрізняється від звичайного ітерування? Що таке parallelism threshold? <<java-collection-framework-concurrenthashmap-parallel-bulk,Answer>>
+- Що таке `search()`, `reduce()`, `mapReduceKeys()` у `ConcurrentHashMap`? <<java-collection-framework-concurrenthashmap-parallel-bulk,Answer>>
+- Як `ConcurrentHashMap` в Java 8+ відрізняється від `ConcurrentHashMap` з Java 5-7 (segment-based)? <<java-collection-framework-concurrenthashmap-java8-vs-java7,Answer>>
+- Скільки потоків можуть писати одночасно в `ConcurrentHashMap`? Чи є теоретичний ліміт? <<java-collection-framework-concurrenthashmap-java8-vs-java7,Answer>>
+- Що гарантує `ConcurrentHashMap` щодо happens-before між потоками? <<java-collection-framework-concurrenthashmap-happens-before,Answer>>
+- Як `ConcurrentHashMap.newKeySet()` створює потокобезпечний `Set`? <<java-collection-framework-concurrenthashmap-keyset,Answer>>
+- Чому `ConcurrentHashMap` кращий за `Collections.synchronizedMap(new HashMap<>())` під навантаженням? <<java-collection-framework-concurrenthashmap-java8-vs-java7,Answer>>
+- Як `ConcurrentHashMap` обробляє treeification? Чи може treeification призвести до блокування інших потоків? <<java-collection-framework-concurrenthashmap-treeify,Answer>>
+- Що таке `EntrySetView` і чому він weakly consistent? <<java-collection-framework-concurrenthashmap-weakly-consistent,Answer>>
+- Яке memory layout `ConcurrentHashMap` і як він оптимізований для cache-line? <<java-collection-framework-concurrenthashmap-memory-layout,Answer>>
+- Як `ConcurrentHashMap.replace(k, oldVal, newVal)` реалізує compare-and-swap на рівні Map? <<java-collection-framework-concurrenthashmap-replace-cas,Answer>>
+- Що відбудеться якщо два потоки одночасно викличуть `compute(key, ...)` з одним ключем? <<java-collection-framework-concurrenthashmap-compute-vs-merge,Answer>>
+- Чому `ConcurrentHashMap` не є "повністю non-blocking"? Де все ж таки є lock? <<java-collection-framework-concurrenthashmap-cas-insert,Answer>>
+- Як `ConcurrentHashMap` обробляє hash collision де hash однаковий але ключі різні? <<java-collection-framework-concurrenthashmap-volatile-read,Answer>>
+- Яка різниця між `ConcurrentHashMap.containsKey()` та `ConcurrentHashMap.get() != null` у concurrent контексті? <<java-collection-framework-concurrenthashmap-no-null-reason,Answer>>
+
+[#question-java-collections-linkedhashmap-deep]
+.LinkedHashMap — глибокі internals
+- Як `LinkedHashMap` розширює `HashMap.Node`? Що таке `LinkedHashMap.Entry` і які додаткові поля? <<java-collection-framework-linkedhashmap-entry-structure,Answer>>
+- Як `LinkedHashMap` підтримує двозв'язний список поверх hash table? <<java-collection-framework-linkedhashmap-entry-structure,Answer>>
+- Як `afterNodeAccess()` переміщує вузол до хвоста в access-order режимі? <<java-collection-framework-linkedhashmap-after-access,Answer>>
+- Як `afterNodeInsertion()` вирішує чи видаляти eldest entry? <<java-collection-framework-linkedhashmap-after-insertion,Answer>>
+- Чому виклик `get()` в access-order `LinkedHashMap` під час ітерації кидає `ConcurrentModificationException`? <<java-collection-framework-linkedhashmap-pitfalls,Answer>>
+- Як `LinkedHashMap` реалізує `removeEldestEntry()` hook? Чому метод приймає `eldest` entry? <<java-collection-framework-linkedhashmap-removeeldest,Answer>>
+- Яка різниця між `LinkedHashMap` з access-order та Guava `Cache`? <<java-collection-framework-linkedhashmap-lru,Answer>>
+- Як `LinkedHashMap` ітерується у вставному порядку? Що таке `head` і `tail` поля? <<java-collection-framework-linkedhashmap-entry-structure,Answer>>
+- Що таке eldest entry у `LinkedHashMap`? Як правильно реалізувати LRU cache з bounded size? <<java-collection-framework-linkedhashmap-removeeldest,Answer>>
+- Як `LinkedHashMap.keySet()` та `values()` зберігають insertion order? <<java-collection-framework-linkedhashmap-after-access,Answer>>
+- Яка реальна різниця в продуктивності між `LinkedHashMap` та `HashMap` ітерацією? <<java-collection-framework-linkedhashmap-big-o-notation,Answer>>
+- Як `LinkedHashMap` поводиться при `putIfAbsent()` в access-order режимі? <<java-collection-framework-linkedhashmap-after-access,Answer>>
+- Чому `LinkedHashMap` є найефективнішим способом реалізації insertion-ordered Map в Java? <<java-collection-framework-linkedhashmap-entry-structure,Answer>>
+- Що станеться якщо в access-order `LinkedHashMap` викликати `entrySet().iterator()` і `get()` одночасно з двох потоків? <<java-collection-framework-linkedhashmap-pitfalls,Answer>>
+- Як `LinkedHashMap.forEach()` обходить entries — через linked list чи через hash table? <<java-collection-framework-linkedhashmap-after-access,Answer>>
+- Яка роль `accessOrder` boolean field у `LinkedHashMap`? <<java-collection-framework-linkedhashmap-access-order,Answer>>
+- Чому `LinkedHashMap` не підходить для concurrent LRU cache? Що краще? <<java-collection-framework-linkedhashmap-pitfalls,Answer>>
+- Як `LinkedHashMap.containsValue()` шукає значення — через linked list чи hash table? <<java-collection-framework-linkedhashmap-after-access,Answer>>
+- Чому `LinkedHashMap` не є thread-safe навіть для concurrent reads? <<java-collection-framework-linkedhashmap-pitfalls,Answer>>
+- Який overhead `LinkedHashMap` на кожен елемент порівняно з `HashMap`? Як це впливає на GC? <<java-collection-framework-linkedhashmap-entry-structure,Answer>>
+
+[#question-java-collections-treemap-deep]
+.TreeMap — Red-Black Tree internals
+- Які 5 інваріантів Red-Black Tree повинні завжди виконуватися у `TreeMap`? <<java-collection-framework-treemap-rb-invariants,Answer>>
+- Що таке Left Rotation і Right Rotation у Red-Black Tree? Як вони зберігають BST властивість? <<java-collection-framework-treemap-rotations,Answer>>
+- Яка максимальна висота Red-Black Tree з n вузлів? Чому O(2 log n)? <<java-collection-framework-treemap-height,Answer>>
+- Як `TreeMap.put()` вставляє новий вузол і що таке fixAfterInsertion()? <<java-collection-framework-treemap-fix-insertion,Answer>>
+- Як `TreeMap.remove()` видаляє вузол з дерева? Що таке successor і як він заміщує видалений вузол? <<java-collection-framework-treemap-fix-deletion,Answer>>
+- Що таке fixAfterDeletion()? Скільки випадків (cases) існує при видаленні? <<java-collection-framework-treemap-fix-deletion,Answer>>
+- Як `TreeMap.firstEntry()` та `lastEntry()` знаходять крайні вузли? BigO? <<java-collection-framework-treemap-navigation,Answer>>
+- Як `TreeMap.floorEntry()` та `ceilingEntry()` реалізовані? Яка відмінність від `lowerEntry()` та `higherEntry()`? <<java-collection-framework-treemap-navigation,Answer>>
+- Що таке successor(t) у `TreeMap`? Як він знаходить наступний вузол in-order traversal? <<java-collection-framework-treemap-fix-deletion,Answer>>
+- Як `TreeMap` ітерується у відсортованому порядку? Який алгоритм обходу? <<java-collection-framework-treemap-iterator-impl,Answer>>
+- Що таке `DescendingSubMap` та `AscendingSubMap`? Як вони реалізують reverse ordering? <<java-collection-framework-treemap-submaps,Answer>>
+- Як `subMap()`, `headMap()`, `tailMap()` перевіряють що нові елементи в межах діапазону? <<java-collection-framework-treemap-submaps,Answer>>
+- Чому `TreeMap.compareTo()` є часто критичним bottleneck? Як правильно писати `Comparator` для `TreeMap`? <<java-collection-framework-treemap-comparator-performance,Answer>>
+- Що таке "consistent with equals" вимога для `TreeMap`? Що станеться якщо порушити? <<java-collection-framework-treemap-pitfalls,Answer>>
+- Як `TreeMap` реалізує `headMap(K toKey, boolean inclusive)`? Яка різниця від старого `headMap(K toKey)`? <<java-collection-framework-treemap-submaps,Answer>>
+- Що таке "нечутливий до регістру" `TreeMap`? Покажіть реалізацію з `String.CASE_INSENSITIVE_ORDER`. <<java-collection-framework-treemap-comparator-performance,Answer>>
+- Як `TreeMap.clone()` копіює Red-Black Tree? Чи є це O(n)? <<java-collection-framework-treemap-clone,Answer>>
+- Чому `TreeMap` споживає більше пам'яті ніж `HashMap`? Яка структура кожного Entry? <<java-collection-framework-treemap-memory,Answer>>
+- Яка складність `TreeMap.entrySet().contains()` та `TreeMap.containsValue()`? Чому різна? <<java-collection-framework-treemap-big-o-notation,Answer>>
+- Як `TreeMap` забезпечує O(log n) для `pollFirstEntry()` (видалення + повернення)? <<java-collection-framework-treemap-navigation,Answer>>
+
+[#question-java-collections-specialized-map-deep]
+.Спеціалізовані Map — глибокі internals
+- Як `WeakHashMap` використовує `ReferenceQueue` для виявлення зібраних GC ключів? <<java-collection-framework-weakhashmap-referencequeue-impl,Answer>>
+- Коли саме `WeakHashMap` видаляє застарілі entries — lazily чи eagerly? <<java-collection-framework-weakhashmap-referencequeue-impl,Answer>>
+- Чому `WeakHashMap.expungeStaleEntries()` викликається ПЕРЕД кожною публічною операцією? <<java-collection-framework-weakhashmap-referencequeue-impl,Answer>>
+- Що таке `WeakHashMap.Entry` і як він наслідує від `WeakReference`? <<java-collection-framework-weakhashmap-referencequeue-impl,Answer>>
+- Чому `WeakHashMap.size()` може повернути різні значення при двох послідовних викликах без мутацій? <<java-collection-framework-weakhashmap-pitfalls,Answer>>
+- Як `WeakHashMap` обробляє `null`-ключ? Він же слабкий — чи збирає GC `null`? <<java-collection-framework-weakhashmap-null-key,Answer>>
+- Чому `WeakHashMap` НЕ підходить як кеш якщо значення тримає сильне посилання на ключ? <<java-collection-framework-weakhashmap-pitfalls,Answer>>
+- Яка різниця між `WeakHashMap`, `SoftHashMap` (Apache Commons) та `Caffeine Cache`? <<java-collection-framework-weakhashmap-vs-cache,Answer>>
+- Як `IdentityHashMap` зберігає дані? Чому він використовує `Object[]` замість `Entry[]`? <<java-collection-framework-identityhashmap-internal-array,Answer>>
+- Що таке open addressing в `IdentityHashMap`? Як він відрізняється від chaining в `HashMap`? <<java-collection-framework-identityhashmap-internal-array,Answer>>
+- Яка load factor у `IdentityHashMap` за замовчуванням і чому вона відрізняється від `HashMap`? <<java-collection-framework-identityhashmap-pitfalls,Answer>>
+- Як `IdentityHashMap` вирішує проблему probe sequence при open addressing? <<java-collection-framework-identityhashmap-internal-array,Answer>>
+- Що таке linear probing у `IdentityHashMap` і де виникають кластери? <<java-collection-framework-identityhashmap-internal-array,Answer>>
+- Яка складність `IdentityHashMap.get()` в найгіршому випадку при open addressing? <<java-collection-framework-identityhashmap-pitfalls,Answer>>
+- Як `EnumMap` зберігає дані внутрішньо? Що таке `vals[]` масив? <<java-collection-framework-enummap-internal-array,Answer>>
+- Чому доступ до `EnumMap` є O(1) guaranteed (не amortized)? <<java-collection-framework-enummap-internal-array,Answer>>
+- Як `EnumMap` ітерується у порядку оголошення enum? <<java-collection-framework-enummap-pitfalls,Answer>>
+- Що таке `EnumMap.KeySet` і як він ефективно реалізований через bitset? <<java-collection-framework-enummap-internal-array,Answer>>
+- Як `EnumMap.clone()` копіює масив значень? <<java-collection-framework-enummap-internal-array,Answer>>
+- Що таке skip list? Яка ймовірність p (зазвичай 0.5) і скільки рівнів? <<java-collection-framework-concurrentskiplistmap-skiplist-theory,Answer>>
+- Як CAS (Compare-And-Swap) забезпечує lock-free вставку в `ConcurrentSkipListMap`? <<java-collection-framework-concurrentskiplistmap-cas-insert,Answer>>
+- Що таке logical deletion у `ConcurrentSkipListMap`? Чому вузол спочатку "маркується" а не видаляється фізично? <<java-collection-framework-concurrentskiplistmap-logical-delete,Answer>>
+- Яка очікувана кількість порівнянь для знаходження елемента у skip list з n елементів? <<java-collection-framework-concurrentskiplistmap-skiplist-theory,Answer>>
+- Чому `ConcurrentSkipListMap.size()` є O(n)? Чому не тримати counter? <<java-collection-framework-concurrentskiplistmap-pitfalls,Answer>>
+- Як `ConcurrentSkipListMap` забезпечує sorted order в concurrent середовищі без global lock? <<java-collection-framework-concurrentskiplistmap-cas-insert,Answer>>
+- Що таке `Index` і `HeadIndex` у `ConcurrentSkipListMap`? Як вони організовані? <<java-collection-framework-concurrentskiplistmap-index-structure,Answer>>
+- Як `ConcurrentSkipListMap.headMap()` та `tailMap()` реалізують живий view у concurrent середовищі? <<java-collection-framework-concurrentskiplistmap-pitfalls,Answer>>
+- Чому `ConcurrentSkipListMap` підходить для concurrent leaderboards або time-series даних? <<java-collection-framework-concurrentskiplistmap,Answer>>
+- Яка теоретична та практична різниця між O(log n) skip list та O(log n) Red-Black Tree? <<java-collection-framework-concurrentskiplistmap-skiplist-theory,Answer>>
+- Що таке `Hashtable.rehash()`? Як він відрізняється від `HashMap.resize()`? <<java-collection-framework-hashtable-rehash,Answer>>
+
+[#question-java-collections-properties-sorted-deep]
+.Properties та SortedMap/NavigableMap — internals
+- Що відбудеться якщо викликати `Properties.put(Integer.valueOf(1), new Date())` замість `setProperty()`? <<java-collection-framework-properties-pitfalls,Answer>>
+- Як `Properties` зберігає defaults? Що таке ланцюжок `defaults`? <<java-collection-framework-properties-pitfalls,Answer>>
+- Яка різниця між `Properties.propertyNames()` та `Properties.stringPropertyNames()`? <<java-collection-framework-properties-methods,Answer>>
+- Як `Properties.store()` зберігає unicode символи? Яке кодування? <<java-collection-framework-properties-pitfalls,Answer>>
+- Що таке `Properties.list()` і навіщо він? <<java-collection-framework-properties-methods,Answer>>
+- Як `System.getProperties()` та `System.setProperty()` пов'язані з `Properties`? <<java-collection-framework-properties-methods,Answer>>
+- Чому `Properties` успадковує від `Hashtable<Object,Object>` а не від `HashMap<String,String>`? <<java-collection-framework-properties,Answer>>
+- Що таке `SortedMap` інтерфейс? Які методи він додає понад `Map`? <<java-collection-framework-sortedmap-methods,Answer>>
+- Що таке `NavigableMap` інтерфейс? Які навігаційні методи він додає понад `SortedMap`? <<java-collection-framework-navigablemap-methods,Answer>>
+- Яка різниця між `SortedMap.headMap(K toKey)` (exclusive) та `NavigableMap.headMap(K toKey, boolean inclusive)`? <<java-collection-framework-navigablemap-methods,Answer>>
+- Що таке `NavigableMap.descendingMap()`? Яка складність його створення? <<java-collection-framework-navigablemap-methods,Answer>>
+- Як `NavigableMap.pollFirstEntry()` та `pollLastEntry()` відрізняються від `firstEntry()` та `lastEntry()`? <<java-collection-framework-navigablemap-methods,Answer>>
+- Що таке `NavigableMap.subMap(fromKey, fromInclusive, toKey, toInclusive)`? Яка відмінність від `SortedMap.subMap()`? <<java-collection-framework-navigablemap-methods,Answer>>
+- Яка ієрархія інтерфейсів: `Map` → `SortedMap` → `NavigableMap` → `ConcurrentNavigableMap`? <<java-collection-framework-sortedmap-methods,Answer>>
+- Що таке `ConcurrentNavigableMap`? Які класи реалізують його? <<java-collection-framework-concurrentskiplistmap,Answer>>
+- Чому `SortedMap.comparator()` може повернути `null`? Що це означає? <<java-collection-framework-sortedmap-methods,Answer>>
+- Яка різниця між `Map.Entry.getKey()` та `Map.Entry.getValue()` у live `entrySet()` view? <<java-collection-framework-map-entry-live,Answer>>
+- Що таке `Map.Entry.setValue()` і при яких умовах він кидає `UnsupportedOperationException`? <<java-collection-framework-map-entry-live,Answer>>
+- Як `Collections.unmodifiableMap()` реалізований? Чи є він thread-safe? <<java-collection-framework-unmodifiable-map,Answer>>
+- Яка різниця між `Map.of()` (Java 9+) та `Collections.unmodifiableMap()`? <<java-collection-framework-unmodifiable-map,Answer>>
+
+[#question-java-collections-arraylist-deep]
+.ArrayList — глибокі internals
+- Як `ArrayList.grow()` обчислює новий розмір? Яка точна формула на рівні байт-коду? <<java-collection-framework-arraylist-grow-bytecode,Answer>>
+- Що таке lazy initialization `ArrayList`? Коли саме виділяється масив розміром 10? <<java-collection-framework-arraylist-lazy-init-detail,Answer>>
+- Як `ArrayList.add(int index, E e)` зміщує елементи? Яка роль `System.arraycopy`? <<java-collection-framework-arraylist-add-index-impl,Answer>>
+- Чому `System.arraycopy` настільки швидкий? Як JVM оптимізує його? <<java-collection-framework-arraylist-add-index-impl,Answer>>
+- Як `ArrayList.remove(int index)` залишає `null` в останній позиції? Навіщо це потрібно? <<java-collection-framework-arraylist-remove-impl,Answer>>
+- Що таке `modCount` в `ArrayList`? При яких операціях він збільшується? <<java-collection-framework-arraylist-modcount,Answer>>
+- Як `ArrayList.subList()` реалізований як live view? Що таке `SubList` inner class? <<java-collection-framework-arraylist-sublist-impl,Answer>>
+- Що відбудеться якщо модифікувати оригінальний `ArrayList` після отримання `subList()`? <<java-collection-framework-arraylist-sublist-impl,Answer>>
+- Як `ArrayList.sort()` використовує `TimSort`? Що таке TimSort і чому він ефективний для реальних даних? <<java-collection-framework-arraylist-timsort,Answer>>
+- Що таке стабільне сортування? Чому `ArrayList.sort()` є стабільним? <<java-collection-framework-arraylist-timsort,Answer>>
+- Як `ArrayList.removeIf()` реалізований ефективно? Чому він кращий за цикл з `iterator.remove()`? <<java-collection-framework-arraylist-removeif-impl,Answer>>
+- Що таке `ArrayList.forEach()` і як він відрізняється від ітератора? Який швидший? <<java-collection-framework-arraylist-foreach-impl,Answer>>
+- Як `ArrayList.spliterator()` реалізований? Що таке `ORDERED`, `SIZED`, `SUBSIZED` characteristics? <<java-collection-framework-arraylist-spliterator,Answer>>
+- Як `ArrayList.toArray(T[])` поводиться якщо переданий масив менший/більший за розмір? <<java-collection-framework-arraylist-toarray,Answer>>
+- Чому `Arrays.asList()` повертає fixed-size list? Яка внутрішня реалізація? <<java-collection-framework-arraylist-arrays-aslist,Answer>>
+- Яка різниця між `ArrayList.trimToSize()` та `new ArrayList<>(list)` щодо GC? <<java-collection-framework-arraylist-trim-gc,Answer>>
+- Як `ArrayList` серіалізує та десеріалізує `transient` поле `elementData`? <<java-collection-framework-arraylist-serialization,Answer>>
+- Що таке `MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8`? Чому не `Integer.MAX_VALUE`? <<java-collection-framework-arraylist-max-size,Answer>>
+- Як `ArrayList.clone()` копіює внутрішній масив? Чому це shallow copy? <<java-collection-framework-arraylist-clone-impl,Answer>>
+- Що таке `ArrayList.replaceAll()` і як він відрізняється від `forEach()` з мутацією? <<java-collection-framework-arraylist-replaceall,Answer>>
+- Як `ArrayList` поводиться при `Collections.sort()` vs `list.sort()`? Яка різниця? <<java-collection-framework-arraylist-timsort,Answer>>
+- Яка роль `RandomAccess` marker interface у `ArrayList`? Як `Collections.binarySearch()` його використовує? <<java-collection-framework-arraylist-randomaccess,Answer>>
+- Що таке `AbstractList.Itr` та `AbstractList.ListItr`? Як `ArrayList` наслідує їх? <<java-collection-framework-arraylist-iterator-impl,Answer>>
+- Як `ArrayList.iterator()` перевіряє `modCount`? Що таке expectedModCount? <<java-collection-framework-arraylist-iterator-impl,Answer>>
+- Що відбудеться якщо двічі викликати `iterator()` на одному ArrayList і обидва iterate? <<java-collection-framework-arraylist-iterator-impl,Answer>>
+- Як `ArrayList.ensureCapacity()` відрізняється від автоматичного grow()? <<java-collection-framework-arraylist-ensure-capacity,Answer>>
+- Чому `ArrayList` з `initialCapacity=0` займає менше пам'яті ніж `new ArrayList()`? <<java-collection-framework-arraylist-lazy-init-detail,Answer>>
+- Яка роль `DEFAULTCAPACITY_EMPTY_ELEMENTDATA` vs `EMPTY_ELEMENTDATA` у `ArrayList`? <<java-collection-framework-arraylist-lazy-init-detail,Answer>>
+- Що таке `List.copyOf()` (Java 10+)? Яка різниця від `Collections.unmodifiableList(new ArrayList<>(list))`? <<java-collection-framework-arraylist-list-copyof,Answer>>
+- Як `ArrayList.contains()` та `indexOf()` порівнюють елементи? Що якщо елемент є `null`? <<java-collection-framework-arraylist-contains-null,Answer>>
+- Яка складність `ArrayList.containsAll()` та `removeAll()`? Яка оптимізація можлива? <<java-collection-framework-arraylist-removeif-impl,Answer>>
+- Що таке `List.of()` (Java 9+)? Яка його внутрішня реалізація? <<java-collection-framework-arraylist-list-copyof,Answer>>
+- Як `ArrayList.addAll(Collection c)` оптимізована порівняно з послідовними `add()`? <<java-collection-framework-arraylist-grow-bytecode,Answer>>
+- Чому `ArrayList.get()` є справді O(1) а не amortized O(1)? <<java-collection-framework-arraylist-randomaccess,Answer>>
+- Як JIT компілятор оптимізує цикл `for(int i=0; i<list.size(); i++)` для `ArrayList`? <<java-collection-framework-arraylist-foreach-impl,Answer>>
+
+[#question-java-collections-linkedlist-deep]
+.LinkedList — глибокі internals
+- Як `LinkedList.linkFirst()` та `linkLast()` маніпулюють вузлами? <<java-collection-framework-linkedlist-link-impl,Answer>>
+- Як `LinkedList.node(int index)` знаходить вузол? Яка оптимізація з боку head vs tail? <<java-collection-framework-linkedlist-node-traversal,Answer>>
+- Що таке `LinkedList.unlinkFirst()`, `unlinkLast()`, `unlink(Node x)` методи? <<java-collection-framework-linkedlist-link-impl,Answer>>
+- Чому `LinkedList` реалізує `Deque` інтерфейс а не тільки `List`? <<java-collection-framework-linkedlist-node,Answer>>
+- Що таке `LinkedList.ListItr` — двонаправлений ітератор? Як `previous()` та `next()` реалізовані? <<java-collection-framework-linkedlist-listiterator,Answer>>
+- Чому `LinkedList.listIterator(int index)` є O(n)? <<java-collection-framework-linkedlist-node-traversal,Answer>>
+- Як `LinkedList.clone()` копіює вузли? Чи є це deep copy? <<java-collection-framework-linkedlist-clone,Answer>>
+- Що таке Sentinel (dummy) nodes? Чи використовує `LinkedList` їх? <<java-collection-framework-linkedlist-link-impl,Answer>>
+- Як `LinkedList.toArray()` ітерується? Через linked list чи є внутрішній масив? <<java-collection-framework-linkedlist-link-impl,Answer>>
+- Чому `LinkedList` не реалізує `RandomAccess`? Які наслідки для `Collections.binarySearch()`? <<java-collection-framework-linkedlist-node-traversal,Answer>>
+- Як `LinkedList.spliterator()` розділяє список для паралельних стрімів? <<java-collection-framework-linkedlist-spliterator,Answer>>
+- Що таке late-binding spliterator у `LinkedList`? <<java-collection-framework-linkedlist-spliterator,Answer>>
+- Яка різниця між `LinkedList.remove()` (як Queue) та `LinkedList.remove(int index)` (як List)? <<java-collection-framework-linkedlist-link-impl,Answer>>
+- Як `LinkedList.offer()`, `peek()`, `poll()` маппуються на внутрішні методи? <<java-collection-framework-linkedlist-link-impl,Answer>>
+- Чому `LinkedList` не підходить для `Collections.sort()`? Яка складність? <<java-collection-framework-linkedlist-node-traversal,Answer>>
+- Що таке memory locality і чому `LinkedList` поганий для CPU cache? <<java-collection-framework-linkedlist-pitfalls,Answer>>
+- Яка реальна різниця у throughput між `LinkedList` та `ArrayDeque` як Queue? <<java-collection-framework-linkedlist-vs-arraydeque,Answer>>
+- Як `LinkedList` серіалізує вузли? <<java-collection-framework-linkedlist-serialization,Answer>>
+- Чому `LinkedList.size` зберігається як окреме поле а не обчислюється? <<java-collection-framework-linkedlist-link-impl,Answer>>
+- Що таке `AbstractSequentialList`? Чому `LinkedList` наслідує від нього, а не від `AbstractList`? <<java-collection-framework-linkedlist-abstract-sequential,Answer>>
+
+[#question-java-collections-priorityqueue-deep]
+.PriorityQueue — min-heap internals
+- Як `PriorityQueue` реалізує min-heap через масив? Яка формула для parent/left/right? <<java-collection-framework-priorityqueue-heap-formula,Answer>>
+- Що таке sift-up (swim) у `PriorityQueue`? Як він відновлює heap property після `add()`? <<java-collection-framework-priorityqueue-sift-up,Answer>>
+- Що таке sift-down (sink) у `PriorityQueue`? Як він відновлює heap після `poll()`? <<java-collection-framework-priorityqueue-sift-down,Answer>>
+- Яка складність побудови `PriorityQueue` з колекції через `heapify()`? Чому O(n) а не O(n log n)? <<java-collection-framework-priorityqueue-heapify,Answer>>
+- Як `PriorityQueue.remove(Object o)` знаходить елемент? Чому O(n)? <<java-collection-framework-priorityqueue-remove-object,Answer>>
+- Чому `PriorityQueue.iterator()` не ітерує в heap order? Яка послідовність? <<java-collection-framework-priorityqueue-pitfalls,Answer>>
+- Як реалізувати max-heap через `PriorityQueue` з `Comparator.reverseOrder()`? <<java-collection-framework-priorityqueue-max-heap,Answer>>
+- Що таке K-way merge і як `PriorityQueue` допомагає злити K відсортованих списків? <<java-collection-framework-priorityqueue-kway-merge,Answer>>
+- Яка складність алгоритму "Top K elements" з `PriorityQueue`? <<java-collection-framework-priorityqueue-kway-merge,Answer>>
+- Як `PriorityQueue` розширює масив? Яка формула grow()? <<java-collection-framework-priorityqueue-heap-formula,Answer>>
+- Що відбудеться якщо `Comparator` `PriorityQueue` не є транзитивним? <<java-collection-framework-priorityqueue-pitfalls,Answer>>
+- Як `PriorityQueue.spliterator()` реалізований? <<java-collection-framework-priorityqueue-spliterator,Answer>>
+- Що таке d-ary heap? Чому Java використовує binary heap (d=2)? <<java-collection-framework-priorityqueue-heap-formula,Answer>>
+- Яке memory layout `PriorityQueue` і як він впливає на cache performance? <<java-collection-framework-priorityqueue-heap-formula,Answer>>
+- Як `PriorityQueue` серіалізує стан (масив не завжди continuous)? <<java-collection-framework-priorityqueue-serialization,Answer>>
+- Чому `PriorityQueue.peek()` є O(1)? Де зберігається мінімум? <<java-collection-framework-priorityqueue-heap-formula,Answer>>
+- Що таке "heap violation" і як fixDown()/fixUp() її виправляють? <<java-collection-framework-priorityqueue-sift-down,Answer>>
+- Яка різниця між `PriorityQueue` та `TreeSet` для зберігання відсортованих елементів? <<java-collection-framework-priorityqueue-pitfalls,Answer>>
+- Як `PriorityQueue` обробляє елементи з однаковим пріоритетом при `poll()`? <<java-collection-framework-priorityqueue-pitfalls,Answer>>
+- Яке практичне застосування `PriorityQueue` в алгоритмі Dijkstra? <<java-collection-framework-priorityqueue-kway-merge,Answer>>
+
+[#question-java-collections-arraydeque-deep]
+.ArrayDeque — circular array internals
+- Як `ArrayDeque` реалізує кільцевий буфер? Що таке head, tail і mask? <<java-collection-framework-arraydeque-circular-impl,Answer>>
+- Як `ArrayDeque.addFirst()` обчислює нову позицію head? Що таке `(head - 1) & (elements.length - 1)`? <<java-collection-framework-arraydeque-circular-impl,Answer>>
+- Як `ArrayDeque.addLast()` обчислює нову позицію tail? <<java-collection-framework-arraydeque-circular-impl,Answer>>
+- Що відбувається коли `head == tail` у `ArrayDeque`? Як визначається overflow? <<java-collection-framework-arraydeque-overflow,Answer>>
+- Як `ArrayDeque.doubleCapacity()` копіює кільцевий буфер в новий масив? Яка складність? <<java-collection-framework-arraydeque-overflow,Answer>>
+- Чому `ArrayDeque` завжди має розмір степінь двійки? Яка причина? <<java-collection-framework-arraydeque-circular-impl,Answer>>
+- Як `ArrayDeque.toArray()` обробляє wrap-around (коли head > tail)? <<java-collection-framework-arraydeque-toarray,Answer>>
+- Що таке `ArrayDeque.DeqIterator` та `ArrayDeque.DescendingIterator`? <<java-collection-framework-arraydeque-iterator-impl,Answer>>
+- Як `ArrayDeque.spliterator()` реалізований для parallel streams? <<java-collection-framework-arraydeque-spliterator,Answer>>
+- Чому `ArrayDeque` не допускає `null`? Яку роль грає null у внутрішньому масиві? <<java-collection-framework-arraydeque-circular-impl,Answer>>
+- Яке memory overhead `ArrayDeque` порівняно з `LinkedList`? <<java-collection-framework-arraydeque-circular-impl,Answer>>
+- Як `ArrayDeque` реалізує стек (push/pop) через addFirst/removeFirst? <<java-collection-framework-arraydeque-pitfalls,Answer>>
+- Що таке `ArrayDeque.peekFirst()` і чи може він повернути `null`? <<java-collection-framework-arraydeque-pitfalls,Answer>>
+- Як JIT оптимізує hot path у `ArrayDeque.pollFirst()`? <<java-collection-framework-arraydeque-circular-impl,Answer>>
+- Яка різниця між `Deque` та `Queue` інтерфейсами? Які методи перекриваються? <<java-collection-framework-deque-vs-queue,Answer>>
+
+[#question-java-collections-blockingqueue-deep]
+.BlockingQueue — глибокі internals
+- Що таке `BlockingQueue` інтерфейс? Які 4 сімейства методів він визначає? <<java-collection-framework-blockingqueue-method-families,Answer>>
+- Яка різниця між `put()`, `offer()`, `offer(timeout)`, `add()` у термінах blocking behavior? <<java-collection-framework-blockingqueue-method-families,Answer>>
+- Яка різниця між `take()`, `poll()`, `poll(timeout)`, `remove()` у `BlockingQueue`? <<java-collection-framework-blockingqueue-method-families,Answer>>
+- Як `ArrayBlockingQueue` реалізує blocking через `ReentrantLock` та `Condition`? <<java-collection-framework-arrayblockingqueue-lock-condition,Answer>>
+- Що таке `notFull` та `notEmpty` Condition objects у `ArrayBlockingQueue`? <<java-collection-framework-arrayblockingqueue-lock-condition,Answer>>
+- Як `ArrayBlockingQueue.put()` блокується і прокидається? Що таке `await()` та `signal()`? <<java-collection-framework-arrayblockingqueue-lock-condition,Answer>>
+- Що таке AQS (AbstractQueuedSynchronizer)? Як `ReentrantLock` базується на ньому? <<java-collection-framework-blockingqueue-aqs,Answer>>
+- Як `ArrayBlockingQueue` реалізує кільцевий буфер (putIndex, takeIndex)? <<java-collection-framework-arrayblockingqueue-circular,Answer>>
+- Чому `fair=true` у `ArrayBlockingQueue` значно знижує throughput? <<java-collection-framework-arrayblockingqueue-pitfalls,Answer>>
+- Що таке `ArrayBlockingQueue.drainTo()` і яка його атомарність? <<java-collection-framework-arrayblockingqueue-pitfalls,Answer>>
+- Як `LinkedBlockingQueue` використовує два окремих lock (`putLock` і `takeLock`)? <<java-collection-framework-linkedblockingqueue-dual-lock,Answer>>
+- Чому два lock у `LinkedBlockingQueue` дають вищий throughput ніж один lock у `ArrayBlockingQueue`? <<java-collection-framework-linkedblockingqueue-dual-lock,Answer>>
+- Як `LinkedBlockingQueue` атомарно оновлює `count` між putLock і takeLock зонами? <<java-collection-framework-linkedblockingqueue-dual-lock,Answer>>
+- Що таке `LinkedBlockingQueue.Node` і яке його memory overhead? <<java-collection-framework-linkedblockingqueue-pitfalls,Answer>>
+- Як `LinkedBlockingQueue.signalNotEmpty()` та `signalNotFull()` координують producer/consumer? <<java-collection-framework-linkedblockingqueue-dual-lock,Answer>>
+- Що таке `PriorityBlockingQueue` внутрішньо? Як він комбінує `PriorityQueue` з lock? <<java-collection-framework-priorityblockingqueue-internal,Answer>>
+- Чому `PriorityBlockingQueue.put()` ніколи не блокується (необмежена черга)? <<java-collection-framework-priorityblockingqueue-pitfalls,Answer>>
+- Як `PriorityBlockingQueue` розширює масив під час resize? Чи відбувається це з lock? <<java-collection-framework-priorityblockingqueue-internal,Answer>>
+- Що таке leader-follower pattern у `DelayQueue`? <<java-collection-framework-delayqueue-leader-follower,Answer>>
+- Як `DelayQueue` вибирає наступний потік що займе "leader" роль? <<java-collection-framework-delayqueue-leader-follower,Answer>>
+- Як `DelayQueue` реалізує `take()` з точним очікуванням до моменту deferral? <<java-collection-framework-delayqueue-leader-follower,Answer>>
+- Що таке `ScheduledThreadPoolExecutor.ScheduledFutureTask` і як він реалізує `Delayed`? <<java-collection-framework-delayqueue-pitfalls,Answer>>
+- Як `SynchronousQueue` реалізує rendezvous через `TransferStack` (unfair) та `TransferQueue` (fair)? <<java-collection-framework-synchronousqueue-transfer-impl,Answer>>
+- Що таке dual stack/queue data structure у `SynchronousQueue`? <<java-collection-framework-synchronousqueue-transfer-impl,Answer>>
+- Як `SynchronousQueue.transfer()` парує producer та consumer? <<java-collection-framework-synchronousqueue-transfer-impl,Answer>>
+- Що таке spin-then-park стратегія у `SynchronousQueue`? <<java-collection-framework-synchronousqueue-transfer-impl,Answer>>
+- Як `SynchronousQueue` використовується у `Executors.newCachedThreadPool()`? Яка семантика? <<java-collection-framework-synchronousqueue-pitfalls,Answer>>
+- Що таке `TransferQueue` інтерфейс? Які методи він додає до `BlockingQueue`? <<java-collection-framework-transferqueue-interface,Answer>>
+- Як `LinkedTransferQueue.transfer()` реалізований? Яка різниця між direct handoff та buffering? <<java-collection-framework-linkedtransferqueue-transfer-impl,Answer>>
+- Що таке "slack" у `LinkedTransferQueue`? Як він зменшує CAS операції? <<java-collection-framework-linkedtransferqueue-transfer-impl,Answer>>
+- Як `LinkedTransferQueue.tryTransfer()` відрізняється від `offer()` та `transfer()`? <<java-collection-framework-linkedtransferqueue-pitfalls,Answer>>
+- Що таке `LinkedTransferQueue.QNode`? Як він представляє і producer і consumer? <<java-collection-framework-linkedtransferqueue-transfer-impl,Answer>>
+- Яка різниця між `LinkedTransferQueue` та `SynchronousQueue` у плані буферизації? <<java-collection-framework-linkedtransferqueue,Answer>>
+- Як `hasWaitingConsumer()` реалізований у `LinkedTransferQueue`? <<java-collection-framework-linkedtransferqueue-pitfalls,Answer>>
+- Що таке happens-before гарантії у `LinkedBlockingQueue.put()`/`take()`? <<java-collection-framework-linkedblockingqueue-dual-lock,Answer>>
+- Як `ThreadPoolExecutor` взаємодіє з `BlockingQueue`? Яка роль queue у worker thread lifecycle? <<java-collection-framework-blockingqueue-threadpool,Answer>>
+- Що відбувається з задачами у `BlockingQueue` при `ThreadPoolExecutor.shutdown()`? <<java-collection-framework-blockingqueue-threadpool,Answer>>
+- Яка різниця між `ArrayBlockingQueue` та `LinkedBlockingQueue` у продуктивності на сучасному multi-core CPU? <<java-collection-framework-linkedblockingqueue-dual-lock,Answer>>
+- Що таке back-pressure і як `BlockingQueue.put()` реалізує його? <<java-collection-framework-blockingqueue-method-families,Answer>>
+- Як `LinkedTransferQueue.size()` підраховує елементи? Чому O(n)? <<java-collection-framework-linkedtransferqueue-pitfalls,Answer>>
+- Що таке `Phaser`, `CountDownLatch`, `CyclicBarrier` і чим вони відрізняються від `SynchronousQueue`? <<java-collection-framework-sync-primitives-vs-queue,Answer>>
+- Як `DelayQueue.peek()` повертає елемент навіть якщо він ще не "дозрів"? <<java-collection-framework-delayqueue,Answer>>
+- Що таке `RejectedExecutionHandler` і як він пов'язаний з `BlockingQueue.offer()` failure? <<java-collection-framework-blockingqueue-threadpool,Answer>>
+- Як `ArrayBlockingQueue` обробляє InterruptedException у `put()` та `take()`? <<java-collection-framework-arrayblockingqueue-lock-condition,Answer>>
+- Що таке "bursty traffic" і яка `BlockingQueue` найкраще підходить? <<java-collection-framework-blockingqueue-method-families,Answer>>
+
+[#question-java-collections-list-interface-deep]
+.List інтерфейс та Collections API — senior level
+- Що таке `List.of()` vs `Collections.emptyList()` vs `Collections.singletonList()`? Яка різниця у memory? <<java-collection-framework-list-factory-methods,Answer>>
+- Чому `List.subList()` повертає live view? Які підводні камені serialization? <<java-collection-framework-arraylist-sublist-impl,Answer>>
+- Що таке `ListIterator`? Які методи є у нього але немає у `Iterator`? <<java-collection-framework-listiterator-deep,Answer>>
+- Як `Collections.sort()` (Java 7+) передає список до `Arrays.sort()`? <<java-collection-framework-arraylist-timsort,Answer>>
+- Що таке `Collections.unmodifiableList()` vs `List.copyOf()`? Чи є перший thread-safe? <<java-collection-framework-unmodifiable-list,Answer>>
+- Як `Collections.synchronizedList()` синхронізує доступ? Яка проблема при ітерації? <<java-collection-framework-synchronized-list,Answer>>
+- Що таке `Collections.binarySearch()` і які вимоги до списку? <<java-collection-framework-arraylist-randomaccess,Answer>>
+- Як `Collections.shuffle()` реалізований? Який алгоритм? <<java-collection-framework-collections-shuffle,Answer>>
+- Що таке `Collections.rotate()` і як він реалізований ефективно для `RandomAccess` lists? <<java-collection-framework-collections-shuffle,Answer>>
+- Що таке `Collections.nCopies()` і як він зберігає N копій одного елемента? <<java-collection-framework-list-factory-methods,Answer>>
+- Як `Collections.frequency()` підраховує входження? Яка складність? <<java-collection-framework-collections-shuffle,Answer>>
+- Що таке `Collections.disjoint()` і яка його складність для `HashSet` vs `ArrayList` аргументів? <<java-collection-framework-collections-shuffle,Answer>>
+- Що таке fail-fast vs fail-safe iterator? Який механізм у кожного? <<java-collection-framework-fail-fast-vs-safe-deep,Answer>>
+- Як `modCount` реалізує fail-fast detection? При яких умовах він не спрацьовує? <<java-collection-framework-fail-fast-vs-safe-deep,Answer>>
+- Що таке `Spliterator`? Яка різниця між `Iterator` та `Spliterator`? <<java-collection-framework-spliterator-deep,Answer>>
+- Що таке `Spliterator.characteristics()`? Поясніть ORDERED, SORTED, DISTINCT, SIZED, SUBSIZED, IMMUTABLE, CONCURRENT, NONNULL. <<java-collection-framework-spliterator-deep,Answer>>
+- Як `Spliterator.trySplit()` ділить дані для parallel streams? <<java-collection-framework-spliterator-deep,Answer>>
+- Яка різниця між `ArrayList.spliterator()` та `LinkedList.spliterator()` у ефективності паралелізму? <<java-collection-framework-arraylist-spliterator,Answer>>
+- Що таке `SequencedCollection` (Java 21)? Які методи він додає? <<java-collection-framework-sequenced-collection,Answer>>
+- Що таке `SequencedMap` та `SequencedSet` (Java 21)? <<java-collection-framework-sequenced-collection,Answer>>
+- Яка різниця між `Iterable.forEach()` та `Stream.forEach()`? <<java-collection-framework-arraylist-foreach-impl,Answer>>
+- Що таке `Iterator.forEachRemaining()` і коли його використовувати? <<java-collection-framework-spliterator-deep,Answer>>
+- Як `Collections.checkedList()` реалізує runtime type checking? <<java-collection-framework-checked-collections,Answer>>
+- Що таке `Collections.singletonList()` і чому він immutable? <<java-collection-framework-list-factory-methods,Answer>>
+- Яка різниця між `List.equals()` та `Set.equals()` за контрактом? <<java-collection-framework-list-equals-contract,Answer>>
+- Що таке `Arrays.asList()` fixed-size wrapper? Які операції дозволені? <<java-collection-framework-arraylist-arrays-aslist,Answer>>
+- Як `ListIterator.add()` вставляє елемент в поточну позицію? <<java-collection-framework-listiterator-deep,Answer>>
+- Що таке `Enumeration` та чим він відрізняється від `Iterator`? <<java-collection-framework-enumeration-vs-iterator,Answer>>
+- Як `Vector.elements()` повертає `Enumeration`? <<java-collection-framework-enumeration-vs-iterator,Answer>>
+- Що таке `CopyOnWriteArrayList.COWIterator`? Чому він не підтримує `remove()`? <<java-collection-framework-copyonwritearraylist-pitfalls,Answer>>
+
+[#question-java-collections-hashset-deep]
+.HashSet — глибокі internals
+- Як `HashSet.add()` делегує до `HashMap.put()` і яка роль `PRESENT` sentinel? <<java-collection-framework-hashset-present-sentinel,Answer>>
+- Що таке sentinel pattern? Чому PRESENT є `static final Object` а не `null` або `true`? <<java-collection-framework-hashset-present-sentinel,Answer>>
+- Як `HashSet.contains()` реалізований? Яка складність у найгіршому випадку? <<java-collection-framework-hashset-present-sentinel,Answer>>
+- Як `HashSet.remove()` перевіряє чи елемент був видалений? Що перевіряє умова `== PRESENT`? <<java-collection-framework-hashset-present-sentinel,Answer>>
+- Яка складність `HashSet.retainAll()` якщо аргумент є `HashSet`? Якщо `ArrayList`? <<java-collection-framework-hashset-retainall-complexity,Answer>>
+- Як `HashSet` реалізує `Set` semantic через `HashMap`? Де зберігаються значення? <<java-collection-framework-hashset-present-sentinel,Answer>>
+- Що таке `HashSet.spliterator()` і які його characteristics? <<java-collection-framework-hashset-spliterator,Answer>>
+- Як `HashSet.iterator()` ітерується? Через buckets чи через linked lists? <<java-collection-framework-hashset-spliterator,Answer>>
+- Що таке `LinkedHashSet` constructor що використовується лише з `HashSet`? Навіщо dummy boolean? <<java-collection-framework-hashset-linkedhashset-constructor,Answer>>
+- Як `HashSet` серіалізує стан? Що зберігається — HashMap чи її елементи? <<java-collection-framework-hashset-serialization,Answer>>
+- Чому `HashSet.size()` є O(1)? <<java-collection-framework-hashset-present-sentinel,Answer>>
+- Як `HashSet` порівнює колекції через `equals()`? Що гарантує `AbstractSet.equals()`? <<java-collection-framework-hashset-equals-impl,Answer>>
+- Що таке `AbstractSet.hashCode()` і як він обчислює хеш множини? <<java-collection-framework-hashset-equals-impl,Answer>>
+- Чому порядок `a.containsAll(b)` vs `b.containsAll(a)` у `HashSet.equals()` має значення? <<java-collection-framework-hashset-equals-impl,Answer>>
+- Як `HashSet.addAll()` відрізняється від послідовних `add()` щодо resize? <<java-collection-framework-hashset-present-sentinel,Answer>>
+- Що таке `Collections.newSetFromMap(new HashMap<>())`? Як це пов'язано з `HashSet`? <<java-collection-framework-hashset-newsetfrommap,Answer>>
+- Як `Collections.newSetFromMap(new ConcurrentHashMap<>())` є thread-safe HashSet? <<java-collection-framework-hashset-newsetfrommap,Answer>>
+- Що таке bulk Set операції: union, intersection, difference? Яка складність кожної? <<java-collection-framework-hash-set-class-methods,Answer>>
+- Чому `HashSet.iterator().remove()` безпечніший за `HashSet.remove()` під час ітерації? <<java-collection-framework-hashset-pitfalls,Answer>>
+- Що таке `clone()` у `HashSet`? Чи копіює він елементи? <<java-collection-framework-hashset-clone,Answer>>
+- Яка роль `initialCapacity` та `loadFactor` при конструюванні `HashSet`? <<java-collection-framework-hash-set-class-constructor,Answer>>
+- Як `HashSet` реалізує `Set.of()` (Java 9+)? <<java-collection-framework-hashset-newsetfrommap,Answer>>
+- Що таке `Set.copyOf()` (Java 10+)? <<java-collection-framework-hashset-newsetfrommap,Answer>>
+- Чому `HashSet` не є Random Access? Яку структуру використовує ітератор? <<java-collection-framework-hashset-spliterator,Answer>>
+- Як `HashSet.removeIf()` реалізований ефективно? <<java-collection-framework-hashset-present-sentinel,Answer>>
+
+[#question-java-collections-treeset-deep]
+.TreeSet — Red-Black Tree Set internals
+- Як `TreeSet` делегує до `TreeMap`? Що таке `PRESENT` sentinel і де він? <<java-collection-framework-treeset-treemap-delegation,Answer>>
+- Що таке `TreeSet.NavigableSubSet`? Як реалізовані `headSet()`, `tailSet()`, `subSet()` як живі view? <<java-collection-framework-treeset-submaps-impl,Answer>>
+- Як `TreeSet.ceiling()` реалізований через `TreeMap.ceilingKey()`? <<java-collection-framework-treeset-submaps-impl,Answer>>
+- Що таке `TreeSet.descendingSet()` і яка його складність? <<java-collection-framework-treeset-submaps-impl,Answer>>
+- Як `TreeSet.iterator()` реалізує in-order traversal через `TreeMap.KeyIterator`? <<java-collection-framework-treeset-treemap-delegation,Answer>>
+- Чому `TreeSet.descendingIterator()` є O(1) для створення? <<java-collection-framework-treeset-submaps-impl,Answer>>
+- Як `TreeSet` обробляє `Comparator` що повертає 0 для нерівних об'єктів? <<java-collection-framework-treeset-pitfalls,Answer>>
+- Що таке `TreeSet.floor()` та `TreeSet.higher()`? Яка різниця між ними і `ceiling()`/`lower()`? <<java-collection-framework-treeset-submaps-impl,Answer>>
+- Як `TreeSet.pollFirst()` та `pollLast()` реалізовані атомарно щодо set? <<java-collection-framework-treeset-submaps-impl,Answer>>
+- Чому `TreeSet` не реалізує `RandomAccess`? <<java-collection-framework-treeset-treemap-delegation,Answer>>
+- Що таке `SortedSet.comparator()` і коли він повертає `null`? <<java-collection-framework-sortedset-comparator,Answer>>
+- Яка різниця між `SortedSet` та `NavigableSet` інтерфейсами? <<java-collection-framework-sortedset-comparator,Answer>>
+- Як `TreeSet` реалізує `Set.equals()` з гарантією транзитивності? <<java-collection-framework-treeset-treemap-delegation,Answer>>
+- Що відбудеться якщо `TreeSet` з `Comparator.naturalOrder()` отримає `null`-елемент? <<java-collection-framework-treeset-pitfalls,Answer>>
+- Як `TreeSet.addAll()` оптимізований для випадку коли аргумент є відсортованою колекцією? <<java-collection-framework-treeset-addall-optimized,Answer>>
+- Що таке `TreeSet` з `String.CASE_INSENSITIVE_ORDER`? Яка семантика рівності? <<java-collection-framework-treeset-pitfalls,Answer>>
+- Яка різниця між `TreeSet` та `LinkedHashSet` щодо memory overhead? <<java-collection-framework-treeset-treemap-delegation,Answer>>
+- Як `TreeSet.spliterator()` реалізований? Які його characteristics? <<java-collection-framework-treeset-spliterator,Answer>>
+- Що таке `DISTINCT | SORTED | ORDERED | SIZED` characteristics у `TreeSet.spliterator()`? <<java-collection-framework-treeset-spliterator,Answer>>
+- Яка роль Comparator у `TreeSet.hashCode()`? <<java-collection-framework-treeset-treemap-delegation,Answer>>
+
+[#question-java-collections-enumset-deep]
+.EnumSet — бітовий вектор internals
+- Як `RegularEnumSet` зберігає елементи у одному `long` (64 біти)? <<java-collection-framework-enumset-bitset-impl,Answer>>
+- Як `RegularEnumSet.add()` встановлює відповідний біт? Яка операція: `elements |= bit`? <<java-collection-framework-enumset-bitset-impl,Answer>>
+- Як `RegularEnumSet.contains()` перевіряє наявність? Яка операція: `(elements & bit) != 0`? <<java-collection-framework-enumset-bitset-impl,Answer>>
+- Як `RegularEnumSet.remove()` скидає біт? Яка операція: `elements &= ~bit`? <<java-collection-framework-enumset-bitset-impl,Answer>>
+- Як `JumboEnumSet` зберігає >64 enum через `long[]`? Як обчислюється index та bit position? <<java-collection-framework-enumset-jumbo-impl,Answer>>
+- Як `EnumSet.complementOf()` реалізований через bitwise NOT? <<java-collection-framework-enumset-bitset-impl,Answer>>
+- Чому `EnumSet.addAll()` для іншого `EnumSet` є O(1) через OR операцію? <<java-collection-framework-enumset-bitset-impl,Answer>>
+- Як `EnumSet.retainAll()` (intersection) реалізований через AND? <<java-collection-framework-enumset-bitset-impl,Answer>>
+- Як `EnumSet.removeAll()` (difference) реалізований через AND NOT? <<java-collection-framework-enumset-bitset-impl,Answer>>
+- Що таке `EnumSet.iterator()` і в якому порядку він ітерує? Через ordinal? <<java-collection-framework-enumset-iterator-impl,Answer>>
+- Як `EnumSet.noneOf(Class)` обирає між `RegularEnumSet` та `JumboEnumSet`? <<java-collection-framework-enumset-bitset-impl,Answer>>
+- Чому `EnumSet` не є thread-safe? Як зробити потокобезпечний `EnumSet`? <<java-collection-framework-enumset-pitfalls,Answer>>
+- Як `EnumSet.copyOf()` з `Collection` аргументом відрізняється від `copyOf(EnumSet)`? <<java-collection-framework-enumset-pitfalls,Answer>>
+- Яке memory споживання `RegularEnumSet` порівняно з `HashSet`? <<java-collection-framework-enumset-bitset-impl,Answer>>
+- Чому `EnumSet` є найефективнішою реалізацією `Set` для enum-типів у Java? <<java-collection-framework-enumset-bitset-impl,Answer>>
+
+[#question-java-collections-concurrent-set-deep]
+.CopyOnWriteArraySet та ConcurrentSkipListSet — internals
+- Як `CopyOnWriteArraySet.add()` перевіряє дублікати? Яка складність і чому O(n)? <<java-collection-framework-copyonwritearrayset-add-impl,Answer>>
+- Що таке `CopyOnWriteArraySet.addAllAbsent()` і коли він ефективніший? <<java-collection-framework-copyonwritearrayset-add-impl,Answer>>
+- Як `CopyOnWriteArraySet` делегує до `CopyOnWriteArrayList`? Який контракт? <<java-collection-framework-copyonwritearrayset-add-impl,Answer>>
+- Чому `CopyOnWriteArraySet` порядок ітерації є insertion order а не sorted? <<java-collection-framework-copyonwritearrayset-pitfalls,Answer>>
+- Яка різниця між `CopyOnWriteArraySet.equals()` та `HashSet.equals()`? <<java-collection-framework-copyonwritearrayset-add-impl,Answer>>
+- Як skip list забезпечує O(log n) середню складність у `ConcurrentSkipListSet`? <<java-collection-framework-concurrentskiplistset,Answer>>
+- Що таке "probabilistic balancing" у skip list? <<java-collection-framework-concurrentskiplistset-probabilistic,Answer>>
+- Як `ConcurrentSkipListSet` реалізує `NavigableSet` через `ConcurrentSkipListMap`? <<java-collection-framework-concurrentskiplistset,Answer>>
+- Як `ConcurrentSkipListSet.headSet()` та `tailSet()` повертають concurrent live views? <<java-collection-framework-concurrentskiplistset-pitfalls,Answer>>
+- Що таке weakly consistent semantics конкретно для `ConcurrentSkipListSet`? <<java-collection-framework-concurrentskiplistset-pitfalls,Answer>>
+- Яка різниця між `ConcurrentSkipListSet` та `Collections.synchronizedSortedSet(new TreeSet<>())`? <<java-collection-framework-concurrentskiplistset,Answer>>
+- Як `ConcurrentSkipListSet.floor()` та `ceiling()` реалізовані в concurrent середовищі? <<java-collection-framework-concurrentskiplistset,Answer>>
+- Чому `ConcurrentSkipListSet.size()` є O(n) — яка внутрішня причина? <<java-collection-framework-concurrentskiplistset-pitfalls,Answer>>
+- Як `ConcurrentSkipListSet` вирішує ABA проблему при CAS операціях? <<java-collection-framework-concurrentskiplistset-probabilistic,Answer>>
+- Яке практичне застосування `ConcurrentSkipListSet` у high-frequency trading системах? <<java-collection-framework-concurrentskiplistset,Answer>>
+
+[#question-java-collections-iterator-design-deep]
+.Iterator, Spliterator та дизайн Collection API — senior level
+- Що таке `Iterator` pattern? Яку проблему він вирішує у Java Collections? <<java-collection-framework-iterator-pattern,Answer>>
+- Чому `Iterator.remove()` є необов'язковим (optional operation)? Які колекції кидають UOE? <<java-collection-framework-iterator-pattern,Answer>>
+- Що таке внутрішній ітератор vs зовнішній ітератор? Який `forEach()` є яким? <<java-collection-framework-iterator-pattern,Answer>>
+- Як fail-fast ітератор виявляє concurrent modification? Яка ймовірність miss? <<java-collection-framework-fail-fast-impl,Answer>>
+- Чому fail-fast не є guaranteed? Що означає "best-effort basis"? <<java-collection-framework-fail-fast-impl,Answer>>
+- Що таке structural modification? Чи є `set()` через ітератор структурною модифікацією? <<java-collection-framework-fail-fast-impl,Answer>>
+- Як `Spliterator` відрізняється від `Iterator`? Яка основна нова можливість? <<java-collection-framework-spliterator-vs-iterator,Answer>>
+- Що таке `Spliterator.trySplit()` і яка стратегія розбиття у `ArrayList`? <<java-collection-framework-spliterator-vs-iterator,Answer>>
+- Що таке `Spliterator.estimateSize()` і коли він повертає `Long.MAX_VALUE`? <<java-collection-framework-spliterator-vs-iterator,Answer>>
+- Яка різниця між `tryAdvance()` та `forEachRemaining()` у `Spliterator`? <<java-collection-framework-spliterator-vs-iterator,Answer>>
+- Що таке late-binding Spliterator? Як `ArrayList` реалізує lazy snapshot? <<java-collection-framework-spliterator-vs-iterator,Answer>>
+- Як characteristics `CONCURRENT` у `Spliterator` впливає на parallel stream processing? <<java-collection-framework-spliterator-vs-iterator,Answer>>
+- Що таке `Spliterators.spliterator()` factory? Коли його використовувати? <<java-collection-framework-spliterator-vs-iterator,Answer>>
+- Як `StreamSupport.stream(Spliterator, parallel)` створює Stream з кастомного Spliterator? <<java-collection-framework-spliterator-vs-iterator,Answer>>
+
+[#question-java-collections-jvm-gc-deep]
+.JVM, GC та Memory — вплив на Collections
+- Як GC обробляє `ArrayList` з 1 млн String елементів при compaction? Яке навантаження? <<java-collection-framework-gc-arraylist,Answer>>
+- Що таке object header overhead? Скільки байт займає порожній `ArrayList`? <<java-collection-framework-gc-arraylist,Answer>>
+- Яка різниця між shallow size та retained size у `HashMap`? <<java-collection-framework-memory-shallow-retained,Answer>>
+- Як `WeakHashMap` взаємодіє з GC Generational algorithm? Коли слабкі посилання збираються? <<java-collection-framework-gc-weakhashmap,Answer>>
+- Що таке "floating garbage" у `CopyOnWriteArrayList` після write операцій? <<java-collection-framework-gc-cow-floating,Answer>>
+- Як `LinkedList.Node` навантажує GC порівняно з `ArrayList`? <<java-collection-framework-gc-arraylist,Answer>>
+- Що таке card table у GC і як він пов'язаний з `ArrayList` що тримає посилання на молоді об'єкти? <<java-collection-framework-gc-arraylist,Answer>>
+- Як `HashMap` з value = SoftReference реалізує cache з автоматичним eviction? <<java-collection-framework-gc-weakhashmap,Answer>>
+- Що таке object pooling і коли він переважає над простим `ArrayList`? <<java-collection-framework-gc-arraylist,Answer>>
+- Як `EnumSet` з бітовим вектором впливає на GC порівняно з `HashSet`? <<java-collection-framework-gc-arraylist,Answer>>
+- Що таке false sharing і як `ConcurrentHashMap.counterCells` уникає його через @Contended? <<java-collection-framework-false-sharing,Answer>>
+- Як escape analysis JIT впливає на `ArrayList.iterator()` object allocation? <<java-collection-framework-gc-arraylist,Answer>>
+- Що таке G1GC region і як великий `HashMap` може спричинити humongous allocation? <<java-collection-framework-memory-shallow-retained,Answer>>
+- Яка роль `@Contended` annotation у `ConcurrentHashMap.CounterCell`? <<java-collection-framework-false-sharing,Answer>>
+- Як `Arrays.copyOf()` в `ArrayList.grow()` взаємодіє з G1GC? <<java-collection-framework-gc-arraylist,Answer>>
+- Що таке "promotion failure" у GC і як великі `HashMap` можуть його спричинити? <<java-collection-framework-memory-shallow-retained,Answer>>
+- Як `ThreadLocal` + колекція може спричинити memory leak у thread pool? <<java-collection-framework-threadlocal-leak,Answer>>
+- Що таке "lapsed listener" memory leak і як `WeakHashMap` допомагає? <<java-collection-framework-gc-weakhashmap,Answer>>
+- Яка різниця між strong, soft, weak і phantom references щодо GC поведінки? <<java-collection-framework-gc-weakhashmap,Answer>>
+
+[#question-java-collections-design-patterns-deep]
+.Design та Best Practices Collections — senior level
+- Чому Java Collections використовують interface-based design а не abstract class-based? <<java-collection-framework-interface-design,Answer>>
+- Що таке optional operations у Collections API? Яка критика цього підходу? <<java-collection-framework-interface-design,Answer>>
+- Що таке "defensive copy" pattern і коли його застосовувати з Collections? <<java-collection-framework-defensive-copy,Answer>>
+- Яка різниця між "unmodifiable" та "immutable" колекцією в Java? <<java-collection-framework-defensive-copy,Answer>>
+- Що таке "view" колекція vs "copy" колекція? Коли що повертати з API? <<java-collection-framework-defensive-copy,Answer>>
+- Як правильно проектувати API що повертає колекцію: List vs Collection vs Iterable? <<java-collection-framework-interface-design,Answer>>
+- Що таке "Principle of least surprise" у Collections API? Яка операція порушує його? <<java-collection-framework-interface-design,Answer>>
+- Як реалізувати immutable клас що містить `List` поле? Які підводні камені? <<java-collection-framework-defensive-copy,Answer>>
+- Що таке "collection pipeline" pattern? Як Java Stream API реалізує його? <<java-collection-framework-collection-pipeline,Answer>>
+- Коли краще повернути `Optional<List<T>>` замість порожнього списку? <<java-collection-framework-collection-pipeline,Answer>>
+- Що таке `Collections.emptyList()` vs `new ArrayList<>()` для повернення порожнього результату? <<java-collection-framework-defensive-copy,Answer>>
+- Як правильно реалізувати `equals()` та `hashCode()` для класу що містить колекцію? <<java-collection-framework-equals-hashcode-collections,Answer>>
+- Що таке copy-on-write vs lock-based synchronization trade-off? <<java-collection-framework-interface-design,Answer>>
+- Як вибрати між `HashMap`, `TreeMap`, `LinkedHashMap` для конкретного use case? <<java-collection-framework-interface-design,Answer>>
+- Яка різниця між eager і lazy population колекції? <<java-collection-framework-collection-pipeline,Answer>>
+- Що таке "bulk operation" і чому вони ефективніші за поелементні операції? <<java-collection-framework-collection-pipeline,Answer>>
+- Як правильно клонувати колекцію: shallow vs deep copy pattern? <<java-collection-framework-defensive-copy,Answer>>
+- Що таке "fail-safe" design у CopyOnWriteArrayList і які компроміси? <<java-collection-framework-fail-fast-impl,Answer>>
+- Як обрати розмір початкового capacity для `HashMap` при відомій кількості елементів? <<java-collection-framework-interface-design,Answer>>
+- Що таке "monitor pattern" у `Collections.synchronizedMap()`? Яка його проблема? <<java-collection-framework-interface-design,Answer>>
+- Як реалізувати bounded LRU cache без Guava або Caffeine? <<java-collection-framework-interface-design,Answer>>
+- Що таке producer-consumer pattern і яка `BlockingQueue` найкраща для кожного сценарію? <<java-collection-framework-interface-design,Answer>>
+- Як `ThreadPoolExecutor` вибирає тип `BlockingQueue`? Яка різниця між `fixed`, `cached`, `scheduled` thread pools? <<java-collection-framework-interface-design,Answer>>
+- Що таке "thundering herd" problem і як `SynchronousQueue` допомагає? <<java-collection-framework-interface-design,Answer>>
+- Як правильно використовувати `Collections.sort()` vs `Stream.sorted()` щодо memory? <<java-collection-framework-collection-pipeline,Answer>>
+- Що таке "chunked processing" і як `List.subList()` допомагає обробляти великі колекції? <<java-collection-framework-collection-pipeline,Answer>>
+- Яка різниця між `Comparator.comparing()` chain та традиційним Comparator для `TreeMap`? <<java-collection-framework-interface-design,Answer>>
+- Що таке `Map.computeIfAbsent()` для реалізації multimap pattern? <<java-collection-framework-interface-design,Answer>>
+- Як реалізувати "frequency map" ефективно через `Map.merge()`? <<java-collection-framework-interface-design,Answer>>
+- Що таке "reverse index" pattern і яку Map структуру використовувати? <<java-collection-framework-interface-design,Answer>>
+- Яка різниця між `HashMap<String, List<Integer>>` та `Multimap` з Guava? <<java-collection-framework-interface-design,Answer>>
+- Як "flyweight pattern" пов'язаний з `String.intern()` та `HashMap` ключами? <<java-collection-framework-interface-design,Answer>>
+- Що таке "trie" data structure і коли він переважає `HashMap` для String ключів? <<java-collection-framework-interface-design,Answer>>
+- Як `IdentityHashMap` допомагає при реалізації object graph serialization? <<java-collection-framework-interface-design,Answer>>
+- Що таке "phantom reference" і як він відрізняється від WeakReference для cache implementations? <<java-collection-framework-gc-weakhashmap,Answer>>
+- Яка різниця між `Deque` та `Stack` у термінах API correctness? <<java-collection-framework-interface-design,Answer>>
+- Що таке "read-mostly" vs "write-mostly" pattern і яку колекцію обрати? <<java-collection-framework-interface-design,Answer>>
+
+[#question-java-collections-concurrent-patterns-deep]
+.Concurrent Collections patterns — senior level
+- Що таке "two-phase termination" pattern з `BlockingQueue`? <<java-collection-framework-concurrent-patterns,Answer>>
+- Як реалізувати rate limiter за допомогою `DelayQueue`? <<java-collection-framework-concurrent-patterns,Answer>>
+- Що таке "work stealing" алгоритм і як він пов'язаний з `Deque`? <<java-collection-framework-concurrent-patterns,Answer>>
+- Як `ForkJoinPool` використовує `ArrayDeque` для work stealing? <<java-collection-framework-concurrent-patterns,Answer>>
+- Що таке "lock striping" і як `ConcurrentHashMap` реалізує його? <<java-collection-framework-concurrent-patterns,Answer>>
+- Як реалізувати cache invalidation через `WeakHashMap` + `ReferenceQueue`? <<java-collection-framework-concurrent-patterns,Answer>>
+- Що таке "compare-and-swap" loop pattern при роботі з `ConcurrentHashMap.compute()`? <<java-collection-framework-concurrent-patterns,Answer>>
+- Як реалізувати thread-safe "seen set" без `synchronizedSet()`? <<java-collection-framework-concurrent-patterns,Answer>>
+- Що таке "bounded channel" pattern і як `ArrayBlockingQueue` його реалізує? <<java-collection-framework-concurrent-patterns,Answer>>
+- Як реалізувати "scatter-gather" pattern з `ConcurrentHashMap`? <<java-collection-framework-concurrent-patterns,Answer>>
+- Що таке "read-write lock" і як `ReentrantReadWriteLock` + `HashMap` порівнюється з `ConcurrentHashMap`? <<java-collection-framework-concurrent-patterns,Answer>>
+- Як "event bus" pattern реалізується через `CopyOnWriteArrayList` listeners? <<java-collection-framework-concurrent-patterns,Answer>>
+- Що таке "circuit breaker" і яку колекцію використовувати для sliding window stats? <<java-collection-framework-concurrent-patterns,Answer>>
+- Як реалізувати thread-safe singleton cache через `ConcurrentHashMap.computeIfAbsent()`? <<java-collection-framework-concurrent-patterns,Answer>>
+- Що таке "optimistic locking" pattern і як він пов'язаний з `StampedLock` + колекціями? <<java-collection-framework-concurrent-patterns,Answer>>
+- Як "actor model" (Akka) використовує `LinkedTransferQueue` під капотом? <<java-collection-framework-concurrent-patterns,Answer>>
+- Що таке "disruptor pattern" і чим він відрізняється від `BlockingQueue`? <<java-collection-framework-concurrent-patterns,Answer>>
+- Як реалізувати "priority inbox" для actor через `PriorityBlockingQueue`? <<java-collection-framework-concurrent-patterns,Answer>>
+- Що таке "backpressure" і як `ArrayBlockingQueue.put()` блокуванням реалізує його? <<java-collection-framework-concurrent-patterns,Answer>>
+- Як обрати між `ConcurrentLinkedQueue` та `LinkedBlockingQueue` для lock-free vs blocking semantics? <<java-collection-framework-concurrent-patterns,Answer>>
+
+[#java-pattern-matching]
+- Чому це важливо для сучасної розробки? <<java-pattern-matching-why-important,Answer>>
+
+[#java-concurrency]
+.concurrency
+
+- Что такое ThreadLocal переменная?<<java-concurrency-threadlocal,Answer>>
+
+
+
+
+
+[#java-stream]
+.Java Stream API
+.Блок 1: Внутрішня архітектура (Sink, Spliterator, Pipeline)
+- Чи створює стрім копію колекції на кожному етапі? Ні. Він будує ланцюжок об'єктів Sink, які передають елементи один одному по одному (one-by-one), що економить пам'ять
+- Що таке Sink і яка його роль у Pipeline? <<java-stream-sink,Answer>>
+- Як працює "Short-circuiting" на рівні Sink? <<java-stream-short-circuiting,Answer>>
+- Різниця між Intermediate та Terminal операціями з точки зору реалізації? <<java-stream-short-intermediate-vs-terminal,Answer>>
+// - Що таке Spliterator і чим він кращий за Iterator? Відповідь: Він дозволяє розділяти джерело даних на частини для паралельної обробки (trySplit()) і повідомляє про характеристики джерела (characteristics()).
+// - Які бувають характеристики (characteristics) у Spliterator? Відповідь: ORDERED, DISTINCT, SORTED, SIZED, NONNULL, IMMUTABLE, CONCURRENT, SUBSIZED.
+// - Як Stream дізнається, що можна оптимізувати count()? Відповідь: Якщо Spliterator має характеристику SIZED, count() поверне розмір джерела без ітерації.
+// - Що відбувається при виклику sorted() у середині стріма? Відповідь: Це "Stateful" операція. Sink накопичує всі елементи в список, сортує їх у методі end(), і тільки потім пускає далі.
+// - Чи можна перевикористати стрім? Чому виникає IllegalStateException? Відповідь: Ні. Стрім — це одноразовий ітератор по пайплайну. Після виклику термінальної операції він позначається як "consumed".
+// - Як працює Stream.concat під капотом? Відповідь: Створюється новий Spliterator, який спочатку вичитує перший стрім, а потім другий. Закриття результуючого стріма закриває обидва вхідні.
+// - Яка роль пакета java.util.stream у модулі java.base? Відповідь: Це ядро стрімів, де лежать базові абстракції (AbstractPipeline, ReferencePipeline).
+
+// .Блок 2: Паралельні стріми (Parallelism & Concurrency)
+// - Який Thread Pool використовують Parallel Streams? Відповідь: Загальний ForkJoinPool.commonPool().
+// - В чому небезпека використання parallelStream() у веб-серверах (напр. Spring Boot)? Відповідь: Можна забити commonPool, що сповільнить роботу інших частин системи (напр. обробку запитів).
+// - Як змінити кількість потоків для конкретного паралельного стріма? Відповідь: Виконати його всередині кастомного ForkJoinPool.submit(...).
+// - Коли parallel() зробить код повільнішим? Відповідь: На малих даних, на нелінійних структурах (LinkedList), або коли операції занадто легкі (overhead на поділ/злиття більший за корисну роботу).
+// - Як parallelStream працює з ORDERED характеристикою? Відповідь: Він намагається зберегти порядок, але це вимагає синхронізації (buffer), що сильно знижує продуктивність.
+// - Різниця між reduce та collect у паралельному стрімі? Відповідь: reduce створює нові об'єкти (immutable), collect модифікує існуючий контейнер (mutable), що ефективніше для колекцій.
+// - Чому findAny() краще за findFirst() у паралельних стрімах? Відповідь: findAny повертає перший ліпший результат з будь-якого потоку, а findFirst змушений чекати результатів з "початку" джерела.
+// - Як Spliterator ділить LinkedList для паралельного стріма? Відповідь: Дуже погано. Йому доводиться ітерувати до середини, щоб знайти точку розриву (O(n)).
+// - Чи безпечно змінювати колекцію-джерело під час виконання стріма? Відповідь: Ні, це призведе до ConcurrentModificationException (non-interference rule).
+// - Що таке Combiner у методі reduce? Відповідь: Функція, яка об'єднує результати обробки двох різних гілок (threads) у паралельному стрімі.
+// .Блок 3: Collectors & Reduction (Глибина)
+// - Як працює Collectors.groupingBy? Відповідь: Створює Map, де ключі — результат функції, а значення — список елементів.
+// - Різниця між groupingBy та partitioningBy? Відповідь: Partitioning — це спеціальний випадок grouping, де ключ завжди Boolean. Він швидший.
+// - Як зробити groupingBy у ConcurrentMap? Відповідь: Використати groupingByConcurrent.
+// - Що робить Collectors.collectingAndThen? Відповідь: Дозволяє виконати фінальну дію над результатом колектора (напр. зробити список Unmodifiable).
+// - Як працює teeing колектор (Java 12+)? Відповідь: Він направляє стрім у два різні колектори і потім об'єднує їхні результати.
+// - Чи можна написати свій Collector? Які методи треба реалізувати? Відповідь: Так. supplier(), accumulator(), combiner(), finisher(), characteristics().
+// - Навіщо потрібен identity у reduce? Відповідь: Це початкове значення і результат для порожнього стріма.
+// - Чому Optional<T> reduce(BinaryOperator<T> accumulator) не має identity? Відповідь: Бо без початкового значення він не знає, що повернути для порожнього стріма, тому повертає Optional.empty().
+// - Що таке Identity finish у Collector? Відповідь: Характеристика, яка каже, що результат accumulator не потребує трансформації у finisher.
+// - Яка проблема з Collectors.toList() у порівнянні з Stream.toList() (Java 16+)? Відповідь: Collectors.toList() зазвичай повертає мутабельний ArrayList, а Stream.toList() — незмінний список.
+// .Блок 4: Продуктивність та Пам'ять
+// - Як уникнути боксингу (Boxing) у стрімах? Відповідь: Використовувати примітивні стріми: IntStream, LongStream, DoubleStream.
+// - Що ефективніше: filter().findFirst() чи цикл for з if та break? Відповідь: Цикл зазвичай трохи швидший через відсутність об'єктів стріма, але на великих даних різниця нівелюється JIT-компілятором.
+// - Чи закриває стрім ресурси автоматично? Відповідь: Ні (крім flatMap для внутрішніх стрімів). Треба використовувати try-with-resources.
+// - Як Stream.distinct() працює з великими обсягами даних? Відповідь: Він створює внутрішній HashSet. Якщо даних багато — це може призвести до OutOfMemoryError.
+// - Чи впливає порядок filter() та map() на продуктивність? Відповідь: Так. Завжди краще спочатку фільтрувати, щоб зменшити кількість об'єктів для мапінгу.
+// - Що таке "Lazy Evaluation" і як вона допомагає економити CPU? Відповідь: Обробка починається тільки при виклику термінальної операції. Дані обробляються "пайпами", а не копіями.
+// - Як працює limit() у нескінченних стрімах? Відповідь: Це short-circuiting операція. Як тільки лічильник досягає межі, вона посилає сигнал зупинки.
+// - Чи є різниця між list.stream().forEach() та list.forEach()? Відповідь: Так. Другий варіант зазвичай швидший, бо працює напряму через ітератор колекції без створення Pipeline об'єктів.
+// - Як peek() впливає на продуктивність? Відповідь: Він додає ще один виклик методу на кожен елемент. Це чисто для дебагу.
+// - Що буде, якщо в стрімі використати parallel() і sequential() кілька разів? Відповідь: Виграє останній виклик. Весь стрім буде або паралельним, або послідовним.
+// .Блок 5: Java 9, 10, 11... 21 Updates (Еволюція Stream API)
+// - Чим Stream.ofNullable() (Java 9) корисний при роботі з Map? Відповідь: Він дозволяє уникнути NullPointerException або ручної перевірки, перетворюючи null у порожній стрім.
+// - Різниця між limit(n) та takeWhile(predicate) (Java 9)? Відповідь: limit відсікає за кількістю, а takeWhile зупиняє стрім, як тільки елемент перестав відповідати умові (важливо для відсортованих даних).
+// - Як працює dropWhile? Відповідь: Він ігнорує елементи, поки предикат true, і починає пропускати все підряд, як тільки зустрів перший false.
+// - Навіщо додали Stream.iterate з предикатом (Java 9)? Відповідь: Це аналог циклу for(int i=0; i<n; i++), що дозволяє створювати скінченні стріми без limit.
+// - Що таке Collectors.filtering та flatMapping (Java 9)? Відповідь: Це "downstream" колектори. Вони дозволяють фільтрувати або розгортати дані всередині groupingBy, щоб не втратити порожні групи (ключі).
+// - Яка особливість Stream.toList() (Java 16)? Відповідь: Це не просто цукор для .collect(Collectors.toList()). Він повертає незмінний список (unmodifiable) і працює швидше, бо йому не потрібен Collector як посередник.
+// - Як працює Optional.stream() (Java 9)? Відповідь: Перетворює Optional у стрім з 0 або 1 елемента. Це ідеально для flatMap(Optional::stream).
+// - Що таке Collectors.teeing (Java 12) і де його застосувати? Відповідь: Дозволяє обчислити два різні показники за один прохід (наприклад, суму та кількість одночасно), щоб потім порахувати середнє.
+//  - Чи є зміни в Stream API у зв'язку з Virtual Threads (Java 21)? Відповідь: Прямих змін в API немає, але parallelStream() тепер може бути менш вигідним, ніж запуск звичайних стрімів у тисячах Virtual Threads через ExecutorService.
+// - Як Stream.gatherers() (Java 22/23 Preview) розширює можливості? Відповідь: Це найгучніше оновлення. Воно дозволяє створювати кастомні проміжні оператори (як scan, windowFixed тощо), чого раніше не можна було зробити без втручання в нутрощі JDK.
+// .Блок 6: Обробка винятків (Exceptions) та Side-effects
+// Чи можна викинути Checked Exception всередині .map()? Відповідь: Ні, функціональні інтерфейси (Function, Predicate) не оголошують throws. Потрібно обертати в try-catch або використовувати wrapper.
+// Як працює "Lombok @SneakyThrows" зі стрімами? Відповідь: Він обманює компілятор, дозволяючи викидати checked exceptions як unchecked, але це вважається поганою практикою.
+// Що станеться з Parallel Stream, якщо один потік викине RuntimeException? Відповідь: Стрім негайно припинить обробку, і виняток прокинеться в основний потік (той, що викликав термінальну операцію).
+// Чому Side-effects (зміна зовнішніх змінних) у стрімах — це зло? Відповідь: Це ламає детермінізм. У паралельних стрімах це призведе до Race Condition, якщо тільки ти не використовуєш Atomic змінні або Concurrent колекції.
+// Чи можна використовувати Stream для запису в базу даних через forEach? Відповідь: Можна, але це антипатерн. Краще зібрати дані в пачки (batches) через collect і зберегти одним запитом.
+// .Блок 7: Optional та Stream API (Тандем)
+// - Різниця між Optional.ifPresent() та Stream.forEach()? Відповідь: Перший працює з 0-1 значенням, другий — з будь-якою кількістю. ifPresent — це термінальна дія для Optional.
+// - Як зробити flatMap по Optional полю в об'єкті? Відповідь: .flatMap(obj -> obj.getOptionalField().stream()).
+// - Чому Optional не є серіалізованим (Serializable)? Відповідь: Він створювався як повертаємий тип для методів, а не для зберігання в полях класів (DTO/Entity).
+// - Коли варто використовувати orElseGet() замість orElse()? Відповідь: Завжди, коли обчислення дефолтного значення є дорогим (наприклад, запит в БД), бо orElse виконується завжди, навіть якщо значення є.
+// - Що поверне stream.findAny().orElse(null)? Відповідь: Значення або null, але це "запах коду". Краще продовжувати ланцюжок через Optional.
+// .Блок 8: Stateful vs Stateless та Складні оператори
+// - Які оператори є Stateful? Відповідь: sorted(), distinct(), limit(), skip(). Вони потребують знання про інші елементи стріма.
+// - Чому distinct() на нескінченному стрімі — це проблема? Відповідь: Бо внутрішній HashSet буде рости нескінченно, поки не впаде OOM.
+// - Як limit() працює разом із sorted()? Відповідь: Це "найгірший" випадок. Стрім змушений відсортувати все, і тільки потім віддати перші N.
+// - Чи гарантує forEachOrdered() порядок у паралельному стрімі? Відповідь: Так, але це вбиває весь профіт від паралелізму, бо елементи будуть чекати своєї черги на вихід.
+// - Як працює reduce з трьома аргументами? Відповідь: identity (початкове), accumulator (додавання в поточному потоці), combiner (злиття результатів потоків).
+// .Блок 9: Тонкощі Spliterator та Колекторів
+// - Як Spliterator оцінює розмір через estimateSize()? Відповідь: Це приблизне значення. Для ArrayList воно точне, для Files.lines() — ні.
+// - Що робить характеристика CONCURRENT у Spliterator? Відповідь: Вказує, що джерело може безпечно модифікуватися під час ітерації іншими потоками.
+// - Різниця між Characteristics.IDENTITY_FINISH та іншими у Collector? Відповідь: Якщо вона є, результат акумулятора каститься до результату колектора напряму, без виклику finisher().
+// - Як працює Collectors.joining() всередині? Відповідь: Використовує StringBuilder для конкатенації рядків.
+// - Чому Collectors.toMap кидає Exception при однакових ключах? Відповідь: За замовчуванням він не знає, яке значення вибрати. Треба передати третій аргумент — mergeFunction.
+// .Блок 10: JIT, Оптимізації та "Під капотом"
+// - Як JIT-компілятор (C2) ставиться до довгих ланцюжків Stream API? Відповідь: JIT добре справляється з "інлайнінгом" (inlining) лямбд, але довгі ланцюжки створюють багато об'єктів Sink. Якщо стрім невеликий, іноді він не встигає оптимізуватися, і звичайний for виграє.
+// - Що таке "Stream Fusion"? Відповідь: Це термін, що описує здатність бібліотеки об'єднувати кілька операцій (наприклад, два filter поспіль) в один прохід по даних. В Java це реалізовано через ланцюжок Sink.accept().
+// - Як IntStream допомагає уникнути витоків пам'яті в порівнянні з Stream<Integer>? Відповідь: Окрім відсутності боксингу, примітивні стріми споживають значно менше пам'яті (у 3-4 рази), що зменшує навантаження на Garbage Collector.
+// - Що станеться, якщо змінити джерело стріма (наприклад, ArrayList) під час виконання в іншому потоці? Відповідь: Більшість Spliterator-ів кинуть ConcurrentModificationException через механізм fail-fast, перевіряючи modCount.
+// - Як працює Stream.empty()? Чи створює він нові об'єкти? Відповідь: Ні, він використовує статичний синглтон, що робить його дуже дешевим.
+// .Блок 11: Порівняння та архітектурний вибір
+// - Java Streams vs Kotlin Sequences: головна різниця? Відповідь: Sequences в Kotlin завжди послідовні (немає вбудованого parallel()), але вони мають менший overhead і більш лаконічний синтаксис для обробки винятків.
+// - В яких випадках RxJava або Project Reactor кращі за Stream API? Відповідь: Коли потрібна асинхронність, обробка подій у часі, backpressure або робота з нескінченними потоками даних у реактивному стилі. Stream API — для обробки даних у пам'яті "тут і зараз".
+// - Чи варто зберігати Stream як поле класу? Відповідь: Категорично ні. Стрім — це стан (stateful object) процесу обчислення, він не серіалізується і "протухає" після використання.
+// - Чому в Stream API немає методу zip (об'єднання двох стрімів попарно)? Відповідь: Це складно реалізувати для паралельних стрімів, де частини даних знаходяться в різних потоках. (З'явиться в Gatherers у нових Java).
+// - Як реалізувати пагінацію за допомогою skip() та limit()? Які ризики? Відповідь: Це працює, але для великих значень skip(1000000) стрім все одно має проітерувати (відкинути) мільйон елементів, що неефективно для БД.
+// .Блок 12: Складні Case-studies
+// - Як за допомогою стрімів реалізувати "sliding window" (ковзне вікно)? Відповідь: До Java 22 це робилося через IntStream.range та subList, або через сторонні бібліотеки (Vavr, StreamEx). Тепер — через Gatherers.windowFixed/Sliding.
+// - Як знайти дублікати в стрімі за допомогою filter? Відповідь: set = new HashSet(); ... .filter(n -> !set.add(n)). Але це side-effect, який зламає паралельний стрім!
+// - Як реалізувати власну термінальну операцію? Відповідь: Тільки через .collect(Collector) або .reduce(). Справжні кастомні термінальні операції потребують реалізації внутрішніх інтерфейсів JDK.
+// - Що робити, якщо flatMap повертає занадто багато даних і виникає OOM? Відповідь: Переходити на реактивні стріми з підтримкою backpressure або обробляти дані частинами (batches).
+// - Як перевірити, чи стрім паралельний, всередині лямбди? Відповідь: Викликати Thread.currentThread().getName() — якщо там ForkJoinPool.commonPool-worker-..., то це паралельна гілка.
+// .Блок 13: Питання на "засипку" (Corner cases)
+// - Чи може stream.map(x -> x).count() бути оптимізований до size()? Відповідь: Ні. Оскільки map може змінити кількість елементів (якщо там кидається Exception) або тип, Java змушена виконати пайплайн.
+// - Що поверне Stream.iterate(0, i -> i + 1).filter(i -> i < 0).findFirst()? Відповідь: Програма зависне в нескінченному циклі, намагаючись знайти від'ємне число в ітераторі, що зростає.
+// - Яка різниця між Stream.builder() та Stream.of()? Відповідь: Builder корисний, коли ти додаєш елементи в циклі (логіка накопичення), а of — коли дані вже готові.
+// - Чи можна зробити flatMap по Map? Відповідь: Тільки через map.entrySet().stream().flatMap(...).
+// - Як перетворити Stream<String> у String[]? Відповідь: .toArray(String[]::new). Важливо використовувати посилання на конструктор масиву.
+// .Блок 14: Філософія та Best Practices
+// - Коли Java Stream — це "антипатерн"? Відповідь: Коли логіка всередині лямбд занадто складна (багато рядків, вкладені try-catch), або коли звичайний for набагато читабельніший.
+// - Що таке "Fluent API" в контексті стрімів? Відповідь: Це стиль проектування, де кожен метод повертає об'єкт того ж (або спорідненого) типу, дозволяючи будувати ланцюжки.
+// - Як стріми допомагають у написанні "чистого коду"? Відповідь: Вони переводять акцент з "Як робити" (цикли, індекси) на "Що робити" (фільтрувати, перетворювати).
+// - Чому не рекомендується використовувати parallelStream для IO-задач? Відповідь: Бо commonPool має обмежену кількість потоків (зазвичай рівну кількості ядер CPU). IO-задачі блокують ці потоки, не даючи CPU виконувати корисну роботу.
+// - Чи є в стрімах механізм "Retry" (повтор при помилці)? Відповідь: Ні, стандартний Stream API не підтримує повторних спроб.
+// .Блок 15: Фінальні штрихи (Java 21+)
+// - Що таке SequencedCollection і як вона впливає на стріми? Відповідь: Вона гарантує порядок зустрічі елементів, що робить операції findFirst та reverse більш передбачуваними.
+// - Як працювати з Scoped Values у стрімах? Відповідь: Це складно, оскільки лямбди можуть виконуватися в різних потоках (parallel), де Scoped Value може бути недоступним.
+// - Чи можна використовувати Stream для генерації послідовностей Фібоначчі? Відповідь: Так, через Stream.iterate(new int[]{0, 1}, t -> new int[]{t[1], t[0] + t[1]}).
+// - Яка роль java.util.stream.Collector.Characteristics.CONCURRENT? Відповідь: Вона дозволяє одному об'єкту-результату (напр. ConcurrentHashMap) приймати дані з різних потоків паралельно без виклику combiner.
+// - Найголовніше питання: Плов чи Java? Відповідь: Правильний Senior спочатку ставить казан на вогонь (на ту саму підставку 32 см), а поки плов мліє — пише ідеальний код на стрімах.
+
+[#question-java-collections-advanced-practical]
+.Advanced Collections — Practical & Design
+- Як реалізувати high-throughput LRU cache для багатопотокового середовища? <<java-collection-framework-advanced-cache-design,Answer>>
+- Які trade-offs між segmented LRU (striped) та глобальним synchronized LinkedHashMap? <<java-collection-framework-advanced-cache-design,Answer>>
+- Як коректно написати hashCode()/equals() для ключів у HashMap щоб уникнути subtle bugs і DoS-атак? <<java-collection-framework-advanced-hashcode-best-practices,Answer>>
+- Як написати власний Spliterator для кастомної структури даних? Які характеристики варто вказати? <<java-collection-framework-advanced-spliterator,Answer>>
+- Як Virtual Threads впливають на вибір колекцій та на concurrent patterns? <<java-collection-framework-advanced-virtual-threads,Answer>>
+- Як коректно проводити мікробенчмарки для порівняння колекцій (ArrayList vs LinkedList vs ArrayDeque)? <<java-collection-framework-advanced-benchmarks,Answer>>
+

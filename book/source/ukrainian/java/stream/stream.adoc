@@ -1,0 +1,2247 @@
+ifndef::imagesdir[:imagesdir: ../../imgs]
+ifndef::streamtestdir[:streamtestdir: ../../../../../examples/java/src/test/java/kovteba/stream]
+
+[#java-stream]
+=== Stream API
+Починаючи з JKD 8 з'являється новий API - Stream API. Який дозволяє писати у декларативному(declarative) стилі на відміну звичайному імператівному (imperative) стилю. Головна задача цього API спростити операції над даними такими як фільтрація, сортування і так далі. Зберігається цей функціонал в пакеті `java.util.stream`.
+
+Операціє поділяються:
+
+* <<java-stream-terminal-operation,термінальні (“terminal” або “eager”)>>;
+* <<java-stream-intermediate-operation,нетермінальні або конвеїрні(“intermediate” або “lazy”)>>.
+
+
+Конвеїрні операції модіфікують pipeline при цьому не змінюючи колекцію, а термінальні операції повертают результат та закривають stream. Конвеїрні операції повертають stream що дозволяє нам поєднувати декілька конвеїрних операцій у той час, як термінальна операція може бути тілько одна. Поки не буде виклакана термінальна операція обробки потоку не буде. Тобто `list.stream().filter(x -> x == 1)` не візьме жодного елементу з потоку поки ми не викликаємо термінальну операцію. Також стрім після обробки не можна перевикористовувати. Нижче наведен приклад:
+
+[source,java]
+----
+include::{streamtestdir}/StreamTest.java[tags=streamTest1]
+----
+
+Код на другому рядку виконається, а на третьому ми отримаємо помилку `java.lang.IllegalStateException: stream has already been operated upon or closed`.
+
+[[java-stream-lazy-evaluation]]Зважаючи на те що Stream використовую Lazy Evaluation то без термінальної операції стрім не почне виконуватись можемо зробити висновок, що обробка йде від термінальної операції до джерела. Тобто термінальний оператор запитує елементи у попередніх які йдуть до джерела. Потім елементи йдуть у прямому порядку від джерела до термінальної операції. Наприклад `list.stream().limit(5).forEach()`  коли через проміжний оператор пройде 5 елементів він перейде у закритий стан і не буде запитувати елементу у джерела. У той час forEach запитує елементи у limit і коли елементів більше нема закінчує обробку. Такий підхід називається *pull iteration* коли елементи запитуються у джерела за потреби. (Є ще підхід *push iteration* коли джерело сам повідомляє що з'явилися нові елементи і їх треба обробити, але зараз не про це).
+
+[[java-stream-short-intermediate-vs-terminal]]Тобто принципова різниця між Intermediate та Terminal операціями у тому що Intermediate будують ланцюжок Sink-ів (ліниво), Terminal запускає цикл обходу через `Spliterator.forEachRemaining()`.
+
+Крім інтерфейсу Stream є ще кілька інтерфейсів:
+
+* `IntStream`
+* `LongStream`
+* `DoubleStream`
+
+Ці інтерфейси дають прирост у швидкості. Окрім деяких винятків.
+
+// TODO (https://habr.com/ru/companies/jugru/articles/337534/)
+
+// TODO Також у стрім представлені коротко замкнуті операції. Це означає що операція завершиться раніше ніз скінчаться елементи у стрімі.
+
+[[java-stream-sink]]Основою Stream API є інтерфейс `Sink<T>` який представляє стадію обробки або споживача елементів стріма. Коли ти викликаєш `.filter()`, `.map()`, нічого не відбувається. Мозок Java просто будує «трубопровід». Кожна стадія — це об'єкт Sink. Подивимось на прфклад з документації:
+
+[source,java]
+----
+include::{streamtestdir}/StreamTest.java[tags=streamTest31]
+----
+
+Коли ти викликаєш `.filter()`, `.map()`, нічого не відбувається. Мозок Java просто будує «трубопровід». Кожна стадія — це об'єкт Sink:
+
+* Filter Sink: Отримує рядок. Якщо він починається на "A", він каже: «Окей, передаю далі». Він викликає метод accept() у наступного приймача.
+* Map Sink: Отримує рядок, рахує довжину і викликає accept(int) у наступного.
+* Max Sink: Отримує числа одне за одним і просто запам’ятовує найбільше.
+
+В документації згадується `Sink.ChainedReference`. Це основа всього. Кожен такий об'єкт має поле `downstream` — це посилання на наступний «приймач» у ланцюжку. озберемо твій приклад коду для map:
+
+[source,java]
+----
+IntSink is = new Sink.ChainedReference<U>(sink) { // sink тут — це наступна стадія (напр. max)
+     public void accept(U u) {
+         // 1. Беремо об'єкт u (рядок)
+         // 2. mapper.applyAsInt(u) перетворює його на довжину (int)
+         // 3. Викликаємо accept(int) у НАСТУПНОГО (downstream)
+         downstream.accept(mapper.applyAsInt(u));
+     }
+};
+----
+
+Життєвий цикл — це критично важливо для розуміння того, як стріми «спілкуються» між собою:
+
+* `begin(long size)`: Термінальна операція каже першому Sink: «Починаємо! Очікуй приблизно 10 елементів». Цей сигнал іде по всьому ланцюжку до самого кінця. Це дозволяє, наприклад, ArrayList заздалегідь виділити пам'ять.
+* `accept()`: Це робоча конячка. Дані летять крізь ланцюжок;
+* `end()`: Сигнал «Дані закінчилися». Це дуже важливо для операцій сортування (sorted()). Сортування не може початися, поки не прийде сигнал end(), бо треба зібрати всі елементи;
+* `cancellationRequested()`: Це «стоп-кран». Якщо ми використовуємо `limit(5)` або `findFirst()`, цей метод дозволяє зупинити стрім раніше, щоб не обробляти мільйон зайвих елементів.
+
+це дозволяє передавати дані ланцюжком без створення проміжних колекцій. [[java-stream-short-circuiting]]Stream використовує коротке замикання (Short-circuiting) через метод `cancellationRequested()`. Якщо операція (напр. findFirst або limit) виконана, Sink сигналізує вгору по ланцюжку припинити надсилання даних та accept більше не викликається та ітерація припиняється достроково.
+
+
+[#java-stream-create]
+==== Створення стрімів
+
+- <<java-stream-create-iterate,`iterate(T seed, UnaryOperator f)`/`iterate(T seed, Predicate hasNext, UnaryOperator f)`>>
+- <<java-stream-create-generate,`generate(Supplier<? extends T> s)`>>
+- <<java-stream-create-concat,`concat(Stream a, Stream b)`>>
+- <<java-stream-create-builder,`builder()`>>
+- <<java-stream-create-range,`range(int startInclusive, int endExclusive)`>>
+- <<java-stream-create-rangeClosed,`rangeClosed(int startInclusive, int endExclusive)`>>
+- <<java-stream-create-list,`stream()`>>
+- <<java-stream-create-values,`Stream.of()`>>
+- <<java-stream-create-array,`Arrays.stream()`>>
+- <<java-stream-create-file,`Files.lines()`>>
+- <<java-stream-create-string,`chars()`>>
+- <<java-stream-create-parallel,`parallelStream()`>>
+- <<java-stream-create-ofNullable,ofNullable>> - java 9
+
+[#java-stream-create-iterate]
+.iterate
+Повертає нескінченний стрім який генерується виразом який передали у `UnaryOperator` для того, щоб обмежити кількість  елементів використаємо `limit`.
+
+[source,java]
+----
+include::{streamtestdir}/StreamTest.java[tags=streamTest2]
+----
+
+Починаючи з Java 9 додали перевантажену функцію з ще одним аргументом `hasNext`, якщо повертає `false` стрім завершується.
+
+[source,java]
+----
+include::{streamtestdir}/StreamTest.java[tags=streamTest3]
+----
+
+[#java-stream-create-generate]
+.generate
+[source,java]
+----
+include::{streamtestdir}/StreamTest.java[tags=streamTest15]
+----
+
+[#java-stream-create-concat]
+.concat
+Для створення стріма можна використати операцію `concat` кий поєднує декілька стрімів. Функція приймає два стріма і у результуючому стрімі спочатку йдуть елементи з першого стріма потім з другого.
+
+[source,java]
+----
+include::{streamtestdir}/StreamTest.java[tags=streamTest4]
+----
+
+[#java-stream-create-builder]
+.builder
+[source,java]
+----
+include::{streamtestdir}/StreamTest.java[tags=streamTest5]
+----
+
+[#java-stream-create-range]
+.range
+[source,java]
+----
+include::{streamtestdir}/StreamTest.java[tags=streamTest6]
+----
+
+[#java-stream-create-rangeClosed]
+.rangeClosed
+[source,java]
+----
+include::{streamtestdir}/StreamTest.java[tags=streamTest7]
+----
+
+[#java-stream-create-list]
+.Створення стрімов з колекцій
+[source,java]
+----
+include::{streamtestdir}/StreamTest.java[tags=streamTest8]
+----
+
+[#java-stream-create-values]
+.Створення стрімов з значеннь
+[source,java]
+----
+include::{streamtestdir}/StreamTest.java[tags=streamTest9]
+----
+
+[#java-stream-create-array]
+.Створення стріма з масива
+[source,java]
+----
+include::{streamtestdir}/StreamTest.java[tags=streamTest10]
+----
+
+[#java-stream-create-file]
+.Створення стрімов з файла
+[source,java]
+----
+include::{streamtestdir}/StreamTest.java[tags=streamTest11]
+----
+
+[#java-stream-create-string]
+.Створення стрімов з рядка
+[source,java]
+----
+include::{streamtestdir}/StreamTest.java[tags=streamTest12]
+----
+
+[#java-stream-create-parallel]
+.Створення паралельного стріма
+[source,java]
+----
+include::{streamtestdir}/StreamTest.java[tags=streamTest13]
+----
+
+Як що обчислення залежать одне від одного то використання паралельних стрімів не має сенсу або взагали буде призводити до помилок. Parallel stream використовують загальний <<java-core-fork-join-pool, ForkJoinPool>>.
+
+[#java-stream-create-ofNullable]
+.ofNullable
+`ofNullable` — дозволяє створити стрім з одного елемента або пустий стрім якщо передане значення є `null`.
+
+[source,java]
+----
+// Java 9+
+String value = getValue(); // може повернути null
+
+// Без ofNullable — NPE або ручна перевірка
+Stream<String> stream = (value != null) ? Stream.of(value) : Stream.empty();
+
+// З ofNullable — чисто та безпечно
+Stream<String> streamSafe = Stream.ofNullable(value);
+
+// Практичний приклад: уникнення NullPointerException у flatMap
+List<List<String>> nested = Arrays.asList(
+    Arrays.asList("a", "b"),
+    null,           // може бути null
+    Arrays.asList("c")
+);
+
+List<String> result = nested.stream()
+    .flatMap(list -> Stream.ofNullable(list)    // замість Objects::nonNull + flatMap
+             .flatMap(Collection::stream))
+    .collect(Collectors.toList());
+// ["a", "b", "c"]
+
+// Використання у Optional-ланцюжках
+Map<String, String> config = Map.of("key", "value");
+long count = Stream.ofNullable(config.get("missingKey"))
+    .filter(s -> !s.isBlank())
+    .count(); // 0 — без NPE
+----
+
+NOTE: `Stream.ofNullable(x)` є коротшою та безпечнішою альтернативою паттерну `Optional.ofNullable(x).map(Stream::of).orElseGet(Stream::empty)`.
+
+WARNING: Не плутайте з `Stream.of((Object) null)` — це створює стрім з одним елементом `null`, а не пустий стрім. `ofNullable(null)` повертає `Stream.empty()`.
+
+[#java-stream-intermediate-operation]
+==== Конвеєрні операції
+
+* <<java-stream-filter,`filter(Predicate<? super T> predicate)`>>
+* <<java-stream-map,`map`>>
+* <<java-stream-flatMap,`flatMap`/`flatMapToInt`/`flatMapToDouble`/`flatMapToLong`>>
+* <<java-stream-skip,`skip`>> — пропускає N перших елементів;
+* <<java-stream-distinct,`distinct`>> — повертає stream без дублікатів;
+* <<java-stream-peek,`peek`>> — повертає тойже стрім застосовуючи функцію до кожного елементу;
+* <<java-stream-limit,`limit`>> — повертає тількі перші N елементів;
+* <<java-stream-sorted,`sorted`>> — дозволяє сортувати стрім у натуральному поряку або приймає Comparator;
+* <<java-stream-mapToInt,`mapToInt`/`mapToDouble`/`mapToLong`>> — перетворює об'єктний стрім у числовий;
+* <<java-stream-takeWhile,`takeWhile`>> — повертає елементи поки умова істина; // TODO
+* <<java-stream-dropWhile,`dropWhile`>> — пропускає елементи поки умова істина; // TODO
+* <<java-stream-mapMulti,`mapMulti`>> — Більш ефективна заміна flatMap. Дозволяє уникнути створення зайвих об'єктів Stream для кожного елемента. Дуже корисно для High-load систем (Java 16);
+
+[#java-stream-filter]
+.filter
+Метод `Stream<T> filter(Predicate<? super T> predicate)` - фільтрує елементи у відповідності умови предіката. Метод створює новий поток який містить у собі усі елементи які відповідають умові. І як приклад порахуємо кількість порожніх рядків.
+
+[source,java]
+----
+include::{streamtestdir}/StreamTest.java[tags=streamTest16]
+----
+
+[source,java]
+----
+include::{streamtestdir}/StreamTest.java[tags=streamTest29]
+----
+
+[#java-stream-map]
+.map
+Дає можливість змінювати кожен об'ект і пропускає далі. Як результат виконання ціеї функції ми маемо стрім з новим тіпом елементів. Як параметер приймає `Function<T,R>` що у свою чергу е функціею перехода віl об'єкта тіпа T до об'єкта тіпа R.
+
+[source,java]
+----
+include::{streamtestdir}/StreamTest.java[tags=streamTest17]
+----
+
+[#java-stream-flatMap]
+.flatMap
+Ця функція робе теж сами що і попередній метод але різниця полягає у тому що функція <<java-stream-map,map>> повертає одне вихідне значення, а <<java-stream-flatMap,flatMap>> повертає від нуля та більше вихідних значень.
+
+[source,java]
+----
+include::{streamtestdir}/StreamTest.java[tags=streamTest20]
+----
+
+Також `flatMap` гарантує що кожен створений стрім буде закритий як тільки вміст буде передано до іншого стріма. Коли ми використовуємо `flatMap(x -> stream)` як у другому рядку, Java гарантує, що вона викличе метод `.close()` для кожного внутрішнього стріма, який ти створив. Це є важливим, наприклад коли ми працюємо з файлами та після завершення треба закрити файл. Як раз замість `try-with-resources` і може знадобиться ця особливість. Ось приклад:
+
+[source,java]
+----
+include::{streamtestdir}/StreamTest.java[tags=streamFlatMapFile]
+----
+
+[#java-stream-skip]
+.skip
+Пропускає перші N елементів стріма. Є *stateful* операцією — у паралельних стрімах пропуск N елементів потребує координації між потоками.
+
+[source,java]
+----
+List<Integer> numbers = List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+
+// Пропустити перші 3 елементи
+List<Integer> result = numbers.stream()
+    .skip(3)
+    .collect(Collectors.toList());
+// [4, 5, 6, 7, 8, 9, 10]
+
+// Пагінація: сторінка 2, по 3 елементи
+int page = 2;
+int pageSize = 3;
+List<Integer> page2 = numbers.stream()
+    .skip((long) (page - 1) * pageSize)  // skip(3)
+    .limit(pageSize)
+    .collect(Collectors.toList());
+// [4, 5, 6]
+
+// skip + limit — класична пагінація
+// Але для великих колекцій краще використовувати БД offset/limit
+----
+
+NOTE: `skip(n)` у паралельному стрімі може бути неефективним, оскільки потребує впорядкованого пропуску. Якщо порядок не важливий — зніміть encounter order через `.unordered().skip(n)` для кращої продуктивності.
+
+[#java-stream-distinct]
+.distinct
+Повертає стрім без дублікатів на основі `equals()` та `hashCode()`. Є *stateful* операцією — потребує збереження всіх вже побачених елементів у пам'яті (через `LinkedHashSet` для ordered streams).
+
+[source,java]
+----
+// Базовий приклад з примітивами
+List<Integer> nums = List.of(1, 2, 2, 3, 3, 3, 4);
+List<Integer> distinct = nums.stream()
+    .distinct()
+    .collect(Collectors.toList());
+// [1, 2, 3, 4]
+
+// distinct з кастомними об'єктами — ОБОВ'ЯЗКОВО перевизначити equals() і hashCode()
+record Person(String name, int age) {}  // record автоматично генерує equals/hashCode
+
+List<Person> people = List.of(
+    new Person("Alice", 30),
+    new Person("Bob", 25),
+    new Person("Alice", 30),  // дублікат
+    new Person("Alice", 35)   // не дублікат — інший вік
+);
+
+List<Person> distinctPeople = people.stream()
+    .distinct()
+    .collect(Collectors.toList());
+// [Person[name=Alice, age=30], Person[name=Bob, age=25], Person[name=Alice, age=35]]
+
+// distinct за конкретним полем (через TreeSet з Comparator)
+List<Person> distinctByName = people.stream()
+    .collect(Collectors.collectingAndThen(
+        Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(Person::name))),
+        ArrayList::new
+    ));
+// Тільки перший Alice та Bob
+
+// Альтернатива через фільтр з Set
+Set<String> seen = new HashSet<>();
+List<Person> distinctByNameFilter = people.stream()
+    .filter(p -> seen.add(p.name()))  // add повертає false для дублікатів
+    .collect(Collectors.toList());
+----
+
+WARNING: `distinct()` на паралельному стрімі синхронізує через спільну структуру даних — це може бути вузьким місцем. Якщо порядок не важливий, `.unordered().distinct()` може бути ефективнішим.
+
+NOTE: Якщо в кастомному класі не перевизначено `equals()` та `hashCode()`, `distinct()` порівнює за посиланням і не видалить "логічні" дублікати.
+
+[#java-stream-peek]
+.peek
+Виконує операцію над кожним елементом стріма і повертає новий стрім над яким можна продовжувати операції.
+
+[source,java]
+----
+include::{streamtestdir}/StreamTest.java[tags=streamTest28]
+----
+
+[#java-stream-limit]
+.limit
+Ця операція є короткозамкнутою. Що означає якщо в нас 100 елементів у стрімі, а у цей метод передан значення 5 то ми отримаємо тільки 5 елементів і не будемо перебирати усі.
+
+[#java-stream-sorted]
+.sorted
+Сортує елементи стріма. Без аргументів — натуральний порядок (елементи мають реалізовувати `Comparable`). З аргументом `Comparator` — кастомне сортування. Є *stateful* операцією — збирає усі елементи перед сортуванням.
+
+[source,java]
+----
+// Натуральне сортування
+List<String> sorted = Stream.of("banana", "apple", "cherry", "date")
+    .sorted()
+    .collect(Collectors.toList());
+// [apple, banana, cherry, date]
+
+// Зворотній порядок
+List<String> reversed = Stream.of("banana", "apple", "cherry")
+    .sorted(Comparator.reverseOrder())
+    .collect(Collectors.toList());
+
+// Comparator.comparing — сортування за полем об'єкта
+record Employee(String name, int salary, String department) {}
+
+List<Employee> employees = List.of(
+    new Employee("Alice", 80000, "Engineering"),
+    new Employee("Bob", 60000, "Marketing"),
+    new Employee("Charlie", 80000, "Engineering"),
+    new Employee("Diana", 70000, "Marketing")
+);
+
+// Сортування за зарплатою (зростання)
+List<Employee> bySalary = employees.stream()
+    .sorted(Comparator.comparing(Employee::salary))
+    .collect(Collectors.toList());
+
+// Сортування за зарплатою (спадання) потім за ім'ям (зростання)
+List<Employee> bySalaryDescThenName = employees.stream()
+    .sorted(Comparator.comparing(Employee::salary).reversed()
+            .thenComparing(Employee::name))
+    .collect(Collectors.toList());
+// Charlie(80k), Alice(80k), Diana(70k), Bob(60k)
+
+// Сортування з null — Comparator.naturalOrder() кине NPE!
+List<String> withNulls = Arrays.asList("banana", null, "apple", null, "cherry");
+List<String> sortedWithNulls = withNulls.stream()
+    .sorted(Comparator.nullsFirst(Comparator.naturalOrder()))
+    .collect(Collectors.toList());
+// [null, null, apple, banana, cherry]
+
+// Сортування рядків без урахування регістру
+List<String> caseInsensitive = Stream.of("Banana", "apple", "Cherry")
+    .sorted(String.CASE_INSENSITIVE_ORDER)
+    .collect(Collectors.toList());
+// [apple, Banana, Cherry]
+----
+
+WARNING: `sorted()` на нескінченному стрімі (`Stream.generate()`, `Stream.iterate()` без `limit`) зависне назавжди — він повинен зібрати ВСІ елементи перед сортуванням.
+
+NOTE: `sorted()` використовує TimSort (O(n log n)) і є стабільним — елементи з рівним ключем зберігають відносний порядок.
+
+[#java-stream-mapToInt]
+.mapToInt
+Перетворює `Stream<T>` у `IntStream`, уникаючи boxing/unboxing. Аналогічно `mapToLong()` та `mapToDouble()`.
+
+[source,java]
+----
+record Product(String name, int price, int quantity) {}
+
+List<Product> products = List.of(
+    new Product("Apple", 30, 100),
+    new Product("Banana", 15, 200),
+    new Product("Cherry", 50, 50)
+);
+
+// mapToInt — отримуємо IntStream
+IntStream priceStream = products.stream()
+    .mapToInt(Product::price);
+
+// IntStream має вбудовані агрегатні методи
+int totalPrice = products.stream()
+    .mapToInt(Product::price)
+    .sum();  // 95
+
+OptionalDouble avgPrice = products.stream()
+    .mapToInt(Product::price)
+    .average();  // OptionalDouble[31.666...]
+
+int maxPrice = products.stream()
+    .mapToInt(Product::price)
+    .max()
+    .orElse(0);  // 50
+
+// Складне обчислення: загальна вартість (ціна * кількість)
+int totalValue = products.stream()
+    .mapToInt(p -> p.price() * p.quantity())
+    .sum();  // 30*100 + 15*200 + 50*50 = 8500
+
+// mapToInt → назад через mapToObj або boxed()
+Stream<String> priceLabels = products.stream()
+    .mapToInt(Product::price)
+    .mapToObj(price -> "Price: " + price + " UAH");
+// Stream<String>: ["Price: 30 UAH", "Price: 15 UAH", "Price: 50 UAH"]
+
+// boxed() повертає Stream<Integer>
+Stream<Integer> boxedPrices = products.stream()
+    .mapToInt(Product::price)
+    .boxed();  // Stream<Integer>
+
+// summaryStatistics — всі агрегати одним проходом
+IntSummaryStatistics stats = products.stream()
+    .mapToInt(Product::price)
+    .summaryStatistics();
+// count=3, sum=95, min=15, max=50, average=31.666
+System.out.println("Count: " + stats.getCount());
+System.out.println("Sum: " + stats.getSum());
+System.out.println("Min: " + stats.getMin());
+System.out.println("Max: " + stats.getMax());
+System.out.println("Avg: " + stats.getAverage());
+----
+
+NOTE: `mapToInt()` суттєво ефективніший за `map()` для числових обчислень, бо уникає boxing — перетворення `int` → `Integer` → `int`. На великих колекціях різниця відчутна.
+
+[#java-stream-terminal-operation]
+==== Терминальные операции
+
+* <<java-stream-foreach,`forEach(Consumer<? super T> action)`>> — застосовує функцію до кожного елемента стріма;
+* <<java-stream-forEachOrdered,`forEachOrdered`>> — те саме що і `forEach` але зберігає порядок елементів для паралельних стрімів;
+* <<java-stream-reduce,`reduce`>> — дозволяє виконувати агреатні функції над усіма елементами стріма і повертає один елемента;
+* <<java-stream-min,`min`>> — повертає мінімальний елемент;
+* <<java-stream-max,`max`>> — повертає максимальний елемент;
+* <<java-stream-sum,`sum`>> — повертає суму;
+* <<java-stream-toArray,`toArray`>> — повертає масив елементів стріма;
+* <<java-stream-average,`average`>> — повертає середнє арифметичне всіх чисел;
+* <<java-stream-findFirst,`findFirst`>> — повертає перший елемент;
+* <<java-stream-findAny,`findAny`>> — повертає перший підходящий елемент;
+* <<java-stream-count,`count`>> — повертає кількість елементів у стрімі;
+* <<java-stream-anyMatch,`anyMatch`>> — повертає `true` якщо хочаб один елемент відповідає умові;
+* <<java-stream-noneMatch,`noneMatch`>> — повертає `true` якщо ні один елемент не відповідає умові;
+* <<java-stream-allMatch,`allMatch`>> — повертає `true` якщо усі елементи відповідають умові;
+* <<java-stream-mapToObj,`mapToObj`>> — перетворює числовий стрим назад в об'єктний;
+* <<java-stream-collect,`collect`>> — перетворює результат у колекцію;
+
+[#java-stream-foreach]
+.forEach
+Для кожного елементу виконує дію яка вказану у `Consumer`. для паралельних стрімів не гарантує послідовність елементів. Для гарантії послідовності використовується `forEachOrdered`.
+
+[#java-stream-reduce]
+.reduce
+Дозволяє виконувати агрегатні функції і повертає один результат. Має два варіанти перший який приймає BinaryOperator та другий який приймає BinaryOperator та identity що є стартовим значенням для BinaryOperator або дефолтним значенням якщо в стрімі нема елементів.
+
+[#java-stream-min]
+.min
+Повертає `Optional<T>` з мінімальним елементом відповідно до переданого `Comparator`. Повертає `Optional.empty()` якщо стрім порожній.
+
+[source,java]
+----
+List<Integer> numbers = List.of(5, 3, 8, 1, 9, 2);
+
+// min з числами
+Optional<Integer> min = numbers.stream()
+    .min(Comparator.naturalOrder());
+// Optional[1]
+
+min.ifPresent(m -> System.out.println("Min: " + m));
+
+// Захист від пустого стріма
+int safeMin = numbers.stream()
+    .min(Integer::compareTo)
+    .orElse(Integer.MAX_VALUE);
+
+// min з об'єктами за полем
+record Employee(String name, int salary) {}
+List<Employee> employees = List.of(
+    new Employee("Alice", 80000),
+    new Employee("Bob", 60000),
+    new Employee("Charlie", 75000)
+);
+
+Optional<Employee> lowestPaid = employees.stream()
+    .min(Comparator.comparing(Employee::salary));
+// Optional[Employee[name=Bob, salary=60000]]
+
+// min з рядками (лексикографічно)
+Optional<String> shortestWord = Stream.of("banana", "fig", "apple", "kiwi")
+    .min(Comparator.comparingInt(String::length));
+// Optional[fig]
+
+// Порівняння за кількома полями
+Optional<Employee> result = employees.stream()
+    .min(Comparator.comparing(Employee::salary)
+                   .thenComparing(Employee::name));
+----
+
+[#java-stream-max]
+.max
+Повертає `Optional<T>` з максимальним елементом відповідно до переданого `Comparator`.
+
+[source,java]
+----
+List<Integer> numbers = List.of(5, 3, 8, 1, 9, 2);
+
+// max з числами
+Optional<Integer> max = numbers.stream()
+    .max(Comparator.naturalOrder());
+// Optional[9]
+
+// max з об'єктами
+record Product(String name, double price) {}
+List<Product> products = List.of(
+    new Product("Apple", 1.5),
+    new Product("Mango", 4.0),
+    new Product("Banana", 0.8)
+);
+
+Optional<Product> mostExpensive = products.stream()
+    .max(Comparator.comparing(Product::price));
+// Optional[Product[name=Mango, price=4.0]]
+
+// Використання з IntStream — max() без Comparator
+int maxFromIntStream = numbers.stream()
+    .mapToInt(Integer::intValue)
+    .max()
+    .orElse(0);  // IntStream.max() повертає OptionalInt
+----
+
+NOTE: `min()` та `max()` є термінальними операціями з коротким замиканням? Ні — вони обходять увесь стрім, оскільки невідомо де знаходиться екстремум.
+
+[#java-stream-sum]
+.sum
+`sum()` — метод примітивних стрімів (`IntStream`, `LongStream`, `DoubleStream`). На `Stream<T>` потрібно спочатку виконати `mapToInt/Long/Double`.
+
+[source,java]
+----
+// Сума через IntStream
+int sum1 = IntStream.of(1, 2, 3, 4, 5).sum();  // 15
+
+// Сума елементів колекції
+List<Integer> numbers = List.of(10, 20, 30, 40, 50);
+int sum2 = numbers.stream()
+    .mapToInt(Integer::intValue)
+    .sum();  // 150
+
+// Сума через reduce (для Stream<Integer>)
+int sum3 = numbers.stream()
+    .reduce(0, Integer::sum);  // 150
+
+// Сума через Collectors.summingInt
+int sum4 = numbers.stream()
+    .collect(Collectors.summingInt(Integer::intValue));  // 150
+
+// Сума поля об'єкта
+record Order(String id, int amount) {}
+List<Order> orders = List.of(
+    new Order("O1", 1000),
+    new Order("O2", 2500),
+    new Order("O3", 750)
+);
+
+int totalAmount = orders.stream()
+    .mapToInt(Order::amount)
+    .sum();  // 4250
+
+// LongStream для великих чисел (уникання overflow)
+long bigSum = LongStream.rangeClosed(1, 1_000_000)
+    .sum();  // 500000500000
+
+// Сума з фільтром
+int sumOfEven = IntStream.rangeClosed(1, 10)
+    .filter(n -> n % 2 == 0)
+    .sum();  // 2+4+6+8+10 = 30
+----
+
+WARNING: При підсумовуванні великих `int` значень використовуйте `LongStream` або `mapToLong()` для уникнення integer overflow.
+
+[#java-stream-toArray]
+.toArray
+[source,java]
+----
+include::{streamtestdir}/StreamTest.java[tags=streamTest23]
+----
+
+[#java-stream-average]
+.average
+Повертає `OptionalDouble` — середнє арифметичне елементів примітивного стріма. Повертає `OptionalDouble.empty()` для порожнього стріма.
+
+[source,java]
+----
+// average на IntStream — повертає OptionalDouble
+OptionalDouble avg1 = IntStream.of(1, 2, 3, 4, 5).average();
+// OptionalDouble[3.0]
+
+double value = avg1.orElse(0.0);  // 3.0
+
+// average на колекції
+List<Integer> scores = List.of(85, 92, 78, 95, 88);
+OptionalDouble avgScore = scores.stream()
+    .mapToInt(Integer::intValue)
+    .average();
+// OptionalDouble[87.6]
+
+// Безпечне використання з orElse
+double safeAvg = scores.stream()
+    .mapToInt(Integer::intValue)
+    .average()
+    .orElse(0.0);
+
+// average через Collectors.averagingInt — повертає Double (не OptionalDouble!)
+Double avgViaCollector = scores.stream()
+    .collect(Collectors.averagingInt(Integer::intValue));
+// 87.6 (не Optional — якщо пусто, поверне 0.0)
+
+// average поля об'єкта
+record Student(String name, double gpa) {}
+List<Student> students = List.of(
+    new Student("Alice", 3.8),
+    new Student("Bob", 3.2),
+    new Student("Charlie", 3.9)
+);
+
+OptionalDouble avgGpa = students.stream()
+    .mapToDouble(Student::gpa)
+    .average();
+// OptionalDouble[3.633...]
+
+// Порівняння повернених типів:
+// IntStream.average()     -> OptionalDouble
+// Collectors.averagingInt -> Double (завжди, 0.0 для пустого)
+----
+
+NOTE: `average()` на пустому стрімі повертає `OptionalDouble.empty()`, а не `0.0`. Завжди використовуйте `.orElse()` або `.orElseThrow()` для безпечного доступу до значення.
+
+[#java-stream-findFirst]
+.findFirst
+Повертає `Optional<T>` з першим елементом стріма або `Optional.empty()` для порожнього стріма. Є термінальною short-circuiting операцією.
+
+[source,java]
+----
+List<String> names = List.of("Alice", "Bob", "Charlie", "Diana");
+
+// findFirst — завжди перший за encounter order
+Optional<String> first = names.stream()
+    .filter(name -> name.startsWith("C"))
+    .findFirst();
+// Optional[Charlie]
+
+String name = first.orElse("Unknown");
+
+// Практичний приклад
+record User(int id, String email, boolean active) {}
+List<User> users = List.of(
+    new User(1, "alice@example.com", false),
+    new User(2, "bob@example.com", true),
+    new User(3, "charlie@example.com", true)
+);
+
+// Знайти першого активного користувача
+Optional<User> firstActive = users.stream()
+    .filter(User::active)
+    .findFirst();
+// Optional[User[id=2, ...]]
+
+// Обробка результату
+firstActive
+    .map(User::email)
+    .ifPresent(email -> System.out.println("Sending to: " + email));
+
+// findFirst у паралельному стрімі — ГАРАНТУЄ перший за encounter order
+// але може бути ПОВІЛЬНІШИМ ніж findAny
+Optional<Integer> firstEven = IntStream.rangeClosed(1, 1000)
+    .parallel()
+    .boxed()
+    .filter(n -> n % 2 == 0)
+    .findFirst();
+// Завжди Optional[2] — гарантовано, але платимо за синхронізацію
+----
+
+[#java-stream-findAny]
+.findAny
+Повертає `Optional<T>` з будь-яким елементом стріма. У послідовних стрімах зазвичай повертає перший, але це *не гарантовано*. У паралельних стрімах повертає перший знайдений будь-яким потоком.
+
+[source,java]
+----
+List<String> names = List.of("Alice", "Bob", "Charlie", "Diana");
+
+// findAny у sequential stream — зазвичай перший, але не гарантовано
+Optional<String> any = names.stream()
+    .filter(name -> name.startsWith("C"))
+    .findAny();
+// Швидше за швидше, зазвичай Optional[Charlie]
+
+// findAny у parallel — НЕДЕТЕРМІНОВАНИЙ результат
+// Може повернути будь-який відповідний елемент!
+Optional<Integer> anyEven = IntStream.rangeClosed(1, 1000)
+    .parallel()
+    .boxed()
+    .filter(n -> n % 2 == 0)
+    .findAny();
+// Може бути 2, 4, 100, 756 — непередбачувано, але ШВИДКО
+
+// Порівняння findFirst vs findAny:
+// findFirst: гарантований перший, може бути повільнішим у parallel
+// findAny:   будь-який, швидший у parallel (не чекає впорядкованого результату)
+
+// ВАЖЛИВО: для пустого стріма обидва повертають Optional.empty()
+Optional<String> empty = Stream.<String>empty().findAny();
+// Optional.empty()
+----
+
+NOTE: У sequential стрімах `findFirst()` та `findAny()` ведуть себе однаково на практиці. Різниця проявляється лише у *parallel* стрімах, де `findAny()` може бути значно швидшим.
+
+WARNING: Не покладайтесь на те, що `findAny()` поверне "перший" елемент навіть у sequential стрімі — специфікація цього не гарантує. Якщо потрібен перший — використовуйте `findFirst()`.
+
+[#java-stream-count]
+.count
+Повертає `long` — кількість елементів у стрімі. Є термінальною операцією, яка обходить увесь стрім.
+
+[source,java]
+----
+// Базовий підрахунок
+long count1 = Stream.of("a", "b", "c", "d").count();  // 4
+
+// count з filter — підрахунок елементів що відповідають умові
+List<Integer> numbers = List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+
+long evenCount = numbers.stream()
+    .filter(n -> n % 2 == 0)
+    .count();  // 5
+
+// count з рядками
+List<String> words = List.of("hello", "world", "java", "stream", "api");
+long longWords = words.stream()
+    .filter(w -> w.length() > 4)
+    .count();  // 3: "hello", "world", "stream"
+
+// Практичний приклад
+record Order(String status, double amount) {}
+List<Order> orders = List.of(
+    new Order("PENDING", 100.0),
+    new Order("COMPLETED", 250.0),
+    new Order("PENDING", 75.0),
+    new Order("CANCELLED", 30.0),
+    new Order("COMPLETED", 180.0)
+);
+
+long pendingCount = orders.stream()
+    .filter(o -> o.status().equals("PENDING"))
+    .count();  // 2
+
+// Групований підрахунок через groupingBy + counting()
+Map<String, Long> countByStatus = orders.stream()
+    .collect(Collectors.groupingBy(Order::status, Collectors.counting()));
+// {PENDING=2, COMPLETED=2, CANCELLED=1}
+
+// count на порожньому стрімі
+long emptyCount = Stream.empty().count();  // 0
+----
+
+NOTE: В деяких випадках JVM може оптимізувати `count()` без повного обходу елементів — наприклад, для `ArrayList.stream().count()` розмір відомий заздалегідь. Але якщо є `filter()` або інші проміжні операції, оптимізація неможлива.
+
+[#java-stream-anyMatch]
+.anyMatch
+Повертає `true` якщо хоча б один елемент відповідає умові. Є short-circuiting операцією — зупиняється при першому `true`.
+
+[source,java]
+----
+List<Integer> numbers = List.of(1, 3, 5, 7, 8, 9);
+
+// anyMatch — є хоча б один парний?
+boolean hasEven = numbers.stream()
+    .anyMatch(n -> n % 2 == 0);  // true (8)
+
+// Практичний приклад
+record User(String role, boolean active) {}
+List<User> users = List.of(
+    new User("USER", true),
+    new User("ADMIN", true),
+    new User("MODERATOR", false)
+);
+
+// Чи є хоч один адміністратор?
+boolean hasAdmin = users.stream()
+    .anyMatch(u -> u.role().equals("ADMIN"));  // true
+
+// Чи є хоч один активний адміністратор?
+boolean hasActiveAdmin = users.stream()
+    .filter(User::active)
+    .anyMatch(u -> u.role().equals("ADMIN"));  // true
+
+// anyMatch на порожньому стрімі завжди повертає false
+boolean result = Stream.empty().anyMatch(x -> true);  // false
+
+// Альтернатива через count() — МЕНШ ЕФЕКТИВНО (не short-circuit)
+boolean inefficient = numbers.stream().filter(n -> n % 2 == 0).count() > 0;
+// Краще: numbers.stream().anyMatch(n -> n % 2 == 0)
+----
+
+[#java-stream-noneMatch]
+.noneMatch
+Повертає `true` якщо жоден елемент не відповідає умові. Є short-circuiting операцією.
+
+[source,java]
+----
+List<Integer> numbers = List.of(1, 3, 5, 7, 9);
+
+// noneMatch — нема парних?
+boolean noEven = numbers.stream()
+    .noneMatch(n -> n % 2 == 0);  // true
+
+// Валідація — жоден елемент не є від'ємним?
+List<Integer> amounts = List.of(100, 250, 0, 75);
+boolean allNonNegative = amounts.stream()
+    .noneMatch(a -> a < 0);  // true
+
+// Перевірка безпеки
+List<String> passwords = List.of("securePass1!", "Admin2023#");
+boolean noWeakPasswords = passwords.stream()
+    .noneMatch(p -> p.length() < 8);  // true
+
+// noneMatch на порожньому стрімі завжди повертає true (вакуумна істина)
+boolean emptyResult = Stream.empty().noneMatch(x -> false);  // true
+----
+
+[#java-stream-allMatch]
+.allMatch
+Повертає `true` якщо усі елементи відповідають умові. Є short-circuiting операцією — зупиняється при першому `false`.
+
+[source,java]
+----
+List<Integer> positives = List.of(1, 2, 3, 4, 5);
+
+// allMatch — усі додатні?
+boolean allPositive = positives.stream()
+    .allMatch(n -> n > 0);  // true
+
+List<Integer> mixed = List.of(1, 2, -3, 4, 5);
+boolean allPositive2 = mixed.stream()
+    .allMatch(n -> n > 0);  // false (-3)
+
+// Практичний приклад — валідація
+record Product(String name, double price, int stock) {}
+List<Product> inventory = List.of(
+    new Product("Apple", 1.5, 100),
+    new Product("Banana", 0.8, 0),
+    new Product("Cherry", 3.0, 50)
+);
+
+// Чи всі продукти мають ціну більше 0?
+boolean allPriced = inventory.stream()
+    .allMatch(p -> p.price() > 0);  // true
+
+// Чи всі продукти є в наявності?
+boolean allInStock = inventory.stream()
+    .allMatch(p -> p.stock() > 0);  // false (Banana = 0)
+
+// allMatch на порожньому стрімі завжди повертає true (вакуумна істина)
+boolean vacuouslyTrue = Stream.empty().allMatch(x -> false);  // true!
+
+// Таблиця: поведінка на порожньому стрімі
+// anyMatch(pred)  -> false  (немає жодного true)
+// noneMatch(pred) -> true   (немає жодного порушення)
+// allMatch(pred)  -> true   (вакуумна істина)
+----
+
+NOTE: Всі три методи — `anyMatch`, `noneMatch`, `allMatch` — є short-circuiting: вони можуть зупинити обхід стріма раніше, щойно результат стає відомим. Це робить їх ефективнішими за `filter().count()`.
+
+IMPORTANT: Поведінка на порожньому стрімі: `anyMatch` → `false`, `noneMatch` → `true`, `allMatch` → `true`. Це математично коректно (вакуумна істина), але може бути несподіваним.
+
+[#java-stream-mapToObj]
+.mapToObj
+Перетворює примітивний стрім (`IntStream`, `LongStream`, `DoubleStream`) назад у об'єктний `Stream<R>`.
+
+[source,java]
+----
+// mapToObj: Integer -> String
+Stream<String> numberStrings = IntStream.rangeClosed(1, 5)
+    .mapToObj(i -> "Number: " + i);
+// ["Number: 1", "Number: 2", "Number: 3", "Number: 4", "Number: 5"]
+
+// mapToObj: int -> Об'єкт
+record Cell(int row, int col) {}
+
+Stream<Cell> diagonal = IntStream.range(0, 5)
+    .mapToObj(i -> new Cell(i, i));
+// [Cell(0,0), Cell(1,1), Cell(2,2), Cell(3,3), Cell(4,4)]
+
+// boxed() — спрощений mapToObj для примітив -> wrapper
+Stream<Integer> boxed = IntStream.of(1, 2, 3).boxed();
+// Еквівалентно до: IntStream.of(1,2,3).mapToObj(Integer::valueOf)
+
+// Практичне використання: генерація рядків ASCII
+String alphabet = IntStream.rangeClosed('a', 'z')
+    .mapToObj(c -> String.valueOf((char) c))
+    .collect(Collectors.joining(", "));
+// "a, b, c, ..., z"
+
+// LongStream -> Stream<String>
+Stream<String> timestamps = LongStream.iterate(
+        System.currentTimeMillis(),
+        t -> t + 1000)
+    .limit(3)
+    .mapToObj(t -> new java.util.Date(t).toString());
+
+// mapToObj vs boxed() — різниця
+IntStream intStream = IntStream.of(1, 2, 3);
+Stream<Integer> viaBoxed = intStream.boxed();          // зручно для Integer
+// intStream вже використано, тому нова змінна:
+Stream<String> viaMapToObj = IntStream.of(1, 2, 3)
+    .mapToObj(Integer::toString);  // пряме в String без проміжного Integer
+----
+
+NOTE: Після `mapToObj()` ви втрачаєте доступ до примітивних методів (`sum()`, `average()` тощо). Якщо ще потрібні числові агрегати — зробіть їх до `mapToObj()` або використовуйте `summaryStatistics()`.
+
+[#java-stream-collect]
+.collect
+Використовується коли нам необхідно отримати як результат звичайну колекцію або множину замість потоку. Для цього collect приймає Collectors. Нижче наведені метода класа Collectors:
+
+* <<java-stream-collect-toList,`toList`>> — представляють стрім у вигляді списку;
+* <<java-stream-collect-toCollection,`toCollection`>> — представляють стриму у вигляді колекції;
+* <<java-stream-collect-toSet,`toSet`>> — являють стрим у вигляді множини;
+* <<java-stream-collect-toConcurrentMap,`toConcurrentMap`/`toMap`>> — дозволяють перетворити стрім на map;
+* <<java-stream-collect-averaging,`averagingInt`/`averagingDouble`/`averagingLong`>> — повертають середнє значення;
+* <<java-stream-collect-summing,`summingInt`/`summingDouble`/`summingLong`>> — повертає суму;
+* <<java-stream-collect-summarizing,`summarizingInt`/`summarizingDouble`/`summarizingLong`>> — повертають SummaryStatistics з різними агрегатними значеннями;
+* <<java-stream-collect-partitioningBy,`partitioningBy`>> — поділяє колекцію на дві частини відповідно до умови і повертає їх як Map<Boolean, List>;
+* <<java-stream-collect-groupingBy,`groupingBy`>> — поділяє колекцію на кілька частин та повертає Map<N, List<T>>;
+* <<java-stream-collect-joining,`joining`>> — об'єднує елементи стріма у рядок;
+* <<java-stream-collect-mapping,`mapping`>> — дополнительные преобразования значений для сложных Collector'ов.
+
+[[java-stream-collect-toList]]
+.toList, toUnmodifiableList
+[source,java]
+----
+List<String> names = Stream.of("Alice", "Bob", "Charlie")
+    .collect(Collectors.toList());               // Mutable List — гарантії не обумовлені специфікацією
+
+List<String> immutable = Stream.of("Alice", "Bob", "Charlie")
+    .collect(Collectors.toUnmodifiableList());   // Java 10+ — UnsupportedOperationException при зміні
+
+List<String> toListJava16 = Stream.of("Alice", "Bob", "Charlie")
+    .toList();                                   // Java 16+ — НЕЗМІННИЙ список
+
+// Різниця гарантій:
+// Collectors.toList()              — може бути мutable або immutable (залежить від реалізації)
+// Collectors.toUnmodifiableList()  — гарантовано immutable, але дозволяє null
+// Stream.toList() (Java 16)        — гарантовано immutable, null дозволено, ordered
+
+// УВАГА: Collectors.toList() у OpenJDK повертає ArrayList (mutable),
+//        але специфікація це не гарантує — не покладайтесь на це!
+List<String> result = Stream.of("a", "b").collect(Collectors.toList());
+result.add("c");  // Працює зараз, але не гарантовано специфікацією!
+----
+
+NOTE: З Java 16 рекомендовано використовувати `.toList()` замість `.collect(Collectors.toList())` — коротше та семантично чіткіше (завжди immutable).
+
+WARNING: `collect(toList())` та `.toList()` (Java 16) мають різні гарантії незмінності. Не замінюйте одне на інше сліпо, якщо код потім модифікує колекцію.
+
+[[java-stream-collect-toSet]]
+.toSet, toCollection
+[source,java]
+----
+// toSet — HashSet без гарантій порядку
+Set<String> set = Stream.of("a", "b", "a", "c")
+    .collect(Collectors.toSet());  // {a, b, c}
+
+// toCollection — точний тип колекції
+LinkedHashSet<String> ordered = Stream.of("banana", "apple", "cherry")
+    .collect(Collectors.toCollection(LinkedHashSet::new));
+// Зберігає порядок вставки
+
+TreeSet<String> sorted = Stream.of("banana", "apple", "cherry")
+    .collect(Collectors.toCollection(TreeSet::new));
+// Відсортований: {apple, banana, cherry}
+
+ArrayDeque<String> deque = Stream.of("a", "b", "c")
+    .collect(Collectors.toCollection(ArrayDeque::new));
+----
+
+[[java-stream-collect-toConcurrentMap]]
+.toMap і toMap з merge function
+[source,java]
+----
+record Country(String code, String name, int population) {}
+List<Country> countries = List.of(
+    new Country("UA", "Ukraine", 44_000_000),
+    new Country("DE", "Germany", 83_000_000),
+    new Country("FR", "France",  68_000_000)
+);
+
+// toMap(keyMapper, valueMapper)
+Map<String, String> codeToName = countries.stream()
+    .collect(Collectors.toMap(Country::code, Country::name));
+// {UA=Ukraine, DE=Germany, FR=France}
+
+// toMap — значення є сам об'єкт
+Map<String, Country> codeToCountry = countries.stream()
+    .collect(Collectors.toMap(Country::code, c -> c));
+// або: Collectors.toMap(Country::code, Function.identity())
+
+// toMap з дублікатами — БЕЗ merge function кине IllegalStateException!
+List<Country> withDups = List.of(
+    new Country("UA", "Ukraine", 44_000_000),
+    new Country("UA", "Ukraine (alternate)", 44_000_000)  // дублікат ключа!
+);
+
+// НЕПРАВИЛЬНО — кине IllegalStateException: Duplicate key UA
+// withDups.stream().collect(Collectors.toMap(Country::code, Country::name));
+
+// ПРАВИЛЬНО — merge function вирішує конфлікт
+Map<String, String> withMerge = withDups.stream()
+    .collect(Collectors.toMap(
+        Country::code,
+        Country::name,
+        (existing, replacement) -> existing + "/" + replacement  // зберігаємо обидва
+    ));
+// {UA=Ukraine/Ukraine (alternate)}
+
+// toMap з підрахунком дублікатів
+List<String> words = List.of("apple", "banana", "apple", "cherry", "banana", "apple");
+Map<String, Long> wordCount = words.stream()
+    .collect(Collectors.toMap(
+        w -> w,
+        w -> 1L,
+        Long::sum  // merge: підсумовуємо при дублікатах
+    ));
+// {apple=3, banana=2, cherry=1}
+
+// toMap зі збереженням порядку (LinkedHashMap)
+Map<String, String> linkedMap = countries.stream()
+    .collect(Collectors.toMap(
+        Country::code,
+        Country::name,
+        (a, b) -> a,
+        LinkedHashMap::new
+    ));
+----
+
+WARNING: `toMap()` кидає `IllegalStateException` при дублікатах ключів, якщо не передано merge function. Завжди передавайте merge function якщо джерело даних може мати дублікати.
+
+[[java-stream-collect-groupingBy]]
+.groupingBy з downstream collectors
+[source,java]
+----
+record Employee(String name, String dept, int salary) {}
+List<Employee> employees = List.of(
+    new Employee("Alice",   "Engineering", 90000),
+    new Employee("Bob",     "Marketing",   60000),
+    new Employee("Charlie", "Engineering", 80000),
+    new Employee("Diana",   "Marketing",   70000),
+    new Employee("Eve",     "Engineering", 95000)
+);
+
+// Базовий groupingBy — групує у List
+Map<String, List<Employee>> byDept = employees.stream()
+    .collect(Collectors.groupingBy(Employee::dept));
+// {Engineering=[Alice, Charlie, Eve], Marketing=[Bob, Diana]}
+
+// groupingBy + counting() — кількість у кожній групі
+Map<String, Long> countByDept = employees.stream()
+    .collect(Collectors.groupingBy(Employee::dept, Collectors.counting()));
+// {Engineering=3, Marketing=2}
+
+// groupingBy + summingInt — сума зарплат по відділах
+Map<String, Integer> totalSalaryByDept = employees.stream()
+    .collect(Collectors.groupingBy(
+        Employee::dept,
+        Collectors.summingInt(Employee::salary)
+    ));
+// {Engineering=265000, Marketing=130000}
+
+// groupingBy + mapping — тільки імена у кожній групі
+Map<String, List<String>> namesByDept = employees.stream()
+    .collect(Collectors.groupingBy(
+        Employee::dept,
+        Collectors.mapping(Employee::name, Collectors.toList())
+    ));
+// {Engineering=[Alice, Charlie, Eve], Marketing=[Bob, Diana]}
+
+// groupingBy + toSet (унікальні відділи)
+Map<String, Set<String>> setByDept = employees.stream()
+    .collect(Collectors.groupingBy(
+        Employee::dept,
+        Collectors.mapping(Employee::name, Collectors.toSet())
+    ));
+
+// groupingBy + averagingInt — середня зарплата по відділах
+Map<String, Double> avgSalaryByDept = employees.stream()
+    .collect(Collectors.groupingBy(
+        Employee::dept,
+        Collectors.averagingInt(Employee::salary)
+    ));
+// {Engineering=88333.33, Marketing=65000.0}
+
+// Вкладений groupingBy — групування у дві рівні
+// Наприклад, по відділу і потім по рівню зарплати
+Map<String, Map<String, List<Employee>>> nested = employees.stream()
+    .collect(Collectors.groupingBy(
+        Employee::dept,
+        Collectors.groupingBy(e -> e.salary() > 80000 ? "Senior" : "Junior")
+    ));
+
+// groupingBy зі збереженням порядку (LinkedHashMap)
+Map<String, Long> orderedCount = employees.stream()
+    .collect(Collectors.groupingBy(
+        Employee::dept,
+        LinkedHashMap::new,
+        Collectors.counting()
+    ));
+
+// filtering (Java 9) — фільтр всередині groupingBy
+Map<String, List<Employee>> seniorByDept = employees.stream()
+    .collect(Collectors.groupingBy(
+        Employee::dept,
+        Collectors.filtering(e -> e.salary() > 80000, Collectors.toList())
+    ));
+// {Engineering=[Alice, Eve], Marketing=[]}  <- Marketing присутній з порожнім списком!
+// Порівняйте з filter().groupingBy() де Marketing взагалі б відсутній!
+
+// flatMapping (Java 9) — flatMap всередині groupingBy
+record Team(String dept, List<String> skills) {}
+List<Team> teams = List.of(
+    new Team("Engineering", List.of("Java", "Python", "Kubernetes")),
+    new Team("Engineering", List.of("Java", "Docker")),
+    new Team("Marketing",   List.of("Excel", "Analytics"))
+);
+
+Map<String, Set<String>> skillsByDept = teams.stream()
+    .collect(Collectors.groupingBy(
+        Team::dept,
+        Collectors.flatMapping(t -> t.skills().stream(), Collectors.toSet())
+    ));
+// {Engineering=[Java, Python, Kubernetes, Docker], Marketing=[Excel, Analytics]}
+----
+
+[[java-stream-collect-partitioningBy]]
+.partitioningBy з downstream
+[source,java]
+----
+List<Integer> numbers = IntStream.rangeClosed(1, 10)
+    .boxed()
+    .collect(Collectors.toList());
+
+// Базовий partitioningBy — завжди два ключі: true і false
+Map<Boolean, List<Integer>> evenOdd = numbers.stream()
+    .collect(Collectors.partitioningBy(n -> n % 2 == 0));
+// {false=[1,3,5,7,9], true=[2,4,6,8,10]}
+
+// partitioningBy + counting
+Map<Boolean, Long> countEvenOdd = numbers.stream()
+    .collect(Collectors.partitioningBy(
+        n -> n % 2 == 0,
+        Collectors.counting()
+    ));
+// {false=5, true=5}
+
+// partitioningBy з об'єктами
+record Student(String name, double gpa) {}
+List<Student> students = List.of(
+    new Student("Alice", 3.8),
+    new Student("Bob", 2.9),
+    new Student("Charlie", 3.5),
+    new Student("Diana", 2.5)
+);
+
+Map<Boolean, List<String>> passFail = students.stream()
+    .collect(Collectors.partitioningBy(
+        s -> s.gpa() >= 3.0,
+        Collectors.mapping(Student::name, Collectors.toList())
+    ));
+// {false=[Bob, Diana], true=[Alice, Charlie]}
+
+// Різниця з groupingBy:
+// partitioningBy завжди має ОБИДВА ключі true/false (навіть якщо група порожня)
+// groupingBy має тільки ключі де є елементи
+----
+
+[[java-stream-collect-joining]]
+.joining
+[source,java]
+----
+List<String> words = List.of("Java", "Stream", "API", "is", "powerful");
+
+// joining без параметрів
+String joined1 = words.stream()
+    .collect(Collectors.joining());
+// "JavaStreamAPIispowerful"
+
+// joining з delimiter
+String joined2 = words.stream()
+    .collect(Collectors.joining(", "));
+// "Java, Stream, API, is, powerful"
+
+// joining з delimiter, prefix, suffix
+String joined3 = words.stream()
+    .collect(Collectors.joining(", ", "[", "]"));
+// "[Java, Stream, API, is, powerful]"
+
+// SQL IN-clause
+List<String> ids = List.of("1", "2", "3", "4");
+String inClause = ids.stream()
+    .collect(Collectors.joining(", ", "WHERE id IN (", ")"));
+// "WHERE id IN (1, 2, 3, 4)"
+
+// joining з mapToObj
+String result = IntStream.rangeClosed(1, 5)
+    .mapToObj(Integer::toString)
+    .collect(Collectors.joining(" + ")) + " = " +
+    IntStream.rangeClosed(1, 5).sum();
+// "1 + 2 + 3 + 4 + 5 = 15"
+----
+
+[[java-stream-collect-summarizing]]
+.summarizingInt і collectingAndThen
+[source,java]
+----
+List<Integer> scores = List.of(85, 92, 78, 95, 88, 72, 91);
+
+// summarizingInt — всі агрегати за один прохід
+IntSummaryStatistics stats = scores.stream()
+    .collect(Collectors.summarizingInt(Integer::intValue));
+
+System.out.println("Count:   " + stats.getCount());    // 7
+System.out.println("Sum:     " + stats.getSum());      // 601
+System.out.println("Min:     " + stats.getMin());      // 72
+System.out.println("Max:     " + stats.getMax());      // 95
+System.out.println("Average: " + stats.getAverage());  // 85.857...
+
+// collectingAndThen — застосовує фінальну трансформацію до результату
+// Наприклад: toList() -> unmodifiableList
+List<String> unmodifiable = Stream.of("a", "b", "c")
+    .collect(Collectors.collectingAndThen(
+        Collectors.toList(),
+        Collections::unmodifiableList
+    ));
+
+// collectingAndThen: знайти найдовший рядок
+Optional<String> longest = Stream.of("apple", "kiwi", "strawberry", "fig")
+    .collect(Collectors.collectingAndThen(
+        Collectors.maxBy(Comparator.comparingInt(String::length)),
+        opt -> opt  // просто повертаємо Optional як є
+    ));
+// Optional[strawberry]
+
+// collectingAndThen: List -> Set -> unmodifiableSet
+Set<String> immutableSet = Stream.of("a", "b", "c", "a")
+    .collect(Collectors.collectingAndThen(
+        Collectors.toSet(),
+        Set::copyOf  // Java 10+
+    ));
+----
+
+[[java-stream-collect-teeing]]
+.teeing (Java 12+)
+Виконує два collector-и паралельно на одному стрімі та об'єднує результати через BiFunction.
+
+[source,java]
+----
+// teeing — два колектори одночасно
+List<Integer> numbers = List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+
+// Одночасно: сума та кількість
+record SumCount(int sum, long count) {
+    double average() { return count == 0 ? 0 : (double) sum / count; }
+}
+
+SumCount sumCount = numbers.stream()
+    .collect(Collectors.teeing(
+        Collectors.summingInt(Integer::intValue),  // перший: сума = 55
+        Collectors.counting(),                      // другий: кількість = 10
+        SumCount::new                               // merge: об'єднуємо
+    ));
+// SumCount[sum=55, count=10], average=5.5
+
+// teeing: min та max одним проходом
+record MinMax(Optional<Integer> min, Optional<Integer> max) {}
+MinMax minMax = numbers.stream()
+    .collect(Collectors.teeing(
+        Collectors.minBy(Comparator.naturalOrder()),
+        Collectors.maxBy(Comparator.naturalOrder()),
+        MinMax::new
+    ));
+// MinMax[min=Optional[1], max=Optional[10]]
+
+// teeing: розподіл на parted + статистика
+record Report(List<Integer> evens, IntSummaryStatistics stats) {}
+Report report = numbers.stream()
+    .collect(Collectors.teeing(
+        Collectors.filtering(n -> n % 2 == 0, Collectors.toList()),
+        Collectors.summarizingInt(Integer::intValue),
+        Report::new
+    ));
+// Report[evens=[2,4,6,8,10], stats=IntSummaryStatistics{count=10, sum=55, ...}]
+----
+
+NOTE: `Collectors.teeing()` доступний з Java 12. До цього потрібно було або два проходи, або кастомний Collector для досягнення того ж результату.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[[java-stream-custom-collector]]
+==== Кастомний Collector
+
+Інтерфейс `Collector<T, A, R>` складається з чотирьох компонентів:
+
+* `supplier()` — створює нову мутабельну контейнер-акумулятор `A`;
+* `accumulator()` — додає елемент `T` до акумулятора `A`;
+* `combiner()` — об'єднує два акумулятори (для паралельних стрімів);
+* `finisher()` — перетворює акумулятор `A` у фінальний результат `R`;
+* `characteristics()` — оголошує властивості: `CONCURRENT`, `UNORDERED`, `IDENTITY_FINISH`.
+
+[cols="2,1,4"]
+|===
+|Характеристика |Значення |Ефект
+
+|`IDENTITY_FINISH`
+|Акумулятор == результат
+|JVM пропускає виклик `finisher()`, cast A → R виконується напряму
+
+|`UNORDERED`
+|Порядок не важливий
+|Дозволяє JVM оптимізувати паралельні об'єднання
+
+|`CONCURRENT`
+|Акумулятор thread-safe
+|Один акумулятор на всі потоки (без combiner у parallel)
+|===
+
+[source,java]
+----
+// Приклад 1: кастомний колектор для конкатенації рядків через StringBuilder
+// Еквівалент до Collectors.joining(", ") але показує механіку
+
+import java.util.stream.Collector;
+
+public class StringConcatCollector {
+
+    public static Collector<String, StringBuilder, String> joining(String delimiter) {
+        return Collector.of(
+            StringBuilder::new,                          // supplier: новий StringBuilder
+            (sb, s) -> {                                 // accumulator: додаємо з delimiter
+                if (!sb.isEmpty()) sb.append(delimiter);
+                sb.append(s);
+            },
+            (sb1, sb2) -> {                              // combiner: для parallel
+                if (!sb1.isEmpty() && !sb2.isEmpty()) sb1.append(delimiter);
+                sb1.append(sb2);
+                return sb1;
+            },
+            StringBuilder::toString,                    // finisher: -> String
+            Collector.Characteristics.UNORDERED         // порядок не важливий (опційно)
+        );
+    }
+}
+
+// Використання
+String result = Stream.of("Java", "Stream", "API")
+    .collect(StringConcatCollector.joining(", "));
+// "Java, Stream, API"
+
+// Приклад 2: кастомний колектор "Top N elements" через PriorityQueue
+import java.util.*;
+
+public class TopNCollector {
+
+    public static <T extends Comparable<T>>
+    Collector<T, PriorityQueue<T>, List<T>> topN(int n) {
+        return Collector.of(
+            () -> new PriorityQueue<>(n + 1),           // supplier: min-heap розміром n+1
+            (queue, element) -> {                        // accumulator
+                queue.offer(element);
+                if (queue.size() > n) {
+                    queue.poll();                        // видаляємо найменший якщо перевищено n
+                }
+            },
+            (q1, q2) -> {                               // combiner: для parallel
+                q2.forEach(e -> {
+                    q1.offer(e);
+                    if (q1.size() > n) q1.poll();
+                });
+                return q1;
+            },
+            queue -> {                                  // finisher: heap -> відсортований список
+                List<T> result = new ArrayList<>(queue);
+                Collections.sort(result, Collections.reverseOrder());
+                return result;
+            }
+            // НЕ IDENTITY_FINISH — finisher потрібен для перетворення!
+        );
+    }
+}
+
+// Використання
+List<Integer> numbers = List.of(3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5);
+
+List<Integer> top3 = numbers.stream()
+    .collect(TopNCollector.topN(3));
+// [9, 6, 5] — три найбільших елементи, відсортовано
+
+// Приклад 3: IDENTITY_FINISH — коли A == R
+Collector<String, List<String>, List<String>> toMutableList = Collector.of(
+    ArrayList::new,
+    List::add,
+    (l1, l2) -> { l1.addAll(l2); return l1; },
+    Collector.Characteristics.IDENTITY_FINISH  // finisher = identity cast, не викликається
+);
+// A = List<String>, R = List<String> → IDENTITY_FINISH безпечний
+----
+
+NOTE: Характеристика `IDENTITY_FINISH` означає що `finisher()` є функцією ідентичності — JVM виконає `(R) accumulator` замість виклику `finisher.apply(accumulator)`. Це можливо тільки якщо тип `A` є підтипом `R`.
+
+WARNING: Якщо додаєте `CONCURRENT` — акумулятор повинен бути thread-safe (наприклад, `ConcurrentHashMap`). Інакше отримаєте race condition у parallel стрімах.
+
+[[java-stream-spliterator]]
+==== Spliterator
+
+`Spliterator<T>` — це ітератор для Stream API, який підтримує *паралельне розбиття* (split + iterate). Саме він є рушієм під капотом кожного стріма.
+
+На відміну від `Iterator<T>`:
+
+[cols="2,1,4"]
+|===
+|Властивість |Iterator |Spliterator
+
+|Паралельне розбиття
+|Немає
+|`trySplit()` ділить на два незалежні шматки
+
+|Характеристики даних
+|Немає
+|Оголошує ORDERED, SIZED, DISTINCT тощо
+
+|Push vs Pull
+|Pull (hasNext/next)
+|Pull + bulk (`forEachRemaining`)
+
+|Відомий розмір
+|Ні
+|`estimateSize()` повертає приблизний або точний розмір
+|===
+
+===== Характеристики Spliterator
+
+[cols="2,1,4"]
+|===
+|Характеристика |Бітова маска |Значення
+
+|`ORDERED`
+|0x00000010
+|Елементи мають визначений encounter order
+
+|`DISTINCT`
+|0x00000001
+|Кожна пара елементів e1 != e2 (за equals)
+
+|`SORTED`
+|0x00000004
+|Елементи відсортовані за Comparator або природним порядком
+
+|`SIZED`
+|0x00000040
+|`estimateSize()` повертає точний розмір
+
+|`NONNULL`
+|0x00000100
+|Елементи ніколи не є null
+
+|`IMMUTABLE`
+|0x00000400
+|Джерело не може бути структурно змінено під час обходу
+
+|`CONCURRENT`
+|0x00001000
+|Джерело може бути safely змінено під час обходу
+
+|`SUBSIZED`
+|0x00004000
+|Результат `trySplit()` також SIZED і SUBSIZED
+|===
+
+[source,java]
+----
+// forEachRemaining vs tryAdvance
+List<String> list = List.of("a", "b", "c", "d", "e");
+Spliterator<String> spliterator = list.spliterator();
+
+// tryAdvance — обробляє один елемент, повертає false якщо немає більше
+spliterator.tryAdvance(s -> System.out.println("First: " + s));  // "First: a"
+
+// forEachRemaining — обробляє всі залишкові елементи
+spliterator.forEachRemaining(s -> System.out.println("Rest: " + s));
+// "Rest: b", "Rest: c", "Rest: d", "Rest: e"
+
+// trySplit — ділить для паралельності
+Spliterator<String> full = list.spliterator();
+Spliterator<String> prefix = full.trySplit();
+// prefix містить першу половину, full — другу
+// Для ArrayList: prefix=[a,b], full=[c,d,e] (або схожий поділ)
+
+System.out.println("Prefix size: " + prefix.estimateSize());  // 2
+System.out.println("Full size:   " + full.estimateSize());    // 3
+
+// Перевірка характеристик
+System.out.println("ORDERED: " +
+    spliterator.hasCharacteristics(Spliterator.ORDERED));  // true для List
+System.out.println("SIZED:   " +
+    spliterator.hasCharacteristics(Spliterator.SIZED));    // true для ArrayList
+
+// Кастомний Spliterator: нескінченний ряд Фібоначчі
+public class FibonacciSpliterator implements Spliterator<Long> {
+    private long prev = 0;
+    private long curr = 1;
+
+    @Override
+    public boolean tryAdvance(Consumer<? super Long> action) {
+        action.accept(prev);
+        long next = prev + curr;
+        prev = curr;
+        curr = next;
+        return true;  // нескінченний — завжди true
+    }
+
+    @Override
+    public Spliterator<Long> trySplit() {
+        return null;  // не підтримуємо паралельне розбиття
+    }
+
+    @Override
+    public long estimateSize() {
+        return Long.MAX_VALUE;  // нескінченний
+    }
+
+    @Override
+    public int characteristics() {
+        return ORDERED | NONNULL | IMMUTABLE;  // впорядкований, без null, незмінний
+    }
+}
+
+// Використання: стрім Фібоначчі
+Stream<Long> fibonacci = StreamSupport.stream(new FibonacciSpliterator(), false);
+List<Long> first10Fib = fibonacci
+    .limit(10)
+    .collect(Collectors.toList());
+// [0, 1, 1, 2, 3, 5, 8, 13, 21, 34]
+
+// Як Collection.stream() будується через spliterator()
+// Кожна Collection реалізує метод spliterator()
+// ArrayList.spliterator() → ArrayListSpliterator (ORDERED, SIZED, SUBSIZED)
+// HashSet.spliterator()   → HashSet$KeySpliterator (DISTINCT, SIZED)
+// Потім: StreamSupport.stream(collection.spliterator(), false)  // false = sequential
+----
+
+NOTE: `trySplit()` повертає `null` якщо розбиття неможливе або невигідне. ForkJoinPool викликає `trySplit()` рекурсивно поки не отримає `null` або розмір стане меншим за порогове значення.
+
+[[java-stream-pipeline-internals]]
+==== Pipeline Internals
+
+Stream pipeline складається з трьох рівнів ієрархії в `ReferencePipeline`:
+
+[cols="2,1,4"]
+|===
+|Клас |Тип |Опис
+
+|`ReferencePipeline.Head`
+|Джерело
+|Перша стадія, обгортає Spliterator
+
+|`ReferencePipeline.StatelessOp`
+|Stateless проміжна
+|`filter()`, `map()`, `peek()`, `flatMap()` — не зберігають стану між елементами
+
+|`ReferencePipeline.StatefulOp`
+|Stateful проміжна
+|`sorted()`, `distinct()`, `limit()`, `skip()` — зберігають стан або потребують усіх елементів
+|===
+
+===== Чому sorted() і distinct() зупиняють pipeline
+
+[source,java]
+----
+// Stateless pipeline — елементи проходять один за одним:
+// [1] -> filter -> map -> collect
+// [2] -> filter -> map -> collect
+// ...ефективно, без збереження стану
+
+list.stream()
+    .filter(x -> x > 0)   // StatelessOp: кожен елемент одразу далі
+    .map(x -> x * 2)       // StatelessOp: трансформація і далі
+    .collect(toList());    // термінальна: збирає результат
+
+// Stateful pipeline — sorted() БЛОКУЄ потік:
+// Всі елементи спочатку збираються у буфер
+// Потім сортуються
+// Потім один за одним передаються далі
+list.stream()
+    .filter(x -> x > 0)   // StatelessOp: проходять далі
+    .sorted()              // StatefulOp: ЗУПИНЯЄ! Збирає ВСЕ, сортує, потім віддає
+    .limit(5)              // StatelessOp: бере перші 5
+    .collect(toList());
+
+// distinct() теж StatefulOp — потребує Set для відстеження вже побачених
+list.stream()
+    .distinct()            // Зберігає LinkedHashSet видимих елементів
+    .map(String::toUpperCase)
+    .collect(toList());
+----
+
+===== wrapSink() — як будується ланцюжок Sink
+
+[source,java]
+----
+// Коли ти викликаєш термінальну операцію, Java "загортає" Sink-и у зворотньому порядку:
+
+// stream.filter(pred).map(fn).forEach(action)
+//
+// Крок 1: forEach створює TerminalSink (споживач результату)
+// Крок 2: map.wrapSink(terminalSink) → MapSink { downstream = terminalSink }
+// Крок 3: filter.wrapSink(mapSink)  → FilterSink { downstream = mapSink }
+//
+// Результат — ланцюжок:
+// FilterSink → MapSink → TerminalSink (ForEachOp)
+
+// copyInto() — форсує ітерацію
+// Після побудови ланцюжка Sink-ів, copyInto() викликає:
+// sourceSpliterator.forEachRemaining(sinkChain)
+// Тобто кожен елемент передається у перший Sink, який каскадно викликає downstream
+
+// Спрощена реалізація (для розуміння):
+void copyInto(Sink<T> wrappedSink, Spliterator<T> spliterator) {
+    wrappedSink.begin(spliterator.estimateSize());
+    spliterator.forEachRemaining(wrappedSink);
+    wrappedSink.end();
+}
+----
+
+NOTE: Саме тому проміжні операції "ліниві" — `wrapSink()` та `copyInto()` викликаються тільки при виклику термінальної операції. До цього будується лише ланцюжок об'єктів-описів.
+
+[[java-stream-parallel]]
+==== Parallel Streams (поглиблено)
+
+[[java-stream-parallel-forkjoin]]
+===== ForkJoinPool і налаштування
+
+[source,java]
+----
+// Parallel stream за замовчуванням використовує ForkJoinPool.commonPool()
+// Розмір = кількість CPU - 1 (зазвичай)
+int poolSize = ForkJoinPool.commonPool().getParallelism();
+// На 8-ядерній машині: 7
+
+// Налаштування через системну властивість (при запуску JVM):
+// java -Djava.util.concurrent.ForkJoinPool.common.parallelism=4 MyApp
+
+// Перевірка поточного потоку у стрімі
+List<Integer> numbers = IntStream.rangeClosed(1, 8).boxed().collect(Collectors.toList());
+numbers.parallelStream()
+    .forEach(n ->
+        System.out.println(n + " -> " + Thread.currentThread().getName()));
+// Виведе різні ForkJoinPool.commonPool-worker-N
+
+// Custom ForkJoinPool — ізольований пул для конкретного завдання
+ForkJoinPool customPool = new ForkJoinPool(4);  // 4 потоки
+try {
+    List<Integer> result = customPool.submit(() ->
+        numbers.parallelStream()
+               .filter(n -> n % 2 == 0)
+               .collect(Collectors.toList())
+    ).get();  // блокуємо до завершення
+} finally {
+    customPool.shutdown();  // ВАЖЛИВО: завжди закривати!
+}
+----
+
+WARNING: Custom `ForkJoinPool` не закривається автоматично. Завжди огортайте у `try-finally` або використовуйте `try-with-resources` (якщо реалізує `AutoCloseable` — з Java 19).
+
+[[java-stream-parallel-ordered]]
+===== Ordered vs Unordered parallel
+
+[source,java]
+----
+List<Integer> numbers = IntStream.rangeClosed(1, 10).boxed().collect(Collectors.toList());
+
+// forEach у parallel — порядок НЕ гарантований
+numbers.parallelStream()
+    .forEach(System.out::println);
+// Виведе: 6, 1, 9, 3, ... (непередбачувано)
+
+// forEachOrdered у parallel — ГАРАНТУЄ порядок, але повільніше
+numbers.parallelStream()
+    .forEachOrdered(System.out::println);
+// Виведе: 1, 2, 3, ... (завжди в порядку)
+
+// unordered() — знімає encounter order constraint, дозволяє оптимізації
+numbers.parallelStream()
+    .unordered()            // "мені не важливий порядок"
+    .distinct()             // тепер distinct може використовувати CONCURRENT стратегію
+    .collect(Collectors.toList());
+
+// sorted() у parallel — збирає ВСЕ у буфер, потім сортує
+// Це нівелює переваги parallel для самого sorted
+numbers.parallelStream()
+    .sorted()               // бар'єр: чекає всіх елементів
+    .limit(5)
+    .forEach(System.out::println);
+----
+
+[[java-stream-parallel-when-faster]]
+===== Коли parallel ШВИДШИЙ, а коли ПОВІЛЬНІШИЙ
+
+[cols="2,1,4"]
+|===
+|Сценарій |Parallel |Чому
+
+|Великі колекції (N > 10_000) з CPU-bound операціями
+|Швидше
+|ForkJoinPool розподіляє роботу між ядрами
+
+|Маленькі колекції (N < 1000)
+|Повільніше
+|Overhead на розбиття та злиття більше за саму роботу
+
+|IO-bound операції
+|Часто повільніше
+|ForkJoinPool не призначений для IO; краще CompletableFuture
+
+|Boxing/unboxing (`Stream<Integer>` vs `IntStream`)
+|Повільніше
+|Boxing overhead накладається на кожен елемент
+
+|`sorted()` або `distinct()` у pipeline
+|Частково втрачає перевагу
+|Stateful ops потребують бар'єрної синхронізації
+
+|`forEachOrdered` у parallel
+|Bottleneck
+|Вимушена серіалізація результатів
+|===
+
+[source,java]
+----
+// NQ-model: parallel вигідний якщо N * Q > 10_000
+// N = кількість елементів
+// Q = вартість однієї операції (в "одиницях роботи")
+
+// Q=1 (просте порівняння): потрібно N > 10_000
+// Q=100 (складне обчислення): вистачить N > 100
+
+// Приклад: CPU-bound — parallel вигідний
+long count = LongStream.rangeClosed(1, 10_000_000)
+    .parallel()
+    .filter(n -> isPrime(n))  // Q=√n — дорога операція
+    .count();
+
+// Приклад: trivial — parallel ШКОДИТЬ
+long trivialSum = IntStream.rangeClosed(1, 100)
+    .parallel()       // НЕ ВАРТО — overhead > gain
+    .sum();
+
+// Mutable state у parallel — RACE CONDITION!
+int[] count2 = {0};  // НЕ МОЖНА так у parallel
+numbers.parallelStream()
+    .forEach(n -> count2[0]++);  // race condition!
+
+// ПРАВИЛЬНО: AtomicInteger або reduce
+AtomicInteger atomicCount = new AtomicInteger(0);
+numbers.parallelStream()
+    .forEach(n -> atomicCount.incrementAndGet());
+
+// Або краще через reduce (без shared state):
+long sumViaReduce = numbers.parallelStream()
+    .mapToLong(Integer::longValue)
+    .reduce(0L, Long::sum);  // combiner автоматично з'єднує результати
+----
+
+WARNING: `parallel()` + `forEachOrdered()` = "паралельний бар'єр". Елементи обробляються паралельно, але виводяться серіально. Це часто дає гірший результат ніж sequential стрім.
+
+WARNING: `parallel()` + mutable state (не atomic) = race condition. У parallel стрімах кожен thread ForkJoinPool обробляє свою частину незалежно — без синхронізації доступ до спільної змінної призведе до некоректних результатів.
+
+NOTE: `ThreadLocal` у parallel стрімі: кожен worker-thread ForkJoinPool має *свій* `ThreadLocal`. Якщо ви ініціалізуєте `ThreadLocal` в основному потоці і очікуєте побачити це значення у parallel stream — ви не побачите.
+
+[[java-stream-primitive]]
+==== Примітивні стріми (IntStream / LongStream / DoubleStream)
+
+Примітивні стріми уникають boxing/unboxing і надають вбудовані числові агрегати.
+
+[cols="2,1,4"]
+|===
+|Метод |Повертає |Опис
+
+|`sum()`
+|`int`/`long`/`double`
+|Сума всіх елементів
+
+|`min()`
+|`OptionalInt`/`OptionalLong`/`OptionalDouble`
+|Мінімум (без Comparator!)
+
+|`max()`
+|`OptionalInt`/`OptionalLong`/`OptionalDouble`
+|Максимум (без Comparator!)
+
+|`average()`
+|`OptionalDouble`
+|Середнє (завжди double)
+
+|`summaryStatistics()`
+|`IntSummaryStatistics` тощо
+|Всі агрегати за один прохід
+
+|`range(a, b)`
+|`IntStream`
+|[a, b) — не включаючи b
+
+|`rangeClosed(a, b)`
+|`IntStream`
+|[a, b] — включаючи b
+
+|`boxed()`
+|`Stream<Integer>`
+|Конвертує в об'єктний стрім
+
+|`asLongStream()`
+|`LongStream`
+|Widening конвертація int → long
+
+|`asDoubleStream()`
+|`DoubleStream`
+|Widening конвертація int/long → double
+|===
+
+[source,java]
+----
+// range vs rangeClosed
+IntStream.range(1, 5).forEach(System.out::print);       // 1234 (без 5)
+IntStream.rangeClosed(1, 5).forEach(System.out::print); // 12345 (з 5)
+
+// Класика: сума від 1 до 100 (формула Гауса через Stream)
+long sum = LongStream.rangeClosed(1, 100).sum();  // 5050
+
+// Факторіал через LongStream
+long factorial10 = LongStream.rangeClosed(1, 10)
+    .reduce(1L, (a, b) -> a * b);  // 3628800
+// Увага: factorial(20) переповнює long! Використовуйте BigInteger для великих чисел
+
+// summaryStatistics — всі агрегати за ОДИН ПРОХІД (ефективно!)
+IntSummaryStatistics stats = IntStream.of(5, 3, 8, 1, 9, 2, 7)
+    .summaryStatistics();
+System.out.printf("count=%d, sum=%d, min=%d, max=%d, avg=%.2f%n",
+    stats.getCount(), stats.getSum(), stats.getMin(),
+    stats.getMax(), stats.getAverage());
+// count=7, sum=35, min=1, max=9, avg=5.00
+
+// asLongStream — безпечна конвертація int → long
+int[] largeNumbers = {Integer.MAX_VALUE, Integer.MAX_VALUE};
+long safeSum = Arrays.stream(largeNumbers)
+    .asLongStream()       // конвертуємо у long ПЕРЕД підсумовуванням
+    .sum();               // 4294967294 (правильно, без overflow)
+// Порівняйте: Arrays.stream(largeNumbers).sum() = -2 (overflow!)
+
+// Зворотна конвертація: boxed()
+List<Integer> list = IntStream.rangeClosed(1, 5)
+    .boxed()
+    .collect(Collectors.toList());
+
+// iterate (Java 9+) — скінченний примітивний стрім
+IntStream fibonacci = IntStream.iterate(
+    new int[]{0, 1},
+    arr -> arr,
+    arr -> new int[]{arr[1], arr[0] + arr[1]}
+).limit(10).mapToInt(arr -> arr[0]);
+// 0, 1, 1, 2, 3, 5, 8, 13, 21, 34
+
+// Сума квадратів парних чисел від 1 до 100
+long sumOfSquaresOfEvens = LongStream.rangeClosed(1, 100)
+    .filter(n -> n % 2 == 0)
+    .map(n -> n * n)
+    .sum();  // 4+16+36+...+10000 = 171700
+
+// Генерація масиву через IntStream
+int[] squares = IntStream.rangeClosed(1, 10)
+    .map(n -> n * n)
+    .toArray();
+// [1, 4, 9, 16, 25, 36, 49, 64, 81, 100]
+----
+
+NOTE: Використовуйте `IntStream`/`LongStream`/`DoubleStream` замість `Stream<Integer>`/`Stream<Long>`/`Stream<Double>` для числових обчислень. Boxing overhead на великих колекціях може бути значним.
+
+[[java-stream-takeWhile-dropWhile]]
+==== takeWhile / dropWhile (Java 9)
+
+[source,java]
+----
+// takeWhile — повертає елементи ПОКИ умова true, зупиняється при першому false
+// Ключова різниця з filter: filter перевіряє КОЖЕН елемент, takeWhile ЗУПИНЯЄТЬСЯ
+
+List<Integer> numbers = List.of(1, 2, 3, 4, 5, 1, 2);  // відсортований + "хвіст"
+
+// filter — продовжує після false
+List<Integer> filtered = numbers.stream()
+    .filter(n -> n < 4)
+    .collect(Collectors.toList());
+// [1, 2, 3, 1, 2] — бере всі елементи < 4
+
+// takeWhile — зупиняється при першому false
+List<Integer> taken = numbers.stream()
+    .takeWhile(n -> n < 4)
+    .collect(Collectors.toList());
+// [1, 2, 3] — зупинився на 4, не бачить "хвіст" [1, 2]
+
+// dropWhile — пропускає поки умова true, потім передає ВСЕ залишкове
+List<Integer> dropped = numbers.stream()
+    .dropWhile(n -> n < 4)
+    .collect(Collectors.toList());
+// [4, 5, 1, 2] — пропустив [1,2,3], потім передав решту
+
+// Практичний приклад: лог-файл з timestamp
+List<String> logLines = List.of(
+    "2024-01-01 INFO Starting",
+    "2024-01-01 INFO Connected",
+    "2024-01-02 ERROR Failed",
+    "2024-01-02 INFO Retrying",
+    "2024-01-02 INFO Success"
+);
+
+// Взяти лише рядки до першої помилки
+List<String> beforeError = logLines.stream()
+    .takeWhile(line -> !line.contains("ERROR"))
+    .collect(Collectors.toList());
+// ["2024-01-01 INFO Starting", "2024-01-01 INFO Connected"]
+
+// Пропустити рядки до першої помилки
+List<String> fromError = logLines.stream()
+    .dropWhile(line -> !line.contains("ERROR"))
+    .collect(Collectors.toList());
+// ["2024-01-02 ERROR Failed", "2024-01-02 INFO Retrying", "2024-01-02 INFO Success"]
+
+// Паралельний takeWhile — гарантує ПОРЯДОК для ordered streams
+// Для unordered parallel поведінка недетермінована
+List<Integer> sorted = IntStream.rangeClosed(1, 20).boxed().collect(Collectors.toList());
+
+List<Integer> parallelTaken = sorted.parallelStream()
+    .takeWhile(n -> n <= 5)
+    .collect(Collectors.toList());
+// Гарантовано: [1, 2, 3, 4, 5] — бо List має encounter order
+
+// Для unordered — результат непередбачуваний!
+List<Integer> unorderedTaken = sorted.parallelStream()
+    .unordered()
+    .takeWhile(n -> n <= 5)
+    .collect(Collectors.toList());
+// Може бути будь-яка підмножина елементів <= 5
+----
+
+NOTE: `takeWhile` та `dropWhile` є short-circuiting: `takeWhile` зупиняє обхід стріма при першому `false`, що робить його ефективним для відсортованих послідовностей.
+
+WARNING: На *unordered* або *parallel* стрімах `takeWhile`/`dropWhile` мають недетерміновану поведінку. Використовуйте їх лише на відсортованих або ordered стрімах для передбачуваних результатів.
+
+[[java-stream-mapMulti]]
+==== mapMulti (Java 16)
+
+`mapMulti` — більш ефективна альтернатива `flatMap`. Використовує *push model* (BiConsumer) замість *pull model* (Stream), уникаючи створення проміжних `Stream` об'єктів для кожного елемента.
+
+[source,java]
+----
+// Порівняння: flatMap vs mapMulti
+
+// flatMap: для кожного елемента створює НОВИЙ Stream об'єкт
+List<Integer> flatMapped = Stream.of(List.of(1, 2), List.of(3, 4), List.of(5))
+    .flatMap(Collection::stream)  // 3 нових Stream об'єкти
+    .collect(Collectors.toList());
+// [1, 2, 3, 4, 5]
+
+// mapMulti: використовує Consumer — без проміжних Stream об'єктів
+List<Integer> multiMapped = Stream.of(List.of(1, 2), List.of(3, 4), List.of(5))
+    .<Integer>mapMulti((list, consumer) -> list.forEach(consumer))
+    .collect(Collectors.toList());
+// [1, 2, 3, 4, 5] — той самий результат, але ефективніше
+
+// Приклад: умовне розширення елементів
+// Якщо число парне — emit його і його половину
+// Якщо непарне — emit тільки його
+List<Integer> numbers = List.of(1, 2, 3, 4, 5, 6);
+
+List<Integer> expanded = numbers.stream()
+    .<Integer>mapMulti((n, consumer) -> {
+        consumer.accept(n);
+        if (n % 2 == 0) {
+            consumer.accept(n / 2);  // додатковий елемент для парних
+        }
+    })
+    .collect(Collectors.toList());
+// [1, 2, 1, 3, 4, 2, 5, 6, 3]
+
+// Приклад: розгортання дерева (обхід у глибину)
+class TreeNode {
+    int value;
+    List<TreeNode> children;
+
+    TreeNode(int value, TreeNode... children) {
+        this.value = value;
+        this.children = List.of(children);
+    }
+}
+
+TreeNode root = new TreeNode(1,
+    new TreeNode(2,
+        new TreeNode(4),
+        new TreeNode(5)),
+    new TreeNode(3,
+        new TreeNode(6))
+);
+
+// Обхід дерева через mapMulti (DFS)
+Stream<TreeNode> traverse(TreeNode node) {
+    return Stream.of(node)
+        .<TreeNode>mapMulti((n, consumer) -> {
+            consumer.accept(n);
+            n.children.stream()
+                .flatMap(child -> traverse(child))
+                .forEach(consumer);
+        });
+}
+
+List<Integer> values = traverse(root)
+    .map(n -> n.value)
+    .collect(Collectors.toList());
+// [1, 2, 4, 5, 3, 6]
+
+// mapMultiToInt — примітивна версія (без boxing!)
+IntStream sums = Stream.of(List.of(1, 2, 3), List.of(4, 5))
+    .mapMultiToInt((list, consumer) ->
+        list.forEach(n -> consumer.accept(n)));
+// IntStream: 1, 2, 3, 4, 5
+----
+
+NOTE: `mapMulti` є більш ефективним коли: (1) результуючих елементів небагато на вхідний елемент, (2) для деяких елементів взагалі нічого не emit-иться. У таких випадках `flatMap` все одно створює пустий `Stream.empty()` — `mapMulti` просто не викликає `consumer`.
+
+[[java-stream-pitfalls]]
+==== Підводні камені та нюанси
+
+*Питання для підготовки до інтерв'ю:*
+
+1. Що станеться якщо викликати термінальну операцію на вже закритому стрімі?
+2. Чому `sorted()` на нескінченному стрімі призводить до `OutOfMemoryError`?
+3. В чому різниця між `findFirst()` та `findAny()` у parallel стрімі?
+4. Чому `Collectors.toList()` та `.toList()` (Java 16) не є взаємозамінними?
+5. Що не так з `stream.parallel().forEach(list::add)`?
+
+[source,java]
+----
+// 1. Stream can be consumed only once
+Stream<String> stream = Stream.of("a", "b", "c");
+stream.forEach(System.out::println);  // OK
+stream.forEach(System.out::println);  // IllegalStateException!
+// "stream has already been operated upon or closed"
+
+// ПРАВИЛО: Зберігайте Collection/Supplier, а не Stream
+Supplier<Stream<String>> streamSupplier = () -> Stream.of("a", "b", "c");
+streamSupplier.get().forEach(System.out::println);  // OK
+streamSupplier.get().count();                        // OK
+
+// 2. Effectively final у lambda
+int multiplier = 3;  // OK — effectively final
+// multiplier++;  // Якщо розкоментувати — compile error у lambda нижче
+List<Integer> result = List.of(1, 2, 3).stream()
+    .map(n -> n * multiplier)  // captured variable
+    .collect(Collectors.toList());
+
+// НЕ МОЖНА змінювати захоплену змінну:
+// for (int i = 0; i < 10; i++) {
+//     list.stream().map(n -> n * i);  // compile error: i не effectively final
+// }
+
+// 3. forEach у parallel — порядок не гарантований
+List<Integer> nums = List.of(1, 2, 3, 4, 5);
+nums.parallelStream().forEach(System.out::println);       // непередбачувано
+nums.parallelStream().forEachOrdered(System.out::println); // 1, 2, 3, 4, 5
+
+// 4. peek() для debugging, не для side effects у production
+// Проблема: peek() може не виконатися якщо немає термінальної операції
+// або якщо short-circuit зупинить pipeline
+
+Stream.of("a", "b", "c")
+    .peek(s -> System.out.println("Before: " + s))  // OK для debugging
+    .filter(s -> s.startsWith("a"))
+    .peek(s -> System.out.println("After: " + s))
+    .findFirst();  // short-circuit після першого знайденого!
+// "Before: a" та "After: a" — "Before: b" не виводиться!
+
+// 5. sorted() на нескінченному стрімі — ЗАВИСНЕ
+// Stream.generate(Math::random).sorted().findFirst();  // OutOfMemoryError!
+// Потрібно СПОЧАТКУ limit, потім sorted:
+Stream.generate(Math::random)
+    .limit(100)
+    .sorted()
+    .findFirst();  // OK
+
+// 6. Boxing overhead: Stream<Integer> vs IntStream
+// Повільно: boxing кожного int у Integer
+long slowSum = IntStream.rangeClosed(1, 10_000_000)
+    .boxed()           // int → Integer (boxing!)
+    .mapToLong(Integer::longValue)
+    .sum();
+
+// Швидко: без boxing
+long fastSum = LongStream.rangeClosed(1, 10_000_000)
+    .sum();
+
+// 7. collect(toList()) vs .toList() (Java 16)
+List<String> mutable = Stream.of("a", "b").collect(Collectors.toList());
+mutable.add("c");  // OK (поки що)
+
+List<String> immutable = Stream.of("a", "b").toList();
+// immutable.add("c");  // UnsupportedOperationException!
+
+// 8. NullPointerException у flatMap
+// НЕПРАВИЛЬНО: якщо mapper повертає null
+List<List<String>> data = Arrays.asList(List.of("a"), null, List.of("b"));
+// data.stream().flatMap(Collection::stream); // NPE на null елементі!
+
+// ПРАВИЛЬНО: фільтруємо null або використовуємо ofNullable
+data.stream()
+    .flatMap(list -> Stream.ofNullable(list).flatMap(Collection::stream))
+    .forEach(System.out::println);  // a, b
+
+// 9. Comparator.naturalOrder() з null → NPE
+List<String> withNull = Arrays.asList("b", null, "a");
+// withNull.stream().sorted(Comparator.naturalOrder()); // NPE!
+withNull.stream()
+    .sorted(Comparator.nullsFirst(Comparator.naturalOrder()))
+    .forEach(System.out::println);  // null, a, b
+
+// 10. reduce без identity — повертає Optional
+List<Integer> empty = List.of();
+int sumWithIdentity = empty.stream().reduce(0, Integer::sum);  // 0 (безпечно)
+Optional<Integer> sumNoIdentity = empty.stream().reduce(Integer::sum);  // Optional.empty()
+
+// 11. Stateful lambda у parallel — атомарні змінні!
+List<Integer> numbers2 = IntStream.rangeClosed(1, 1000).boxed().collect(Collectors.toList());
+
+// НЕПРАВИЛЬНО — race condition
+int[] counter = {0};
+numbers2.parallelStream().forEach(n -> counter[0]++);  // помилкова відповідь!
+
+// ПРАВИЛЬНО — AtomicInteger
+AtomicInteger atomicCounter = new AtomicInteger(0);
+numbers2.parallelStream().forEach(n -> atomicCounter.incrementAndGet());
+// або просто: numbers2.parallelStream().mapToInt(n -> 1).sum()
+
+// 12. Stream.generate() та Stream.iterate() — НЕСКІНЧЕННІ!
+// ЗАВЖДИ потрібен limit() або takeWhile()!
+Stream<Double> randoms = Stream.generate(Math::random).limit(10);  // OK
+Stream<Integer> evens = Stream.iterate(0, n -> n + 2).limit(5);    // OK
+
+// Java 9: iterate з Predicate (скінченний без limit)
+Stream<Integer> evensUnder100 = Stream.iterate(0, n -> n < 100, n -> n + 2);
+// [0, 2, 4, ..., 98] — автоматично зупиняється
+----
+
+IMPORTANT: `Stream` є *одноразовим*. Спроба виконати дві термінальні операції на одному стрімі кидає `IllegalStateException`. Якщо потрібно багаторазово використовувати дані — зберігайте `Collection` або `Supplier<Stream<T>>`.
+
+WARNING: Ніколи не змінюйте джерело даних під час обходу стріма. Якщо `list.stream()` ітерує список, а в `forEach` ви змінюєте цей же список — `ConcurrentModificationException`.
+
+// https://habr.com/ru/articles/337350/
+// https://habr.com/ru/companies/jugru/articles/337534/
+// https://stackify.com/streams-guide-java-8/
+// https://docs.oracle.com/javase/8/docs/api/java/util/stream/package-summary.html
+// https://www.logicbig.com/tutorials/core-java-tutorial/java-util-stream/short-circuiting.html
+// https://docs.oracle.com/javase/8/docs/api/java/util/stream/package-summary.html

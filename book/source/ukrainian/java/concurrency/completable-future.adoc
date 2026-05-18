@@ -1,0 +1,110 @@
+ifndef::imagesdir[:imagesdir: ../../../imgs/]
+ifndef::completablefuturedir[:completablefuturedir: ../../../../../examples/java/src/main/java/kovteba/concurrency]
+ifndef::completablefuturetestdir[:completablefuturetestdir: ../../../../examples/java/src/test/java/kovteba/concurrency]
+
+
+[#java-completable-future]
+=== CompletableFuture
+Якщо ви працювали з багатопоточністю в Java, то ви, ймовірно, стикалися з класом `Future`. Він представляє результат асинхронної операції. Ви можете отримати результат, викликавши метод `get()`, який блокує потік, доки результат не буде готовий. Але що робити, якщо ви хочете виконувати деякі дії відразу після того, як результат стане доступним, не блокуючи потік? Саме для цього і був створений `CompletableFuture`. Якщо вам необхідно асінхронно виконати якусь фонову задачу яка не повертає результат, ви можете використовувати метод `CompletableFuture.runAsync()`. Він приймає об'єкт `Runnable` і повертає `CompletableFuture<Void>`.
+
+[source,java]
+----
+include::{completablefuturedir}/completablefuture/CompletableFutureDemo1.java[tags=CompletableFutureDemo1]
+----
+
+`CompletableFuture.runAsync()` буде корисним для виконання деяких фонових задач, які не повертають результат. Але якщо вам потрібно повернути якийсь результат з фонової задачі, то `runAsync()` не підходить, оскільки він повертає `CompletableFuture<Void>`. В такому випадку вам на допомогу прийде метод `CompletableFuture.supplyAsync()`. Він приймає `Supplier<T>` і повертає `CompletableFuture<T>`, де T це тип возвращаемого функцией-поставщиком значения:
+
+[source,java]
+----
+include::{completablefuturedir}/completablefuture/CompletableFutureDemo2.java[tags=CompletableFutureDemo2]
+----
+
+Якщо `runAsync()` та `supplyAsync() виконуються в окремомум потоке, то ми ж ніде не створювали новий потік, чи не так? Так! `CompletableFuture` виконує ці задачі в потоці, отриманому з глобального `ForkJoinPool.commonPool()`. Також варто відзначити, що `ForkJoinPool.commonPool()` використовує кількість процесорів, доступних на вашому комп'ютері, мінус один. Це означає, що якщо у вас 4 ядра, то `commonPool` буде використовувати 3 потоки для виконання асинхронних задач. Якщо ж у вас 1 ядро, то `commonPool` буде використовувати 1 потік. Також можна створити власний `ForkJoinPool` і передати його в методи `runAsync()` та `supplyAsync()`, щоб вони виконували свої задачи в потоке, полученном уже из вашего пула потоков. Всі методи `CompletableFuture` API представлені в двох варіантах: один приймає `Executor` як аргумент, а другий ні.
+
+[source,java]
+----
+static CompletableFuture<Void>  runAsync(Runnable runnable);
+static CompletableFuture<Void>  runAsync(Runnable runnable, Executor executor);
+static <U> CompletableFuture<U> supplyAsync(Supplier<U> supplier);
+static <U> CompletableFuture<U> supplyAsync(Supplier<U> supplier, Executor executor);
+----
+
+Для того щоб отрмати результат з `CompletableFuture`, необхідно викликати метод `get()`. Виклик цього методу блокує потік, він буде чекати, поки `CompletableFuture` не поверне результат, і про асинхронність можна забыть. Більш прийнятним способом обробити результат роботи `CompletableFuture` є callback. Якщо після виконання задачі ми хочемо вивести її на екран, це буде виглядати так:
+
+[source,java]
+----
+include::{completablefuturedir}/completablefuture/CompletableFutureDemo3.java[tags=CompletableFutureDemo3]
+----
+
+Якщо необхідно додати декілька callback, то метод `thenAccept()` не підходить, оскільки `Consumer` нічого не повертає. Для цього потрібно використовувати інший метод - `thenApply()`, який приймає `Function`
+
+
+[source,java]
+----
+include::{completablefuturedir}/completablefuture/CompletableFutureDemo4.java[tags=CompletableFutureDemo4]
+----
+
+Також треба пам'ятати, що `thenApply()` виконується в тому ж потоці, де викликається. Якщо ж використовувати `thenApplyAsync()`, тоді функція буде виконана як отдельная задача в `ForkJoinPool.commonPool`.
+
+[source,java]
+----
+include::{completablefuturedir}/completablefuture/CompletableFutureDemo5.java[tags=CompletableFutureDemo5]
+----
+
+Об'єднати кілька `CompletableFuture` можна кількома способами, один з них `thenApply()`, а другий - за допомогою `thenCompose()`.
+
+
+[source,java]
+----
+include::{completablefuturedir}/completablefuture/CompletableFutureDemo6.java[tags=CompletableFutureDemo6]
+----
+
+Метод `thenApply()` є аналогом `Optional.map()`, тільки він повертає новий `CompletionStage`, який выполняется с результатом этого этапа. В то время как `thenCompose()` является аналогом `Optional.flatMap()` и возвращает новый `CompletionStage`, который выполняется на этом этапе в качестве аргумента для функции. Якщо ми хочемо по завершенню двух задач виконати третю, то це можна зробити з допомогою `thenCombine()`:
+
+[source,java]
+----
+include::{completablefuturedir}/completablefuture/CompletableFutureDemo7.java[tags=CompletableFutureDemo7]
+----
+
+CompletableFuture також дозволяє нам обробляти результат виконання задачі, не блокуючи потік, за допомогою методу `thenAccept()`, який приймає `Consumer` і виконується після того, як результат стане доступним. Якщо ж нам потрібно обробити результат і повернути нове значення, то можна використовувати `thenApply()`, який приймає `Function` і повертає новий `CompletableFuture` з результатом виконання цієї функції. CompletableFuture також дозволяє нам оброблювати виключення, які можуть виникнути під час виконання задачі, за допомогою методу `exceptionally()`, який приймає `Function<Throwable, T>` і виконується, якщо під час виконання задачі виникло виключення. Якщо ж нам потрібно обробити результат і виключення в одному методі, то можна використовувати `handle()`, який приймає `BiFunction<T, Throwable, R>` і виконується після того, як результат стане доступним або якщо виникло виключення.
+
+[source,java]
+----
+include::{completablefuturedir}/completablefuture/CompletableFutureDemo8.java[tags=CompletableFutureDemo8]
+----
+
+и `exceptionally()`
+
+[source,java]
+----
+include::{completablefuturedir}/completablefuture/CompletableFutureDemo9.java[tags=CompletableFutureDemo9]
+----
+
+Варіант з `handle()` є більш гнучким, і функція виконається в будь-якому випадку незалежно від того буде виключення чи ні; в той час як `exceptionally()` виконається тільки в случае виключення. Якщо нам треба запустить декілька `CompletableFuture` паралельно, то зробити це можна за допомогою `allOf()`
+
+[source,java]
+----
+include::{completablefuturedir}/completablefuture/CompletableFutureDemo10.java[tags=CompletableFutureDemo10]
+----
+
+Але треба пам'ятати, що метод `allOf()` лише запускає переданные задачи. Результат работы нужно получать у каждого CompletableFuture отдельно. Если же нам нужно получить результат работы всех задач, тогда можно воспользоваться методом `join()` и `Stream API`.
+
+[source,java]
+----
+include::{completablefuturedir}/completablefuture/CompletableFutureDemo11.java[tags=CompletableFutureDemo11]
+----
+
+Метод  `join()` як і `get()` повертає результат роботи `CompletableFuture`, але на відміну від нього `join()` кидає `RuntimeException` у випадку помилки виконання. `CompletableFuture.anyOf()` як іви дно з назви, завершується відразу ж, як тільки завершується *любой* из заданных `CompletableFuture`. Конечным результатом будет результат этого первого завершившегося `CompletableFuture`.
+
+[source,java]
+----
+include::{completablefuturedir}/completablefuture/CompletableFutureDemo12.java[tags=CompletableFutureDemo12]
+----
+
+Обмеження `Future` які виправляє `CompletableFuture`:
+
+* Его нельзя завершить вручную.
+* Нельзя выполнять дальнейшие действия над результатом Future без блокирования. Также в Future нельзя повесить функцию-колбэк, чтобы она срабатывала автоматически, как только станет доступен результат.
+* Невозможно выполнить множество Future один за другим.
+* Невозможно объединить несколько Future.
+* Нет обработки исключений.

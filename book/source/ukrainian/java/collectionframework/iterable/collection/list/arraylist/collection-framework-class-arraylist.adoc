@@ -1,0 +1,364 @@
+ifndef::imagesdir[:imagesdir: ../../../../../../../imgs/]
+ifndef::arraylistdir[:arraylistdir: ../../../../../../../../../examples/java/src/main/java/kovteba/collectionframework/iterable/collection/list]
+ifndef::arraylisttestdir[:arraylisttestdir: ../../../../../../../../../examples/java/src/main/java/kovteba/collectionframework/iterable/collection/list]
+
+[#java-collection-framework-arraylist]
+====== ArrayList class
+`ArrayList<E>` — це *список на основі динамічного масиву* що реалізує інтерфейс `List<E>`. Забезпечує O(1) доступ до елементів за індексом. Дозволяє зберігати довільні об'єкти включаючи `null`. Не є потокобезпечним. Ітератор — fail-fast.
+
+.Ієрархія наслідування
+[source,subs="normal"]
+----
+Object
+  └── AbstractCollection<E>
+        └── AbstractList<E>
+              └── <<java-collection-framework-arraylist,ArrayList<E>>>
+----
+
+Реалізовані інтерфейси: `List<E>`, `RandomAccess`, `Cloneable`, `Serializable`.
+
+NOTE: `ArrayList` реалізує маркерний інтерфейс `RandomAccess` — це сигнал для алгоритмів (наприклад `Collections.sort`, `Collections.binarySearch`) що доступ за індексом є O(1) і варто використовувати index-based ітерацію замість iterator-based.
+
+.Внутрішня структура
+[source,java]
+----
+public class ArrayList<E> extends AbstractList<E> {
+    transient Object[] elementData; // масив елементів (не private для доступу з вкладених класів)
+    private int size;               // кількість елементів (не ємність!)
+
+    private static final int DEFAULT_CAPACITY = 10;
+    private static final Object[] DEFAULTCAPACITY_EMPTY_ELEMENTDATA = {};
+    private static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8; // ~2.1 млрд
+}
+----
+
+WARNING: `elementData.length` — це *ємність* (capacity), а `size` — це *кількість елементів*. Не плутай їх! Між `size` і `elementData.length` завжди: `size ≤ capacity`.
+
+[[java-collection-framework-arraylist-lazy-init-detail]]
+.Lazy initialization при `new ArrayList()` — деталі
+`DEFAULTCAPACITY_EMPTY_ELEMENTDATA` (статична порожня константа) використовується при `new ArrayList()`. `EMPTY_ELEMENTDATA` — при `new ArrayList(0)`. Різниця: коли перший `add()` відбувається з `DEFAULTCAPACITY_EMPTY_ELEMENTDATA` — масив розширюється до `DEFAULT_CAPACITY=10`. З `EMPTY_ELEMENTDATA` — до 1 (потім 2, 3...). Тому `new ArrayList()` краще `new ArrayList<>(0)` якщо очікується хоч один елемент.
+
+.Lazy initialization при `new ArrayList()`
+[source,java]
+----
+ArrayList<String> list = new ArrayList<>();
+// elementData = DEFAULTCAPACITY_EMPTY_ELEMENTDATA (порожній масив!) ← не 10!
+// Масив розміром 10 виділяється тільки при ПЕРШОМУ add() — lazy init!
+
+list.add("first"); // ← тут вперше виділяється масив [10]
+----
+
+[[java-collection-framework-arraylist-grow-bytecode]]
+.Як ArrayList.grow() обчислює новий розмір (точна формула)
+`grow()` викликається коли `size == capacity`. Нова ємність обчислюється як `oldCapacity + max(minGrowth, oldCapacity >> 1)` — ефективно ~1.5x. `ArraysSupport.newLength()` у байт-коді перевіряє переповнення `int` і обмежує розмір `MAX_ARRAY_SIZE`. `addAll(Collection)` також викликає `grow()` але передає `c.size()` як `minCapacity` — одне розширення замість N окремих.
+
+.Як працює grow() — розширення масиву
+[[java-collection-framework-arraylist-class-add-big-o]]
+
+При додаванні елементу коли `size == capacity` викликається `grow()`:
+
+[source,java]
+----
+private Object[] grow(int minCapacity) {
+    int oldCapacity = elementData.length;
+    if (oldCapacity > 0 || elementData != DEFAULTCAPACITY_EMPTY_ELEMENTDATA) {
+        int newCapacity = ArraysSupport.newLength(
+            oldCapacity,
+            minCapacity - oldCapacity, // мінімальне збільшення
+            oldCapacity >> 1           // «бажане» збільшення = oldCapacity / 2
+        );
+        // Ефективно: newCapacity = oldCapacity + max(minGrowth, preferredGrowth)
+        // При типовому add(): newCapacity ≈ oldCapacity * 1.5
+        return elementData = Arrays.copyOf(elementData, newCapacity);
+    } else {
+        return elementData = new Object[Math.max(DEFAULT_CAPACITY, minCapacity)];
+    }
+}
+----
+
+[source]
+----
+Зростання ємності при послідовних add():
+Capacity: 0 → 10 → 15 → 22 → 33 → 49 → 73 → 109 → ...
+Множник:       ×1.5 при кожному resize (починаючи з 10)
+----
+
+NOTE: До Java 8 формула була `(oldCapacity * 3) / 2 + 1`. З Java 8+ — `oldCapacity + (oldCapacity >> 1)` що є точно тим самим `1.5x`. Різниця тільки в читабельності.
+
+[[java-collection-framework-arraylist-add-index-impl]]
+.ArrayList.add(int index, E e) — зміщення через System.arraycopy
+`add(int index, E e)` спочатку перевіряє bounds, потім викликає `System.arraycopy(elementData, index, elementData, index+1, size-index)` — зсуває всі елементи правіше `index` на одну позицію. `System.arraycopy` є нативним JVM intrinsic: JIT компілює його у процесорну SIMD-інструкцію (AVX/SSE) для блокового копіювання пам'яті, що на порядок швидше Java-циклу.
+
+[[java-collection-framework-arraylist-remove-impl]]
+.ArrayList.remove(int index) — null в останній позиції
+Після зміщення елементів вліво `elementData[--size] = null` обнуляє останню позицію. Це не естетика — це *необхідно для GC*: без обнулення `elementData` буде тримати strong reference на видалений об'єкт, запобігаючи його збору. Це класичний приклад memory leak prevention через explicit null assignment.
+
+[[java-collection-framework-arraylist-modcount]]
+.modCount у ArrayList — лічильник структурних змін
+`modCount` (успадкований від `AbstractList`) збільшується при кожній *структурній* зміні: `add`, `remove`, `clear`, `addAll`, `removeAll`, `retainAll`, `sort`. Не збільшується при `set()` (заміна без зміни розміру). Ітератор зберігає `expectedModCount = modCount` при створенні і перевіряє при кожному `next()/remove()` — різниця кидає `ConcurrentModificationException`.
+
+[[java-collection-framework-arraylist-sublist-impl]]
+.ArrayList.subList() — live view через SubList inner class
+`subList()` повертає об'єкт внутрішнього класу `SubList` що тримає посилання на оригінальний `ArrayList`, `offset` (початковий індекс) і `size` (розмір підсписку). Будь-яка зміна `SubList` делегується оригінальному масиву зі зсувом на `offset`. Після зміни оригінального списку (не через `SubList`) `SubList` виявляє відмінність `modCount` і кидає `ConcurrentModificationException` при будь-якій операції.
+
+[[java-collection-framework-arraylist-timsort]]
+.ArrayList.sort() і TimSort — стабільне сортування
+`list.sort(comparator)` викликає `Arrays.sort(elementData, 0, size, comparator)` який використовує TimSort — гібридний алгоритм (MergeSort + InsertionSort). Стабільне сортування: елементи з однаковим ключем зберігають початковий відносний порядок. Ефективний для реальних даних: знаходить вже відсортовані "runs" (послідовності) і зливає їх. `Collections.sort(list)` з Java 7+ теж делегує до `list.sort()`.
+
+[[java-collection-framework-arraylist-removeif-impl]]
+.ArrayList.removeIf() — ефективна bulk-видалення
+`removeIf(Predicate)` за один прохід будує бітову маску елементів для видалення, потім одним `System.arraycopy` зсуває елементи що залишаються, обнуляє хвіст. Складність O(n) і лише одне зміщення замість O(n²) при видаленні через Iterator в циклі. `removeAll(Collection c)` та `retainAll()` також оптимізовані аналогічно у Java 8+.
+
+[[java-collection-framework-arraylist-foreach-impl]]
+.ArrayList.forEach() vs Iterator — швидкість
+`forEach(Consumer)` ітерує через простий `for(int i=0; i<size; i++)` цикл по масиву — без overhead об'єкта ітератора і виклику `hasNext()/next()`. JIT агресивно оптимізує цей цикл: bound-check elimination, loop unrolling, vectorization. `Iterable.forEach()` ≈ `Stream.forEach()` для послідовних операцій, але `stream().forEach()` може мати overhead через boxing/unboxing.
+
+[[java-collection-framework-arraylist-spliterator]]
+.ArrayList.spliterator() — характеристики та паралелізм
+`ArrayList.spliterator()` повертає `ArrayListSpliterator` з характеристиками: `ORDERED` (порядок збережено), `SIZED` (розмір відомий), `SUBSIZED` (розмір під-сплітераторів теж відомий). `trySplit()` ділить масив рівно навпіл за індексами — O(1). Це робить `ArrayList` найефективнішою структурою для `parallelStream()` — балансування абсолютно рівне.
+
+[[java-collection-framework-arraylist-toarray]]
+.ArrayList.toArray(T[]) — поведінка для масивів різного розміру
+Якщо переданий масив `T[] a` менший за `size` — повертається *новий масив* типу `a.getClass()` з усіма елементами. Якщо більший — елементи копіюються у `a`, а `a[size]` встановлюється у `null` (маркер кінця). Якщо рівний — копіює у `a` і повертає `a`. `toArray()` без аргументу завжди повертає `Object[]`.
+
+[[java-collection-framework-arraylist-arrays-aslist]]
+.Arrays.asList() — фіксований список, внутрішня реалізація
+`Arrays.asList()` повертає `java.util.Arrays$ArrayList` (приватний вкладений клас) що обгортає переданий масив напряму — без копіювання. Тому `set()` дозволено (змінює оригінальний масив!), а `add()`/`remove()` кидають `UnsupportedOperationException`. Зміни у поверненому списку відображаються у початковому масиві.
+
+[[java-collection-framework-arraylist-trim-gc]]
+.trimToSize() vs new ArrayList<>(list) — GC наслідки
+`trimToSize()` робить `Arrays.copyOf(elementData, size)` in-place. `new ArrayList<>(list)` теж копіює але створює новий об'єкт. Різниця для GC: `trimToSize()` — старий масив стає garbage; `new ArrayList<>()` — старий ArrayList + старий масив garbage. При великій різниці `size`/`capacity` обидва звільняють однакову пам'ять. `trimToSize()` корисніший коли list залишається тим самим об'єктом (посилання збережені).
+
+[[java-collection-framework-arraylist-serialization]]
+.ArrayList — серіалізація transient поля elementData
+`elementData` позначено `transient` бо масив зазвичай має зайву capacity. `writeObject()` записує лише `size` + реальні елементи (від 0 до size-1). `readObject()` відновлює масив рівно розміру `size`. Результат: серіалізований `ArrayList` компактний — без waste capacity. Але після десеріалізації наступний `add()` одразу викличе `grow()`.
+
+[[java-collection-framework-arraylist-max-size]]
+.MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8 — чому не MAX_VALUE?
+JVM зберігає metadata масиву (довжина, тип, заголовок об'єкта) поруч з даними. Деякі JVM реалізації потребують кілька байт для цього metadata у межах виділеного блоку. `Integer.MAX_VALUE - 8` є безпечним верхнім лімітом що уникає `OutOfMemoryError` або `NegativeArraySizeException` на будь-якій JVM. На практиці масив такого розміру (~2 GB) все одно спричинить OOM через обмеження heap.
+
+[[java-collection-framework-arraylist-clone-impl]]
+.ArrayList.clone() — shallow copy
+`clone()` створює новий `ArrayList` і копіює посилання на `elementData` через `Arrays.copyOf`. Це shallow copy: нові `ArrayList` і новий масив посилань, але самі *об'єкти-елементи не копіюються* — обидва списки вказують на одні й ті ж об'єкти. Зміна `list1.get(0).setSomething()` буде видна через `list2.get(0)`.
+
+[[java-collection-framework-arraylist-replaceall]]
+.ArrayList.replaceAll() vs forEach() з мутацією
+`replaceAll(UnaryOperator)` ітерує по `elementData` і замінює `elementData[i] = operator.apply(elementData[i])` in-place — без копіювання масиву. `forEach()` дозволяє мутувати елементи (якщо вони mutable), але не замінювати посилання в масиві. `replaceAll()` збільшує `modCount` (структурна операція), `forEach()` — ні.
+
+[[java-collection-framework-arraylist-randomaccess]]
+.RandomAccess marker interface та Collections.binarySearch()
+`Collections.binarySearch()` перевіряє: `list instanceof RandomAccess`. Якщо так — використовує index-based алгоритм (O(log n) з O(1) доступом). Якщо ні — використовує `ListIterator`-based алгоритм (O(n) для переміщення). `Collections.sort()`, `Collections.copy()`, `Collections.fill()` також враховують `RandomAccess`. `ArrayList.get()` є справді O(1) (не amortized) — одна операція `elementData[index]`.
+
+[[java-collection-framework-arraylist-iterator-impl]]
+.ArrayList.iterator() — AbstractList.Itr та modCount
+`ArrayList.iterator()` повертає приватний клас `Itr` (внутрішній у `ArrayList`). Він зберігає `cursor` (наступний індекс), `lastRet` (останній повернений), `expectedModCount = modCount`. При `next()` перевіряє `modCount != expectedModCount` → `ConcurrentModificationException`. Два незалежних ітератори на одному ArrayList: кожен має свій `expectedModCount` і курсор — обидва fail-fast незалежно.
+
+[[java-collection-framework-arraylist-ensure-capacity]]
+.ensureCapacity() vs автоматичний grow()
+`ensureCapacity(minCapacity)` дозволяє *вручну* передвиділити пам'ять до bulk-вставки. Якщо `minCapacity > elementData.length` викликає `grow(minCapacity)`. На відміну від автоматичного `grow()` який збільшує на 1.5x — `ensureCapacity(n)` гарантує що capacity ≥ n рівно. Використовуй для уникнення множинних reallocation при відомій кількості елементів.
+
+[[java-collection-framework-arraylist-list-copyof]]
+.List.copyOf() vs Collections.unmodifiableList(new ArrayList<>())
+`List.copyOf(list)` (Java 10+) повертає immutable список: не допускає null, не є view (незалежна копія). `Collections.unmodifiableList(new ArrayList<>(list))` — обгортка що делегує читання до underlying list але блокує мутації. При зміні underlying list через пряме посилання — `unmodifiableList` відображатиме зміни! `List.copyOf()` — справжня незалежна immutable копія. `List.of()` (Java 9+) — immutable від початку, compact реалізація.
+
+[[java-collection-framework-arraylist-contains-null]]
+.ArrayList.contains() та indexOf() з null
+`contains(null)` повертає `true` якщо список містить хоч один `null`. `indexOf(null)` повертає індекс першого `null`. Внутрішньо: при `o == null` використовується `elementData[i] == null`, при `o != null` — `o.equals(elementData[i])`. Тому `ArrayList` допускає множинні `null`-елементи і коректно їх шукає.
+
+[[java-collection-framework-arraylist-class-delete-element-capacity-change]]
+
+WARNING: Автоматичного *зменшення* ємності при `remove()` *не відбувається*. Якщо додати 10 000 елементів і видалити 9 999 — масив і далі займатиме пам'ять для 10 000 елементів. Для звільнення пам'яті: `list.trimToSize()` або `new ArrayList<>(list)`.
+
+Оскільки `ArrayList` реалізує інтерфейс `Iterable`, то ми можемо пробігтися по списку в циклі `for-each: for(String person : people)`. Цю колекцію слід використовувати, якщо в процесі роботи з колекцією передбачається часте звернення до елементів за індексом. Якщо необхідні часті видалення або додавання елементів в середину колекції, то краще використовувати `LinkedList`.
+
+[#java-collection-framework-arraylist-class-constructors]
+.Конструктори:
+* `ArrayList()` — створює порожній список;
+* `ArrayList(Collection <? extends E> col)` — створює список, в який додаються всі елементи колекції col;
+* `ArrayList (int capacity)` — створює список, який має початкову ємність capacity.
+
+[#java-collection-framework-arraylist-class-methods]
+.Методи:
+* `add(E e)` — додає елемент в кінець списку;
+* `add(int index, E e)` — додає елемент в позицію index;
+* `addAll(Collection <? extends E> col)` — додає всі елементи колекції col в кінець списку;
+* `addAll(int index, Collection <? extends E> col)` — додає всі елементи колекції col в позицію index;
+* `clear()` — видаляє всі елементи зі списку;
+* `contains(Object obj)` — повертає `true`, якщо список містить об'єкт obj;
+* `get(int index)` — повертає елемент за індексом index;
+* `indexOf(Object obj)` — повертає індекс першого входження об'єкта obj;
+* `isEmpty()` — повертає `true`, якщо список порожній;
+* `remove(int index)` — видаляє елемент за індексом index;
+* `remove(Object obj)` — видаляє перше входження об'єкта obj;
+* `removeAll(Collection <?> col)` — видаляє всі елементи, які є в колекції col;
+* `retainAll(Collection <?> col)` — видаляє всі елементи, які не є в колекції col;
+* `subList(int start, int end)` — повертає список, який містить всі елементи від start до end;
+* `toArray()` — повертає масив, який містить всі елементи списку;
+* `toArray(T[] array)` — повертає масив, який містить всі елементи списку, в якому відбувається збереження елементів списку;
+* `trimToSize()` — зменшує розмір списку до кількості елементів у ньому;
+* `iterator()` — повертає ітератор для перебору елементів списку;
+* `listIterator()` — повертає ітератор для перебору елементів списку;
+* `listIterator(int index)` — повертає ітератор для перебору елементів списку, починаючи з позиції index;
+* `removeIf(Predicate <? super E> filter)` — видаляє всі елементи, які задовольняють умову filter, з'явився з Java 8;
+* `replaceAll(UnaryOperator <E> operator)` — замінює всі елементи списку на результат виклику operator;
+* `sort(Comparator <? super E> comparator)` — сортує всі елементи списку за допомогою компаратора comparator;
+* `spliterator()` — повертає сплітератор для перебору елементів списку;
+* `set(int index, E e)` — замінює елемент за індексом index на e;
+* `size()` — повертає кількість елементів у списку.
+
+[#java-collection-framework-arraylist-class-big-o-notation]
+.BigO notation для `ArrayList`
+[cols="2,1,4", options="header"]
+|===
+|`set(int index, E e)`                  |O(1)           |`elementData[index] = e` — пряма заміна
+|`add(E e)`                             |O(1)*          |Амортизоване O(1). При resize — O(n): `Arrays.copyOf` копіює всі елементи
+|`add(int index, E e)`                  |O(n)           |`System.arraycopy` зсуває всі елементи правіше index на 1 позицію
+|`remove(int index)`                    |O(n)           |`System.arraycopy` зсуває елементи вліво після видаленого
+|`remove(Object obj)`                   |O(n)           |Спочатку лінійний пошук O(n), потім зсув O(n)
+|`contains(Object obj)`                 |O(n)           |Лінійний перебір через `equals()`
+|===
+
+=== Memory & GC
+
+- Allocation pressure: короткоживучі об’єкти генерують навантаження на Young Gen; для hot-path мінімізуйте створення тимчасових об'єктів (iterators, wrappers).
+- Object layout: масивна структура `elementData` має кращу cache-locality ніж node-based структури; при виборі колекції враховуйте overhead вузлів у LinkedList/HashMap (рефери та хедери).
+- Для memory-sensitive застосунків розгляньте primitive collections (fastutil, HPPC) або off-heap рішення (Chronicle Map, Agrona).
+- GC tuning: вибір GC (G1, ZGC, Shenandoah) впливає на latency/throughput tradeoff; профілюйте під production-навантаженням.
+
+=== Profiling & Benchmarks
+
+- Використовуйте JMH для мікробенчмарків; визначайте warmup, iterations та forks адекватно.
+- Профілюйте allocation та CPU hotspots через async-profiler або Java Flight Recorder; дивіться allocation flamegraphs.
+- При порівнянні колекцій фіксуйте JVM flags, heap size, GC, CPU governor/boost — без цього результати некоректні.
+- Для production-оптимізацій додавайте JMH-тести поруч з кодом і запускайте їх у CI перед релізом.
+
+
+|===
+|`lastIndexOf(Object obj)`              |O(n)           |Лінійний перебір з кінця
+|`size()`                               |O(1)           |Повертає поле `size`
+|`isEmpty()`                            |O(1)           |`size == 0`
+|`clear()`                              |O(n)           |Обнуляє всі елементи масиву (`elementData[i] = null`) для GC
+|`addAll(Collection c)`                 |O(m)           |`System.arraycopy` блоком. m — розмір c
+|`addAll(int index, Collection c)`      |O(n+m)         |Зсув + копіювання
+|`removeAll(Collection c)` / `retainAll`|O(n*m)         |Для кожного з n елементів — `c.contains()` (O(m) якщо c=List)
+|`sort(Comparator c)`                   |O(n log n)     |TimSort — стабільне сортування
+|`subList(from, to)`                    |O(1)           |Повертає live-view, не копію. Ітерація O(k)
+|`iterator()`                           |O(1)           |Створює об'єкт ітератора
+|`trimToSize()`                         |O(n)           |`Arrays.copyOf` до розміру `size`
+|===
+
+[[java-collection-framework-arraylist-class-remove-big-o]]
+Видалення елементу відбувається за лінійний час O(n), оскільки всі елементи після видаленого зсуваються на одну позицію вліво через `System.arraycopy`. [[java-collection-framework-arraylist-class-delete-multiple-elements-algorithm]]Видалення кількох сусідніх елементів можна оптимізувати: замість n окремих видалень (кожне O(n)) → один `System.arraycopy` зі зсувом одразу на k позицій. `removeIf(Predicate)` робить це автоматично.
+
+.Підводні камені та нюанси
+
+.subList() — live view, не копія!
+[source,java]
+----
+List<String> list = new ArrayList<>(Arrays.asList("a","b","c","d","e"));
+List<String> sub = list.subList(1, 4); // ["b","c","d"] — live view!
+
+sub.clear(); // видаляє елементи і з оригінального list!
+System.out.println(list); // ["a", "e"]
+
+// Якщо потрібна незалежна копія:
+List<String> copy = new ArrayList<>(list.subList(1, 4)); // ✅
+----
+
+.Ітерація та видалення
+[source,java]
+----
+List<String> list = new ArrayList<>(List.of("a", "b", "c"));
+
+// НЕПРАВИЛЬНО — ConcurrentModificationException:
+for (String s : list) {
+    if (s.equals("b")) list.remove(s); // ❌
+
+// ПРАВИЛЬНО:
+list.removeIf(s -> s.equals("b")); // ✅ Java 8+
+
+// АБО через Iterator:
+Iterator<String> it = list.iterator();
+while (it.hasNext()) {
+    if (it.next().equals("b")) it.remove(); // ✅
+}
+----
+
+.ArrayList vs LinkedList — коли що обирати
+[cols="3,1,1", options="header"]
+|===
+|Додавання в кінець `add(e)`        |✅ O(1)*       |✅ O(1)
+|Додавання на початок `addFirst(e)` |❌ O(n)        |✅ O(1)
+|Видалення з середини               |❌ O(n)        |❌ O(n) (пошук) + O(1) (від'єднання)
+|Пам'ять на елемент                 |✅ ~4 байти (ref) |❌ ~24 байти (Node: item + prev + next)
+|Локальність пам'яті (CPU cache)    |✅ елементи поруч |❌ вузли розкидані по heap
+|Iterator / for-each швидкість      |✅ швидший     |❌ повільніший (cache miss)
+|Використання як Queue/Deque        |❌ неефективно |✅ O(1) addFirst/removeLast
+|Загальна рекомендація              |✅ 95% випадків |⚠️ тільки для Deque/Queue
+|===
+
+TIP: На практиці `ArrayList` виграє у `LinkedList` навіть при частих вставках у середину списку через локальність пам'яті (CPU cache hits). `System.arraycopy` надзвичайно оптимізований на рівні JVM і процесора. `LinkedList` оптимальний тільки як `Deque` (часті операції на обох кінцях). Для Queue/Stack використовуй `ArrayDeque`.
+
+.remove(int) vs remove(Object) — неоднозначність з Integer
+[source,java]
+----
+List<Integer> list = new ArrayList<>(List.of(1, 2, 3));
+list.remove(1);                  // видаляє ЕЛЕМЕНТ ЗА ІНДЕКСОМ 1, тобто "2"! НЕ значення 1!
+list.remove(Integer.valueOf(1)); // ✅ видаляє значення 1
+----
+
+WARNING: `remove(int index)` та `remove(Object o)` — два різних перевантаження. При виклику `list.remove(1)` компілятор завжди обирає `int`-перевантаження, тому що `1` є примітивом. Автобоксінг до `Integer` *не відбувається* якщо є відповідне `int`-перевантаження. Щоб видалити за значенням — обов'язково передавай `Integer.valueOf(x)`.
+
+.Arrays.asList() — список фіксованого розміру
+[source,java]
+----
+List<String> fixed = Arrays.asList("a", "b", "c");
+fixed.add("d");    // UnsupportedOperationException! — розмір фіксований
+fixed.set(0, "x"); // OK — заміна елемента дозволена
+List<String> mutable = new ArrayList<>(Arrays.asList("a", "b", "c")); // ✅ повноцінний ArrayList
+----
+
+NOTE: `Arrays.asList()` повертає *фіксований список* (`java.util.Arrays$ArrayList`, не `java.util.ArrayList`!). Він дозволяє `set()`, але кидає `UnsupportedOperationException` при `add()`, `remove()`, `clear()`. Завжди загортай у `new ArrayList<>(...)` якщо потрібна повна мутабельність.
+
+.List.of() — незмінний список (Java 9+)
+[source,java]
+----
+List<String> immutable = List.of("a", "b");
+immutable.add("c");    // UnsupportedOperationException!
+immutable.set(0, "x"); // UnsupportedOperationException!
+immutable.contains(null); // NullPointerException! — List.of не допускає null
+----
+
+WARNING: `List.of()` (Java 9+) повертає *повністю незмінний список*: забороняє `add`, `set`, `remove`. Крім того, він *не допускає `null`-елементи* — навіть `contains(null)` кидає `NullPointerException`. Якщо потрібен `null` або мутабельність — використовуй `new ArrayList<>()`.
+
+.ensureCapacity — передвиділення пам'яті для bulk-вставок
+[source,java]
+----
+List<String> list = new ArrayList<>();
+list.ensureCapacity(100_000); // уникає ~17 resize-операцій (кожен resize = Arrays.copyOf)
+for (int i = 0; i < 100_000; i++) list.add(String.valueOf(i));
+----
+
+TIP: Якщо заздалегідь відомо скільки елементів буде додано — виклич `ensureCapacity(n)` або одразу передай розмір у конструктор `new ArrayList<>(n)`. Це усуває всі проміжні `grow()`-операції та значно покращує продуктивність при великих об'ємах даних.
+
+.Серіалізація — ємність не зберігається
+[source,java]
+----
+ArrayList<String> list = new ArrayList<>(1000);
+list.add("only one element");
+// list.size() == 1, але capacity == 1000
+
+// Після серіалізації і десеріалізації:
+// list.size() == 1, capacity == 1  ← скинуто до size через writeObject/readObject
+----
+
+NOTE: Поле `elementData` позначено як `transient` — стандартна серіалізація його пропускає. `ArrayList` має власні методи `writeObject`/`readObject` які серіалізують лише реальні елементи (від 0 до `size`). Після десеріалізації ємність дорівнює `size`, а не оригінальній ємності. Це зазвичай бажана поведінка (економія місця), але може бути несподіванкою якщо розраховував на збережену ємність.
+
+.Підсумки:
+* Швидкий доступ до елементів за індексом за час O(1);
+* Доступ до елементів за значенням за лінійний час O(n);
+* Повільний при вставці та видаленні елементів із "середини" списку;
+* Дозволяє зберігати будь-які значення, включно з null;
+* Не синхронізований.
+
+// https://habr.com/ru/articles/128269/

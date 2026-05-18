@@ -1,0 +1,425 @@
+ifndef::imagesdir[:imagesdir: ../../../../../../../imgs/]
+ifndef::queuedir[:queuedir: ../../../../../../../../../examples/java/src/main/java/kovteba/collectionframework/iterable/collection/queue]
+ifndef::queuetestdir[:queuetestdir: ../../../../../../../../../examples/java/src/main/java/kovteba/collectionframework/iterable/collection/queue]
+
+[#java-collection-framework-priorityqueue]
+===== PriorityQueue
+`PriorityQueue` у Java — це *черга з пріоритетом*, яка реалізує інтерфейс `Queue<E>`. На відміну від звичайної черги (FIFO), елементи видаляються *у порядку пріоритету* — найменший елемент (за натуральним порядком або `Comparator`) завжди на вершині.
+
+* `Queue<E>` — поведінка черги: `offer`, `poll`, `peek`
+* `Iterable<E>` — підтримка `for-each`
+* `Collection<E>` — базові операції колекції
+
+.Ієрархія наслідування
+[source,subs="normal"]
+----
+Object
+  └── AbstractCollection<E>
+        └── AbstractQueue<E>
+              └── <<java-collection-framework-priorityqueue,PriorityQueue<E>>>
+----
+
+WARNING: `PriorityQueue` *не є потокобезпечною*. Для багатопотокового середовища використовуй `PriorityBlockingQueue` з пакету `java.util.concurrent`.
+
+WARNING: `PriorityQueue` *не допускає `null`*. Спроба додати `null` викине `NullPointerException`, оскільки порівняння `null` з іншими елементами неможливе.
+
+.Конструктор PriorityQueue()
+[source,java]
+----
+PriorityQueue<Integer> pq = new PriorityQueue<>();
+----
+
+*Що робить:* створює порожню чергу з початковою ємністю 11 і натуральним порядком (`Comparable`). Елементи мають реалізовувати `Comparable`, інакше — `ClassCastException` при додаванні другого елемента.
+
+*Коли використовувати:* коли елементи вже реалізують `Comparable` (`Integer`, `String`, тощо) і потрібен мінімальний елемент на вершині.
+
+[source,java]
+----
+PriorityQueue<Integer> pq = new PriorityQueue<>();
+pq.offer(5);
+pq.offer(1);
+pq.offer(3);
+pq.peek(); // → 1 (мінімальний, але масив всередині не відсортований!)
+----
+
+.Конструктор PriorityQueue(int initialCapacity)
+[source,java]
+----
+PriorityQueue<Integer> pq = new PriorityQueue<>(100);
+----
+
+*Що робить:* створює порожню чергу із заданою початковою ємністю внутрішнього масиву. Не впливає на логіку пріоритету — лише зменшує кількість перевиділень пам'яті.
+
+*Коли використовувати:* коли заздалегідь відома приблизна кількість елементів і важлива продуктивність.
+
+.Конструктор PriorityQueue(Comparator<? super E> comparator)
+[source,java]
+----
+PriorityQueue<String> pq = new PriorityQueue<>(Comparator.comparingInt(String::length));
+----
+
+*Що робить:* створює чергу з користувацьким компаратором. Порядок пріоритету визначається `comparator`, а не натуральним порядком елементів.
+
+*Коли використовувати:* коли потрібен нестандартний порядок — наприклад, *максимальний* елемент на вершині або сортування за полем об'єкта.
+
+[source,java]
+----
+// Максимальна черга (max-heap):
+PriorityQueue<Integer> maxPq = new PriorityQueue<>(Comparator.reverseOrder());
+maxPq.offer(1);
+maxPq.offer(5);
+maxPq.offer(3);
+maxPq.peek(); // → 5
+----
+
+[source,java]
+----
+// Черга задач за пріоритетом:
+record Task(String name, int priority) {}
+
+PriorityQueue<Task> tasks = new PriorityQueue<>(
+    Comparator.comparingInt(Task::priority)
+);
+tasks.offer(new Task("Low",  3));
+tasks.offer(new Task("High", 1));
+tasks.offer(new Task("Mid",  2));
+tasks.poll().name(); // → "High"
+----
+
+.Конструктор PriorityQueue(Collection<? extends E> c)
+[source,java]
+----
+List<Integer> source = List.of(5, 1, 3, 2, 4);
+PriorityQueue<Integer> pq = new PriorityQueue<>(source);
+----
+
+*Що робить:* копіює всі елементи колекції та виконує *heapify* — побудову купи за O(n). Це швидше, ніж додавати елементи по одному (що було б O(n log n)).
+
+*Коли використовувати:* коли вже є готова колекція і потрібно швидко отримати чергу з пріоритетом.
+
+.Конструктор PriorityQueue(PriorityQueue<? extends E> c)
+[source,java]
+----
+PriorityQueue<Integer> copy = new PriorityQueue<>(originalPq);
+----
+
+*Що робить:* створює нову чергу з тим самим `Comparator` і тими самими елементами. Копіює внутрішній масив — O(n).
+
+*Коли використовувати:* коли потрібна копія черги без зміни оригіналу (наприклад, для симуляції або тестування).
+
+.Конструктор PriorityQueue(SortedSet<? extends E> c)
+[source,java]
+----
+TreeSet<Integer> sorted = new TreeSet<>(Set.of(3, 1, 2));
+PriorityQueue<Integer> pq = new PriorityQueue<>(sorted);
+----
+
+*Що робить:* копіює елементи з `SortedSet`, успадковуючи його `Comparator`. Порядок пріоритету відповідає порядку `SortedSet`.
+
+[[java-collection-framework-priorityqueue-big-o-notation]]
+[#java-collection-framework-priorityqueue-class-big-o-notation]
+.BigO notation для PriorityQueue:
+[cols="2,1,4", options="header"]
+|===
+|Метод                                                          |Складність     |Пояснення
+|<<java-collection-framework-priorityqueue-offer,`offer(E e)`>> |O(log n)       |Додає елемент в кінець масиву, потім *sift up* — піднімає елемент вгору по купі до правильної позиції
+|`add(E e)`                         |O(log n)       |Псевдонім `offer`, але кидає `IllegalStateException` якщо не вдалось додати (у необмеженій черзі — ніколи)
+|`peek()`                           |O(1)           |Повертає `queue[0]` — корінь купи — без видалення. Завжди мінімальний елемент
+|<<java-collection-framework-priorityqueue-poll,`poll()`>>                           |O(log n)       |Видаляє і повертає корінь (`queue[0]`), переміщує останній елемент на вершину, потім *sift down* — опускає його до правильної позиції
+|===
+|`remove()`                         |O(log n)       |Як `poll()`, але кидає `NoSuchElementException` якщо черга порожня
+|===
+|`remove(Object o)`                 |O(n)           |Лінійний пошук елемента (O(n)) + видалення з відновленням властивості купи (O(log n))
+|===
+|`contains(Object o)`               |O(n)           |Лінійний перебір внутрішнього масиву з `equals()` — купа не гарантує порядок за значенням
+|===
+|`size()`                           |O(1)           |Повертає поле `size` — лічильник елементів
+|===
+|`isEmpty()`                        |O(1)           |Перевіряє `size == 0`
+|===
+|`clear()`                          |O(n)           |Обнуляє всі елементи масиву (`queue[i] = null`) щоб GC міг їх зібрати, потім `size = 0`
+|===
+|`toArray()`                        |O(n)           |Копіює внутрішній масив через `Arrays.copyOf`. *Масив не відсортований* — лише купа-порядок
+|===
+|`iterator()`                       |O(1)           |Створює ітератор. *Не гарантує порядок пріоритету* — ітерує по внутрішньому масиві як є
+|===
+|`comparator()`                     |O(1)           |Повертає `Comparator` або `null` якщо використовується натуральний порядок
+|===
+|`PriorityQueue(Collection c)`      |O(n)           |Побудова купи через *heapify* — ефективніше ніж n разів викликати `offer` (O(n log n))
+|===
+|===
+
+[[java-collection-framework-priorityqueue-heap-formula]]
+.Heap на масиві — формула, d-ary heap, memory layout
+Для вузла з індексом `i`: батько `(i-1)/2`, лівий нащадок `2*i+1`, правий `2*i+2`. Java використовує binary heap (d=2) бо він оптимальний для більшості випадків: d=4 зменшує висоту дерева але збільшує роботу при sift-down. Memory layout масиву є cache-friendly для батько-нащадок доступу (сусідні індекси). `peek()` — O(1) бо мінімум завжди `queue[0]`. `grow()`: якщо `size < 64` → `size + size + 2`; інакше `size + size/2`. `MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8`.
+
+[[java-collection-framework-priorityqueue-sift-up]]
+.Sift-up (swim) — відновлення heap після add()
+Новий елемент додається в `queue[size]` (кінець масиву), потім `siftUp(size, element)`: поки `k > 0` і елемент менший за батька → елемент і батько міняються місцями, `k = parent`. Максимум `log n` порівнянь і обмінів. "Heap violation" — батько більший за нащадка. `fixUp()` — альтернативна назва для `siftUp()`.
+
+[[java-collection-framework-priorityqueue-sift-down]]
+.Sift-down (sink) — відновлення heap після poll()
+`poll()` зберігає `queue[0]`, ставить `queue[size-1]` на вершину, обнуляє `queue[size-1]`, потім `siftDown(0, lastElement)`: вибирає меншого з двох нащадків, якщо він менший за поточний — міняється, продовжує вниз. Максимум `log n` кроків. `fixDown()` — альтернативна назва.
+
+[[java-collection-framework-priorityqueue-heapify]]
+.Heapify — O(n) побудова купи з колекції
+`heapify()` у конструкторі: від `(n/2)-1` до `0` викликає `siftDown(i, queue[i])`. Складність O(n) (не O(n log n)) бо більшість вузлів — листя (не потребують sift), а глибокий sift потрібен лише ~n/4 вузлам. Математично: сума `height(i) * count(i)` = O(n).
+
+[[java-collection-framework-priorityqueue-remove-object]]
+.PriorityQueue.remove(Object o) — чому O(n)
+`remove(Object o)` спочатку лінійно шукає об'єкт у `queue[0..size-1]` через `equals()` — O(n). Після знаходження на позиції `i`: ставить `queue[size-1]` на позицію `i`, потім виконує і `siftUp` і `siftDown` щоб відновити heap. Немає індексу елементів — тому пошук лінійний. Для O(log n) remove(Object) потрібна хеш-таблиця позицій (як у Fibonacci Heap).
+
+[[java-collection-framework-priorityqueue-max-heap]]
+.Max-heap через Comparator.reverseOrder()
+`new PriorityQueue<>(Comparator.reverseOrder())` або `Comparator.comparingInt(Task::priority).reversed()`. У max-heap `queue[0]` — максимальний елемент. Для "Top K smallest": max-heap розміром K — при додаванні якщо `heap.size() > K` і новий елемент < peek() → poll() + offer(). Підтримує K мінімальних елементів за O(n log K).
+
+[[java-collection-framework-priorityqueue-kway-merge]]
+.K-way merge та алгоритм Dijkstra
+K-way merge: PriorityQueue зберігає (value, listIndex, elementIndex) для кожного з K списків. `poll()` дає глобальний мінімум → O(n log K). "Top K elements": min-heap розміром K для top-K largest; max-heap для top-K smallest. Dijkstra: `PriorityQueue<int[]>` де `int[]{distance, node}` — O((V+E) log V) замість O(V²).
+
+[[java-collection-framework-priorityqueue-spliterator]]
+.PriorityQueue.spliterator() — heap-order, не sorted
+`spliterator()` має характеристики `SIZED` і `SUBSIZED`, але не `SORTED` і не `ORDERED`. Ітерація через spliterator дає елементи у heap-order (по індексах масиву), не у відсортованому порядку. `trySplit()` ділить внутрішній масив по індексах.
+
+[[java-collection-framework-priorityqueue-serialization]]
+.PriorityQueue серіалізація
+`writeObject()` записує `size`, `comparator`, потім всі елементи з `queue[0..size-1]` — не обов'язково у heap-order (хоча на практиці так). `readObject()` відновлює масив і викликає `heapify()` щоб побудувати коректну heap структуру. Capacity не зберігається — після десеріалізації capacity = size.
+
+.Внутрішній устрій — бінарна мінімальна купа
+`PriorityQueue` всередині — це *бінарна мінімальна купа* (binary min-heap), реалізована на масиві:
+
+[source,java]
+----
+transient Object[] queue; // внутрішній масив-купа
+private int size;         // кількість елементів
+private final Comparator<? super E> comparator; // null = натуральний порядок
+----
+
+Купа — це повне бінарне дерево, збережене в масиві. Для вузла з індексом `i`:
+
+[source]
+----
+батько:      (i - 1) / 2
+лівий нащадок:  2 * i + 1
+правий нащадок: 2 * i + 2
+----
+
+Властивість купи: *кожен батько ≤ обох своїх нащадків*. Тому мінімум завжди у `queue[0]`.
+
+Візуалізація купи для `[1, 3, 2, 5, 4]`:
+
+[source]
+----
+          1          ← queue[0]  (корінь = мінімум)
+        /   \
+       3     2       ← queue[1], queue[2]
+      / \
+     5   4           ← queue[3], queue[4]
+
+масив: [1][3][2][5][4]
+----
+
+NOTE: Масив *не є відсортованим*. Гарантується лише одне: батько завжди менший або рівний нащадкам. `toArray()` і `iterator()` повернуть елементи у довільному порядку купи, а не за пріоритетом.
+
+[#java-collection-framework-priorityqueue-offer]
+.offer(E e) — sift up
+[source,java]
+----
+pq.offer(0);
+// До:    [1][3][2][5][4]
+// Після: [0][3][1][5][4][2]  ← 0 піднявся на вершину
+----
+
+Що відбувається всередині:
+
+[source,java]
+----
+// Спрощено:
+private void siftUp(int k, E x) {
+    while (k > 0) {
+        int parent = (k - 1) >>> 1;          // індекс батька
+        Object e = queue[parent];
+        if (comparator.compare(x, (E) e) >= 0)
+            break;                            // x ≥ батька → купа відновлена
+        queue[k] = e;                         // батько опускається вниз
+        k = parent;                           // рухаємось вгору
+    }
+    queue[k] = x;
+}
+----
+
+NOTE: *Sift up* — новий елемент додається в кінець масиву і «спливає» вгору, поки не знайде своє місце. Максимум `log n` обмінів → O(log n).
+
+[#java-collection-framework-priorityqueue-poll]
+.poll() — sift down
+[source,java]
+----
+pq.poll();
+// До:    [1][3][2][5][4]
+// Повертає: 1
+// Після: [2][3][4][5]  ← останній елемент (4) став коренем і опустився
+----
+
+[source,java]
+----
+// Спрощено:
+public E poll() {
+    if (size == 0) return null;
+    int s = --size;
+    E result = (E) queue[0];        // зберігаємо мінімум
+    E x = (E) queue[s];            // останній елемент
+    queue[s] = null;               // прибираємо з кінця
+    if (s != 0)
+        siftDown(0, x);            // опускаємо останній на місце кореня
+    return result;
+}
+
+private void siftDown(int k, E x) {
+    int half = size >>> 1;
+    while (k < half) {
+        int child = (k << 1) + 1;              // лівий нащадок
+        Object c = queue[child];
+        int right = child + 1;
+        if (right < size && compare(c, queue[right]) > 0)
+            c = queue[child = right];           // обираємо меншого нащадка
+        if (compare(x, c) <= 0)
+            break;                              // x ≤ меншого нащадка → готово
+        queue[k] = c;                           // нащадок піднімається
+        k = child;
+    }
+    queue[k] = x;
+}
+----
+
+NOTE: *Sift down* — останній елемент переміщується на вершину і «тоне» вниз, обираючи меншого з двох нащадків на кожному кроці. Максимум `log n` обмінів → O(log n).
+
+
+.Heapify — побудова купи з колекції за O(n)
+[source,java]
+----
+// Замість цього (O(n log n)):
+for (Integer x : list) pq.offer(x);
+
+// Краще так (O(n)):
+PriorityQueue<Integer> pq = new PriorityQueue<>(list);
+----
+
+[source,java]
+----
+// Всередині конструктора:
+private void heapify() {
+    final int n = size;
+    // починаємо з останнього не-листового вузла і йдемо до кореня
+    for (int i = (n >>> 1) - 1; i >= 0; i--)
+        siftDown(i, (E) queue[i]);
+}
+----
+
+NOTE: Heapify працює за O(n), бо більшість вузлів — листя (їм не потрібен sift down), а глибокий sift down потрібен лише небагатьом вузлам біля кореня. Математично сума всіх кроків = O(n).
+
+.PriorityQueue як планувальник задач
+[source,java]
+----
+record Task(String name, int priority) {}
+
+PriorityQueue<Task> scheduler = new PriorityQueue<>(
+    Comparator.comparingInt(Task::priority)
+);
+
+scheduler.offer(new Task("Deploy",  3));
+scheduler.offer(new Task("Hotfix",  1));
+scheduler.offer(new Task("Review",  2));
+
+while (!scheduler.isEmpty()) {
+    System.out.println(scheduler.poll().name());
+}
+// Hotfix
+// Review
+// Deploy
+----
+
+.PriorityQueue для знаходження K найменших елементів
+[source,java]
+----
+// K найменших з великого потоку даних — max-heap розміром K
+int k = 3;
+PriorityQueue<Integer> maxHeap = new PriorityQueue<>(Comparator.reverseOrder());
+
+for (int num : new int[]{5, 1, 8, 3, 2, 7, 4}) {
+    maxHeap.offer(num);
+    if (maxHeap.size() > k)
+        maxHeap.poll(); // видаляємо найбільший — залишаємо K найменших
+}
+
+// maxHeap: [3, 1, 2] (3 найменші числа)
+----
+
+.Зростання внутрішнього масиву
+[source,java]
+----
+private void grow(int minCapacity) {
+    int oldCapacity = queue.length;
+    // якщо < 64 → збільшуємо на oldCapacity + 2
+    // якщо ≥ 64 → збільшуємо на 50% (oldCapacity / 2)
+    int newCapacity = oldCapacity + ((oldCapacity < 64) ?
+        (oldCapacity + 2) : (oldCapacity >> 1));
+    queue = Arrays.copyOf(queue, newCapacity); // O(n)
+}
+----
+
+NOTE: Зростання масиву — O(n), але відбувається рідко. Амортизована вартість `offer` залишається O(log n).
+
+[[java-collection-framework-priorityqueue-pitfalls]]
+.Підводні камені
+
+.Порядок елементів з однаковим пріоритетом непередбачуваний
+[source,java]
+----
+PriorityQueue<String> pq = new PriorityQueue<>();
+pq.offer("banana"); pq.offer("apple"); pq.offer("cherry");
+// Виводить у відсортованому порядку (natural: alphabetical):
+while (!pq.isEmpty()) System.out.print(pq.poll() + " "); // apple banana cherry
+
+// Але для рівних "пріоритетів" порядок не гарантований:
+PriorityQueue<int[]> pq2 = new PriorityQueue<>(Comparator.comparingInt(a -> a[0]));
+pq2.offer(new int[]{1, 100}); pq2.offer(new int[]{1, 200}); // обидва пріоритет 1
+// Порядок між {1,100} і {1,200} — НЕПЕРЕДБАЧУВАНИЙ
+----
+
+WARNING: `PriorityQueue` не є FIFO-структурою для елементів з однаковим пріоритетом. Порядок між рівнозначними елементами визначається внутрішньою структурою heap і є непередбачуваним. Якщо потрібна FIFO-поведінка серед рівних — додай вторинний компаратор (sequence number).
+
+.Iterator — не відсортований!
+[source,java]
+----
+PriorityQueue<Integer> pq = new PriorityQueue<>(List.of(5, 1, 3, 2, 4));
+for (int n : pq) {
+    System.out.print(n + " "); // НЕПРАВИЛЬНО: 1 2 3 5 4 — порядок heap, не sorted!
+}
+// ПРАВИЛЬНО — для відсортованого виведення:
+while (!pq.isEmpty()) System.out.print(pq.poll() + " "); // 1 2 3 4 5
+----
+
+WARNING: `iterator()` і цикл `for-each` ітерують по внутрішньому масиву-heap у *довільному* порядку — НЕ у порядку пріоритету. Для отримання елементів у порядку пріоритету використовуй виключно `poll()`.
+
+.null не допускається
+[source,java]
+----
+PriorityQueue<String> pq = new PriorityQueue<>();
+pq.offer(null); // NullPointerException!
+----
+
+WARNING: `PriorityQueue` *не допускає `null`*. Порівняння `null` з іншими елементами через `Comparator` або `Comparable` неможливе і одразу кидає `NullPointerException`.
+
+WARNING: `PriorityQueue` *не є потокобезпечною*. При одночасному доступі з кількох потоків — структура heap може бути пошкоджена. Для потокобезпечної черги з пріоритетом використовуй `PriorityBlockingQueue` з пакету `java.util.concurrent`.
+
+.Внутрішній масив — min-heap, не sorted array
+[source,java]
+----
+PriorityQueue<Integer> pq = new PriorityQueue<>(List.of(5,1,3,2,4));
+// pq.toArray() → може виглядати як [1, 2, 3, 5, 4]
+// Гарантія тільки одна: pq.peek() == мінімальний елемент
+Object[] arr = pq.toArray(); // порядок heap — НЕ sorted!
+Arrays.sort(arr); // якщо потрібен sorted масив
+----
+
+NOTE: `toArray()` повертає копію внутрішнього масиву у порядку heap (не відсортованому). Єдина гарантія — `peek()` та `queue[0]` завжди містять мінімальний елемент. Якщо потрібен відсортований масив — виклич `Arrays.sort()` після `toArray()`.

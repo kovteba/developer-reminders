@@ -1,0 +1,6 @@
+ifndef::imagesdir[:imagesdir: ../../../../imgs/]
+ifndef::microservicesexampledir[:microservicesexampledir: ../../../../../../examples/?????/??????/src/main/java/kovteba]
+
+[#layered-architecture]
+==== Layered Architecture
+// TODO Layered Architecture

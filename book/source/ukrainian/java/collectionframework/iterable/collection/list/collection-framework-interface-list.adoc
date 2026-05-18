@@ -1,0 +1,149 @@
+ifndef::imagesdir[:imagesdir: ../../../../../../imgs/]
+ifndef::listdir[:listdir: ../../../../../../../../examples/java/src/main/java/kovteba/collectionframework/iterable/collection/list]
+ifndef::listtestdir[:listtestdir: ../../../../../../../../examples/java/src/main/java/kovteba/collectionframework/iterable/collection/list]
+
+[[java-collection-framework-list-factory-methods]]
+.List factory methods — List.of(), Collections.emptyList(), singletonList(), nCopies()
+`List.of()` (Java 9+): immutable, compact array-based реалізація (1-2 елементи — спеціальні класи, 3+ — `ListN`), не допускає null, O(1) memory per element. `Collections.emptyList()` — singleton immutable порожній список, без пам'яті на елементи. `Collections.singletonList(e)` — один елемент, immutable, мінімальна пам'ять. `Collections.nCopies(n, e)` — логічно N копій, але зберігає лише один об'єкт + count — O(1) пам'яті.
+
+[[java-collection-framework-listiterator-deep]]
+.ListIterator — додаткові методи відносно Iterator
+`ListIterator` додає: `hasPrevious()`, `previous()` (зворотній хід), `nextIndex()`, `previousIndex()` (позиція у списку), `add(e)` (вставляє перед поточним `next`), `set(e)` (замінює останній повернутий). `Iterator` має лише: `hasNext()`, `next()`, `remove()`. `ListIterator.add()` вставляє елемент так що наступний `next()` пропустить його — `previous()` його поверне.
+
+[[java-collection-framework-unmodifiable-list]]
+.Collections.unmodifiableList() vs List.copyOf() — thread-safety
+`Collections.unmodifiableList(list)` — тонка обгортка: делегує читання до underlying list. Зміни через оригінальне посилання (не через обгортку) *видимі* через unmodifiable view. Не є thread-safe: паралельне читання через обгортку і запис через оригінал → data race. `List.copyOf()` — незалежна копія: зміни оригіналу не відображаються. Для thread-safety потрібен `CopyOnWriteArrayList` або зовнішня синхронізація.
+
+[[java-collection-framework-synchronized-list]]
+.Collections.synchronizedList() — синхронізація та проблема ітерації
+`Collections.synchronizedList(list)` обгортає кожен метод у `synchronized(mutex)`. Ітерація НЕ захищена автоматично: `for(String s : syncList)` — кидає `ConcurrentModificationException`. Правильно: `synchronized(syncList) { Iterator<String> it = syncList.iterator(); while(it.hasNext())... }`. Тримай lock під час всієї ітерації — блокує інших на цей час.
+
+[[java-collection-framework-collections-shuffle]]
+.Collections.shuffle(), rotate(), frequency(), disjoint()
+`shuffle(list)` — Fisher-Yates алгоритм: від `size-1` до 1 міняє `list[i]` з `list[random(0..i)]`. O(n). `rotate(list, distance)` — ефективно для `RandomAccess`: три reversal-а. O(n). `frequency(c, o)` — O(n) лінійний підрахунок через `equals()`. `disjoint(c1, c2)` — перевіряє перетин: якщо c1 або c2 є `Set` → O(n) contains замість O(n*m).
+
+[[java-collection-framework-fail-fast-vs-safe-deep]]
+.Fail-fast vs fail-safe ітератори — механізм та обмеження
+Fail-fast: `ArrayList`, `LinkedList`, `HashMap` — ітератор перевіряє `modCount` при кожному `next()`. CME не гарантована: `modCount` не є volatile, перевірка — data race. CME — best-effort, не гарантія безпеки. Fail-safe: `CopyOnWriteArrayList`, `ConcurrentHashMap` — ітерують по snapshot. Не кидають CME але можуть не бачити свіжих змін. Weakly consistent: `LinkedBlockingQueue` — бачить зміни що відбулись під час ітерації (але не зобов'язаний).
+
+[[java-collection-framework-spliterator-deep]]
+.Spliterator — Iterator vs Spliterator, characteristics, trySplit()
+`Iterator`: sequential, `hasNext()`/`next()`/`remove()`. `Spliterator`: parallel-ready, `tryAdvance(Consumer)`/`forEachRemaining()`/`trySplit()`/`estimateSize()`/`characteristics()`. Характеристики: `ORDERED` (порядок важливий), `SORTED` (відсортовано), `DISTINCT` (унікальні), `SIZED` (розмір відомий точно), `SUBSIZED` (розмір підрозділів відомий), `IMMUTABLE` (джерело не змінюється), `CONCURRENT` (безпечна паралельна модифікація), `NONNULL` (без null). `trySplit()` ділить Spliterator на два — основа для `ForkJoinPool` у parallel streams. Повертає `null` якщо поділ неможливий.
+
+[[java-collection-framework-sequenced-collection]]
+.SequencedCollection, SequencedMap, SequencedSet (Java 21)
+`SequencedCollection` (Java 21) — новий інтерфейс між `Collection` і `List`/`Deque`: `getFirst()`, `getLast()`, `addFirst(e)`, `addLast(e)`, `removeFirst()`, `removeLast()`, `reversed()`. `List`, `Deque`, `LinkedHashSet` тепер реалізують `SequencedCollection`. `SequencedMap`: `firstEntry()`, `lastEntry()`, `putFirst()`, `putLast()`, `reversed()`. `SequencedSet` = `SequencedCollection` + `Set` без дублікатів.
+
+[[java-collection-framework-checked-collections]]
+.Collections.checkedList() — runtime type checking
+`Collections.checkedList(list, String.class)` обгортає список і перевіряє тип кожного доданого елемента через `Class.cast()` при `add()`. Кидає `ClassCastException` одразу при вставці некоректного типу — замість пізнього ClassCastException при читанні. Корисно для діагностики проблем з generics (type erasure) у legacy коді.
+
+[[java-collection-framework-list-equals-contract]]
+.List.equals() vs Set.equals() — контракт
+`List.equals()`: два списки рівні якщо однакового розміру і кожна пара елементів `(list1.get(i), list2.get(i))` рівна через `equals()`. Порядок ВАЖЛИВИЙ. `Set.equals()`: два множини рівні якщо однакового розміру і кожен елемент першої є у другій. Порядок НЕ ВАЖЛИВИЙ. `new ArrayList<>(List.of(1,2)).equals(new LinkedList<>(List.of(1,2)))` → `true` (обидва `List`).
+
+[[java-collection-framework-enumeration-vs-iterator]]
+.Enumeration vs Iterator
+`Enumeration` (legacy, Java 1.0): `hasMoreElements()`, `nextElement()`. Немає `remove()`. Використовується у `Vector.elements()`, `Hashtable.keys()`, `Collections.enumeration()`. `Iterator` (Java 2+): `hasNext()`, `next()`, `remove()`, `forEachRemaining()`. `Iterator` = сучасна заміна `Enumeration`. `Collections.list(enumeration)` конвертує до `ArrayList`.
+
+[#java-collection-framework-list]
+===== List
+Інтерфейс `List` являє собою колекцію, в якій можливі дублікати значень. Елементи такої колекції пронумеровані, починаючи від нуля, до них можна звертатися по індексу. Розширяє `Collection` і визначає методи для роботи зі списками.
+
+[source,subs="normal"]
+----
+[I] <<java-collection-framework-list-interface,List<E>>>
+└── [A] AbstractList<E>
+    ├── [A] AbstractSequentialList<E>
+    │   └── [C] <<java-collection-framework-linkedlist,LinkedList<E>>>
+    ├── [C] <<java-collection-framework-arraylist,ArrayList<E>>>
+    ├── [L] <<java-collection-framework-vector,Vector<E>>>
+    │   └── [L] <<java-collection-framework-stack,Stack<E>>>
+    └── [CC] CopyOnWriteArrayList<E>
+----
+
+.Найбільш використовувані методи інтерфейсу `List`
+* `void add(int index, E obj)` — додає в список по індексу `index` об'єкт `obj`;
+* `boolean addAll(int index, Collection<? extends E> col)` — додає в список по індексу `index` всі елементи колекції `col`. Якщо в результаті додавання список був змінений, то повертається `true`, інакше повертається `false`;
+* `E get(int index)` — повертає об'єкт зі списку по індексу `index`;
+* `int indexOf(Object obj)` — повертає індекс першого входження об'єкта `obj` в список. Якщо об'єкт не знайдений, то повертається `-1`;
+* `int lastIndexOf(Object obj)` — повертає індекс останнього входження об'єкта `obj` в список. Якщо об'єкт не знайдений, то повертається `-1`;
+* `ListIterator<E> listIterator()` — повертає об'єкт `ListIterator` для обходу елементів списку;
+* `static <E> List<E> of(елементи)` — створює з набору елементів об'єкт `List`;
+* `E remove(int index)` — видаляє об'єкт зі списку по індексу `index`, повертаючи при цьому видалений об'єкт;
+* `E set(int index, E obj)` — присвоює значення об'єкта `obj` елементу, який знаходиться по індексу `index`;
+* `void sort(Comparator<? super E> comp)` — сортує список за допомогою компаратора `comp`;
+* `List<E> subList(int start, int end)` — отримує набір елементів, які знаходяться в списку між індексами `start` і `end`.
+
+include::arraylist/collection-framework-class-arraylist.adoc[]
+include::linkedlist/collection-framework-class-linkedlist.adoc[]
+include::vector/stack/collection-framework-class-stack.adoc[]
+include::vector/collection-framework-class-vector.adoc[]
+include::copyonwritearraylist/collection-framework-class-copyonwritearraylist.adoc[]
+
+
+
+//TODO
+[#java-collection-framework-collection-interface-arraylist-vs-linkedlist]
+.ArrayList vs LinkedList
+Зараз порівняймо `ArrayList` та `LinkedList`.
+
+.доступ за індексом
+Перевагою `ArrayList` є доступ за індексом за константний час O(1), на відміну від `LinkedList` який робить це лінійний час O(N), але доступ до першого та останнього елементу списку завжди здійснюється за константний час O(1), бо посилання на перший та останній постійно зберігаються,
+
+.доступ по значенню
+Доступ до елемунтів за значення для `ArrayList` та `LinkedList` відбувається для лінейний час O(N).
+
+.додавання елементів
+Так як посилання зберігаються на перший та останній елемент `LinkedList` тому при додаванні елементу в кінець або на початок не потребує пошуку елементу тому виконується за константний час O(1). Додавання у кінець `ArrayList` здійснюється у середньому за <<java-collection-framework-arraylist-class-add-big-o,константний час>>. `LinkedList` може вставляти та видаляти елементи у середині списку за константний час (саме вставка та видаленн, пошук позиції сюди не входить).
+
+.видалення елементів
+Видалення елементу з `LinkedList` здійснюється за константний час. У той час як `ArrayList` видалення елементу здійснюється за <<java-collection-framework-arraylist-class-remove-big-o, лінійний час O(N)>>.
+
+
+//TODO .Пам'ять: LinkedList vs ArrayList
+
+[source]
+----
+ArrayList  [A][B][C][D][_][_]  ← суцільний блок пам'яті
+                                   (швидкий доступ, cache-friendly)
+
+LinkedList:
+  [Node:A] → [Node:B] → [Node:C] → [Node:D]
+  розкидані по heap, кожен Node займає ~48 байт
+----
+
+WARNING: Кожен `Node` несе накладні витрати: 2 вказівники (16 байт) + заголовок об'єкта JVM (~16 байт). `LinkedList` також *недружній до CPU-кешу* — процесор не може завантажити всі вузли разом. `ArrayList` на практиці швидший навіть там, де теоретична складність однакова.
+
+//TODO У порівняння з ArrayList
+[source,java]
+----
+// ArrayList — O(1):
+return (E) elementData[index]; // прямий доступ до масиву
+
+// LinkedList — O(n):
+// мусимо пройти по ланцюжку вузлів до потрібного
+----
+
+`LinkedList` використовує більше пам'яті для зберігання такої ж кількості елементів, оскільки крім самого елемента зберігаються посилання на наступний та попередній елементи списку.
+
+В цілому ж, LinkedList в абсолютних величинах програє ArrayList як по споживаній пам'яті так і по швидкості виконання операцій. `LinkedList` віддається в перевагу використовувати, коли відбувається активна робота (вставка/видалення) з серединою списку або в випадках, коли необхідно гарантований час додавання елемента в список.
+
+Відмінність двох колекцій ArrayList та LinkedList пов'язана з способом зберігання даних. Реалізація `ArrayList` зберігає елементи у вигляді масиву, а `LinkedList` - у вигляді списку (двунаправленного). Крім цього, в `ArrayList` швидше виконується сортування, оскільки для її виконання дані списку копіюються в масив, а копіювати з масиву `ArrayList` в масив для сортування швидше. При великій кількості операцій додавання та видалення елементів в колекцію `LinkedList` повинен бути більш прийнятним, оскільки при цих операціях не доводиться переміщати частини масиву.
+
+===== Коли використовувати LinkedList, а коли ArrayList
+
+[cols="3,1,1", options="header"]
+|===
+|Вставка/видалення на початку   |✅ O(1)                     |❌ O(n)
+|Вставка в кінець               |✅ O(1)                     |✅ O(1) amortized
+|Пам'ять                        |❌ більше (Node overhead)   |✅ менше
+|CPU cache                      |❌ поганий                  |✅ хороший
+|Як Queue/Stack                 |✅ ідеально                 |❌ не призначений
+|===
+
+TIP: *Використовуй `LinkedList` коли:* потрібна черга або стек; дуже часто видаляєш/додаєш елементи на початку; ітеруєш список і видаляєш під час ітерації через `Iterator.remove()`.
+
+TIP: *Використовуй `ArrayList` коли:* потрібен частий доступ за індексом; більшість операцій — читання; важлива ефективність пам'яті.
+
+IMPORTANT: У 90% випадків `ArrayList` швидший на практиці навіть там, де теорія каже що вони однакові — через cache locality. Переходь на `LinkedList` тільки якщо маєш конкретну причину.

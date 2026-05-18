@@ -1,0 +1,28 @@
+ifndef::actuatordir[:actuatordir: ../../examples/<REPLACE_ON_FOLDER_WITH_EXAMPLES>]
+ifndef::actuatorimgsdir[:actuatorimgsdir: ../imgs]
+ifndef::actuatortestdir[:actuatortestdir: ../../examples/<REPLACE_ON_FOLDER_WITH_EXAMPLES>]
+
+[#spring-actuator]
+=== Actuator
+
+How might you provide access to other actuator endpoints in your Spring Boot projects?
+by using the management.endpoints.web.exposure.include property key and specifying individually or by wildcard * for all
+Correct
+Adding the property entry will allow you to control which actuator endpoints are available to the users.
+
+How might you provide more fine-grain details on the general health of application?
+management.endpoint.health.show-details=always
+Correct
+Adding the property entry to application.properties or application.yml will provide finer grain detail on the health endpoint.
+
+
+How might you provide access to other actuator endpoints in your Spring Boot projects?
+by using the management.endpoints.web.exposure.include property key and specifying individually or by wildcard * for all
+Correct
+Adding the property entry will allow you to control which actuator endpoints are available to the users.
+
+
+java -jar -Dspring.profiles.active=<environment> app.jar
+Correct
+
+You would set the Spring profile externally by using the java -jar -Dspring.profiles.active=<environment>. Although you can set the profile to default to an environment in a properties file, this is not externalizing the environment configuration from the application.

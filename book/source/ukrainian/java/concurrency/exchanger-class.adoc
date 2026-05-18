@@ -1,0 +1,15 @@
+ifndef::imagesdir[:imagesdir: ../../../imgs/]
+ifndef::exchangerclassdir[:exchangerclassdir: ../../../../../examples/java/src/main/java/kovteba/concurrency]
+ifndef::exchangerclasstestdir[:exchangerclasstestdir: ../../../../examples/java/src/test/java/kovteba/concurrency]
+
+
+[#java-concurrency-exchanger]
+=== Class Exchanger
+Класс `Exchanger` використовуться для обміну даними між потоками.
+
+[source,java]
+----
+include::{exchangerclassdir}/exchanger/example1/ExchangerExample.java[tags=ExchangerExample]
+----
+
+Перевага об'єктів Lock у тому, що вони можуть відмовитися від участі у спробі блокування. Метод tryLock завершується, якщо блокування недоступне відразу або після закінчення зазначеного часу. Метод lockInterruptibly відмовляється від спроби отримати блокування, якщо інший потік відправляє interrupt до отримання блокування.

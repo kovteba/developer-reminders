@@ -1,0 +1,25 @@
+ifndef::jmmdir[:jmmdir: ../../../examples/<REPLACE_ON_FOLDER_WITH_EXAMPLES>]
+ifndef::jmmimgsdir[:jmmimgsdir: ../../imgs]
+ifndef::jmmtestdir[:jmmtestdir: ../../../examples/<REPLACE_ON_FOLDER_WITH_EXAMPLES>]
+
+[#java-memory-model]
+=== Java Memory Model
+Модель пояснює які значення можуть бути зчитані в кожен момент часу.
+
+Поведінка потоку в ізоляції повинно бути як описано в потоці але значення які читаються зі зміних визначається моделью пам'яті. Це називається *intra-thread semantic* тобто семснтика однопоточного додатку.
+
+Пам'ять яка може використовуватись декількома потоками називаєтеся куча (shared memory или heap memory). Усі змінні єкземпляра, статичні поля, масиви зберігаються в хіпе.
+
+*Inter-thread action* дії всередині потоку які можуть вплинути на інщі потоки. inter-thread action:
+
+* Читання змінної;
+* Запис змінної;
+* Читання volatile змінної;
+* Запис volatile змінної;
+* Lock;
+* Unlock;
+* Дії із запуску нового потоку або виявлення зупинки потоку;
+* Зовнішні дії (взаємодія з загальним ресурсом);
+
+
+// https://urvanov.ru/2019/04/02/java-memory-model/#sharedvariables

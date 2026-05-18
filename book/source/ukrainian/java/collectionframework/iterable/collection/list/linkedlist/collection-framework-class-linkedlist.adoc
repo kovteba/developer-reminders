@@ -1,0 +1,523 @@
+ifndef::imagesdir[:imagesdir: ../../../../../../../imgs/]
+ifndef::linkedlistdir[:linkedlistdir: ../../../../../../../../../examples/java/src/main/java/kovteba/collectionframework/iterable/collection/list/linkedlist]
+ifndef::linkedlisttestdir[:linkedlisttestdir: ../../../../../../../../../examples/java/src/main/java/kovteba/collectionframework/iterable/collection/list/linkedlist]
+
+[#java-collection-framework-linkedlist]
+====== LinkedList
+`LinkedList` у Java — це *двозв'язний список* (doubly linked list), який одночасно реалізує інтерфейси:
+
+* `List<E>` — поведінка списку з індексованим доступом
+* `Deque<E>` — поведінка двосторонньої черги (можна додавати/видаляти з обох кінців)
+* `Queue<E>` — поведінка черги (FIFO)
+
+.Ієрархія наслідування
+[source,subs="normal"]
+----
+Object
+  └── AbstractCollection<E>
+        └── AbstractList<E>
+              └── AbstractSequentialList<E>
+                    └── <<java-collection-framework-linkedlist,LinkedList<E>>>
+----
+
+На відміну від `ArrayList`, який зберігає елементи в масиві, `LinkedList` зберігає кожен елемент у *вузлі (Node)*, де кожен вузол знає свого сусіда ліворуч і праворуч.
+
+.Конструктор LinkedList()
+[source,java]
+----
+LinkedList<String> list = new LinkedList<>();
+----
+
+*Що робить:* створює порожній список. Жодної пам'яті під елементи не виділяється — поля `first` і `last` просто рівні `null`, `size = 0`.
+
+*Коли використовувати:* коли ти збираєш список поступово, додаючи елементи один за одним — особливо з початку або кінця.
+
+[source,java]
+----
+LinkedList<Integer> queue = new LinkedList<>();
+queue.addLast(1);
+queue.addLast(2);
+queue.addLast(3);
+// [1, 2, 3]
+----
+
+.Конструктор LinkedList(Collection<? extends E> c)
+[source,java]
+----
+List<String> source = List.of("Java", "Python", "Go");
+LinkedList<String> list = new LinkedList<>(source);
+----
+
+*Що робить:* ітерується по переданій колекції і послідовно додає кожен елемент через `addLast()`. Порядок елементів зберігається — як у джерелі.
+
+*Коли використовувати:*
+
+* конвертація з іншої колекції (`ArrayList`, `Set`, `Queue`)
+* коли хочеш отримати `Deque`-функціональність над вже існуючими даними
+* коли потрібна часта вставка/видалення на початку чи в середині
+
+[source,java]
+----
+// Конвертація ArrayList → LinkedList для ефективного removeFirst
+ArrayList<String> arr = new ArrayList<>(List.of("a", "b", "c"));
+LinkedList<String> ll = new LinkedList<>(arr);
+ll.removeFirst(); // O(1) замість O(n) у ArrayList
+----
+
+WARNING: Якщо передати `null` — отримаєш `NullPointerException`. Колекція має бути ненульовою, але може бути порожньою.
+
+[[java-collection-framework-linkedlist-big-o-notation]]
+[#java-collection-framework-linkedlist-class-big-o-notation]
+.BigO notation для LinkedList:
+[cols="2,1,4", options="header"]
+|===
+|`addFirst(E e)`                    |O(1)       |Новий вузол стає `first`, старий `first` стає його `next`
+|`addLast(E e)`                     |O(1)       |Новий вузол стає `last`, старий `last` стає його `prev`
+|`add(int index, E e)`              |O(n)       |Спочатку <<glossary-traversal,traversal>> до `index` (O(n)), потім переставляє 2 вказівники (O(1))
+|`addAll(Collection c)`             |O(m)       |m — розмір доданої колекції; кожен елемент через `addLast`
+|`addAll(int index, Collection c)`  |O(n+m)     |O(n) <<glossary-traversal,Traversal>> до index + O(m) вставка
+|`offer(E e)`                       |O(1)       |Те саме що `addLast`, повертає `true`
+|`offerFirst(E e)`                  |O(1)       |Те саме що `addFirst`, повертає `true`
+|`offerLast(E e)`                   |O(1)       |Те саме що `addLast`, повертає `true`
+|`push(E e)`                        |O(1)       |Те саме що `addFirst` (Stack-семантика)
+|`get(int index)`                   |O(n)       |<<glossary-traversal,Traversal>> від `first` або `last` (обирає ближчий кінець), але все одно лінійний
+|`getFirst()`                       |O(1)       |Просто повертає `first.item` — прямий доступ
+|`getLast()`                        |O(1)       |Просто повертає `last.item` — прямий доступ
+|`peek()`                           |O(1)       |Повертає `first.item` або `null` якщо список порожній (не кидає виняток)
+|`peekFirst()`                      |O(1)       |Те саме що `peek()`
+|`peekLast()`                       |O(1)       |Повертає `last.item` або `null`
+|`element()`                        |O(1)       |Як `getFirst()`, але кидає `NoSuchElementException` якщо порожній
+|`removeFirst()`                    |O(1)       |`first` = `first.next`, у нового `first` обнуляється `prev`. Старий вузол відривається
+|`removeLast()`                     |O(1)       |`last` = `last.prev` (можливо тільки бо є зворотний зв'язок у двозв'язному списку), старий хвіст відривається
+|`remove()`                         |O(1)       |Псевдонім `removeFirst()`
+|`remove(int index)`                |O(n)       |<<glossary-traversal,Traversal>> до вузла (O(n)) + відрив вузла зміною вказівників сусідів (O(1))
+|`remove(Object o)`                 |O(n)       |Лінійний пошук по значенню (O(n)) + відрив (O(1))
+|`poll()`                           |O(1)       |Як `removeFirst()`, але повертає `null` замість винятку якщо порожній
+|`pollFirst()`                      |O(1)       |Те саме що `poll()`
+|`pollLast()`                       |O(1)       |Як `removeLast()`, але `null` замість винятку
+|`pop()`                            |O(1)       |Псевдонім `removeFirst()` (Stack-семантика)
+|`clear()`                          |O(n)       |Проходить по всіх вузлах і обнуляє `item`, `next`, `prev` — щоб GC міг їх зібрати
+|`contains(Object o)`               |O(n)       |Лінійний перебір всіх вузлів з `equals()` порівнянням
+|`indexOf(Object o)`                |O(n)       |Перебір з початку, повертає перший знайдений індекс або -1
+|`lastIndexOf(Object o)`            |O(n)       |Перебір з кінця, повертає останній знайдений індекс або -1
+|`size()`                           |O(1)       |Повертає поле `size`, яке інкрементується при кожній зміні
+|`isEmpty()`                        |O(1)       |Перевіряє `size == 0`
+|`set(int index, E e)`              |O(n)       |<<glossary-traversal,Traversal>> до вузла (O(n)) + заміна `node.item` (O(1))
+|`toArray()`                        |O(n)       |Прохід по всіх вузлах, копіювання значень у новий масив
+|`iterator()`                       |O(1)       |Просто створює об'єкт ітератора, вказуючи на `first`
+|`listIterator()`                   |O(1)       |Створює двонаправлений ітератор
+|`descendingIterator()`             |O(1)       |Ітератор з кінця до початку
+|`clone()`                          |O(n)       |Поверхнева копія: новий список з тими самими посиланнями на об'єкти
+|`subList(from, to)`                |O(n)       |Повертає view (не копію!) від `from` до `to`
+|===
+
+[[java-collection-framework-linkedlist-link-impl]]
+.linkFirst(), linkLast(), unlink() — маніпуляції з вузлами
+`linkFirst(e)` створює `new Node<>(null, e, first)`, оновлює `first`, у старого `first.prev = newNode`. `linkLast(e)` симетрично. `unlink(x)` переставляє `x.prev.next = x.next` та `x.next.prev = x.prev`, обнуляє `x.item/next/prev` для GC. Sentinel (dummy) nodes у `LinkedList` *не використовуються* — `first` і `last` можуть бути `null`. Розмір зберігається явно у полі `size` бо обчислення O(n) traversal недопустиме для O(1) операцій.
+
+[[java-collection-framework-linkedlist-node-traversal]]
+.LinkedList.node(int index) — оптимізований traversal
+`node(index)` перевіряє `index < (size >> 1)`: якщо так — іде з `first`, інакше з `last`. Найгірший випадок: O(n/2) кроків (середина). Через це `get(i)` у циклі є O(n²). `listIterator(int index)` теж викликає `node(index)` → O(n) для довільної позиції. `LinkedList` не реалізує `RandomAccess` → `Collections.binarySearch()` використовує O(n) `ListIterator`-based алгоритм замість O(log n).
+
+[[java-collection-framework-linkedlist-listiterator]]
+.LinkedList.ListItr — двонаправлений ітератор
+`listIterator()` повертає `ListItr` з полями `lastReturned`, `next`, `nextIndex`. `next()` рухається вперед через `next.next`. `previous()` рухається назад через `lastReturned.prev`. `set()` замінює `lastReturned.item`. `add()` вставляє вузол перед `next`. Всі операції O(1) — ітератор вже тримає посилання на вузол.
+
+[[java-collection-framework-linkedlist-clone]]
+.LinkedList.clone() — shallow copy вузлів
+`clone()` створює новий порожній `LinkedList` і послідовно додає всі елементи через `addLast(x.item)`. Це shallow copy: нові вузли `Node` (нова структура), але `item`-посилання вказують на ті самі об'єкти. Зміна mutable об'єкта через один список буде видна через другий.
+
+[[java-collection-framework-linkedlist-spliterator]]
+.LinkedList.spliterator() — late-binding для паралельних стрімів
+`LinkedList.spliterator()` є late-binding: розмір фіксується не при створенні, а при першому `trySplit()` або `estimateSize()`. `trySplit()` для LinkedList неефективний — немає індексного доступу, тому split ділить список обходом до середини O(n/2). Порівняно з `ArrayList.spliterator()` (O(1) split) — LinkedList погано підходить для `parallelStream()`.
+
+[[java-collection-framework-linkedlist-vs-arraydeque]]
+.LinkedList vs ArrayDeque — throughput як Queue
+Benchmarks (JMH): для Queue-операцій `ArrayDeque` у 2-6x швидший за `LinkedList` через: (1) cache locality — масив суцільний у пам'яті, (2) відсутність Node allocation/GC overhead (~40 байт на вузол), (3) бітова арифметика для wrap-around замість pointer chasing. LinkedIn, Google та інші рекомендують `ArrayDeque` замість `LinkedList` для черги/стека.
+
+[[java-collection-framework-linkedlist-serialization]]
+.LinkedList серіалізація
+`writeObject()` записує `size`, потім кожен `item` від `first` до `last`. `readObject()` читає `size` і послідовно відновлює вузли через `addLast()`. Поля `first`, `last`, `size` — `transient`, не серіалізуються напряму. Вузли `Node` також не серіалізуються — відновлюється лише послідовність значень.
+
+[[java-collection-framework-linkedlist-abstract-sequential]]
+.AbstractSequentialList — чому LinkedList наслідує від нього
+`AbstractSequentialList` реалізує `get(index)`, `set(index, e)`, `add(index, e)`, `remove(index)` через `listIterator(index)`. Тому `LinkedList` автоматично отримує коректну реалізацію всіх index-based методів без явного коду — просто наслідуванням. `ArrayList` наслідує від `AbstractList` який реалізує ці методи інакше (через прямий доступ до масиву).
+
+[[java-collection-framework-linkedlist-node]]
+.Внутрішній устрій
+Всередині `LinkedList` є приватний статичний клас `Node<E>`:
+
+[source,java]
+----
+private static class Node<E> {
+    E item;       // значення елемента
+    Node<E> next; // вказівник на наступний вузол
+    Node<E> prev; // вказівник на попередній вузол
+
+    Node(Node<E> prev, E element, Node<E> next) {
+        this.item = element;
+        this.next = next;
+        this.prev = prev;
+    }
+}
+----
+
+Це серце всієї структури. Кожен елемент списку — це окремий об'єкт `Node` у пам'яті. На відміну від масиву, вузли *не лежать поряд у пам'яті* — вони розкидані по heap, і єдиний спосіб дістатися від одного до іншого — йти по ланцюжку `next`/`prev`. Також, `LinkedList` має три основні поля:
+
+[source,java]
+----
+transient int size = 0;
+transient Node<E> first; // голова списку
+transient Node<E> last;  // хвіст списку
+----
+
+Тільки три поля! Весь список — це просто два вказівники (на початок і кінець) + лічильник. Далі зробимо візуалізацію, щоб було зрозуміло, як це працює. Є список `[A, B, C, D]`:
+
+[source]
+----
+null ←─ [A] ⇄ [B] ⇄ [C] ⇄ [D] ─→ null
+         ↑                 ↑
+        first             last
+----
+
+Кожна стрілка `⇄` — це пара вказівників `next` і `prev`. Список можна обходити в обох напрямках.
+
+.addFirst()
+[source,java]
+----
+list.addFirst("X");
+// До:    [A] ⇄ [B] ⇄ [C]
+// Після: [X] ⇄ [A] ⇄ [B] ⇄ [C]
+----
+
+Що відбувається всередині:
+
+[source,java]
+----
+private void linkFirst(E e) {
+    final Node<E> f = first;                    // зберігаємо стару голову
+    final Node<E> newNode = new Node<>(null, e, f); // prev=null, next=стара голова
+    first = newNode;                            // оновлюємо first
+    if (f == null)
+        last = newNode;     // якщо список був порожній — він і хвіст теж
+    else
+        f.prev = newNode;  // старій голові говоримо: твій prev = новий вузол
+    size++;
+}
+----
+
+NOTE: Жодного <<glossary-traversal,traversal>>. Тільки переставляємо 2-3 вказівники → *O(1)*.
+
+.Як працює addLast()
+[source,java]
+----
+list.addLast("Z");
+// До:    [A] ⇄ [B] ⇄ [C]
+// Після: [A] ⇄ [B] ⇄ [C] ⇄ [Z]
+----
+
+[source,java]
+----
+void linkLast(E e) {
+    final Node<E> l = last;
+    final Node<E> newNode = new Node<>(l, e, null); // prev=старий хвіст, next=null
+    last = newNode;
+    if (l == null)
+        first = newNode;
+    else
+        l.next = newNode; // старому хвосту кажемо: твій next = новий вузол
+    size++;
+}
+----
+
+.get(index)
+[source,java]
+----
+public E get(int index) {
+    checkElementIndex(index);
+    return node(index).item;
+}
+
+Node<E> node(int index) {
+    if (index < (size >> 1)) {        // index < size/2 ?
+        Node<E> x = first;
+        for (int i = 0; i < index; i++)
+            x = x.next;              // йдемо з голови
+        return x;
+    } else {
+        Node<E> x = last;
+        for (int i = size - 1; i > index; i--)
+            x = x.prev;              // йдемо з хвоста
+        return x;
+    }
+}
+----
+
+Java оптимізує: якщо `index < size/2` — іде з `first`, інакше — з `last`. Але в найгіршому випадку (середина списку) треба пройти *n/2 кроків* — це все одно O(n).
+
+.remove(Object o)
+[source,java]
+----
+list.remove("B");
+// До:    [A] ⇄ [B] ⇄ [C] ⇄ [D]
+// Після: [A] ⇄ [C] ⇄ [D]
+----
+
+[source,java]
+----
+public boolean remove(Object o) {
+    for (Node<E> x = first; x != null; x = x.next) {
+        if (o.equals(x.item)) {
+            unlink(x);
+            return true;
+        }
+    }
+    return false;
+}
+
+E unlink(Node<E> x) {
+    final E element = x.item;
+    final Node<E> next = x.next;
+    final Node<E> prev = x.prev;
+
+    if (prev == null) first = next;
+    else { prev.next = next; x.prev = null; } // лівий сусід тепер дивиться на правого
+
+    if (next == null) last = prev;
+    else { next.prev = prev; x.next = null; } // правий сусід тепер дивиться на лівого
+
+    x.item = null; // допомагаємо GC
+    size--;
+    return element;
+}
+----
+
+<<glossary-traversal,Traversal>> O(n) + відрив O(1) = *O(n)* загалом.
+
+.LinkedList як Стек (LIFO)
+[source,java]
+----
+Deque<String> stack = new LinkedList<>();
+stack.push("first");   // addFirst
+stack.push("second");  // addFirst
+stack.pop();           // removeFirst → "second"
+----
+
+.LinkedList як Черга (FIFO)
+[source,java]
+----
+Queue<String> queue = new LinkedList<>();
+queue.offer("first");   // addLast
+queue.offer("second");  // addLast
+queue.poll();           // removeFirst → "first"
+----
+
+.LinkedList як Двостороння черга
+[source,java]
+----
+Deque<String> deque = new LinkedList<>();
+deque.addFirst("B");
+deque.addFirst("A");   // [A, B]
+deque.addLast("C");    // [A, B, C]
+deque.pollFirst();     // A → [B, C]
+deque.pollLast();      // C → [B]
+----
+
+[[java-collection-framework-linkedlist-pitfalls]]
+.Підводні камені та нюанси
+
+.get(index) у циклі — O(n²), не O(n)
+[source,java]
+----
+LinkedList<String> list = new LinkedList<>();
+// ... додай 1 000 000 елементів ...
+for (int i = 0; i < list.size(); i++) {
+    String s = list.get(i); // КОЖЕН виклик — обхід до ~500 000 вузлів!
+}
+// Загалом: O(n²) — катастрофічно повільно!
+
+// ПРАВИЛЬНО — використовуй iterator або for-each:
+for (String s : list) { // O(n) — кожен крок = один вузол
+    // ...
+}
+----
+
+WARNING: Ніколи не використовуй `get(index)` у циклі для `LinkedList`. Навіть з оптимізацією (пошук з ближчого кінця) кожен `get(i)` — O(n). Цикл `for(int i=0; i<list.size(); i++) list.get(i)` — це O(n²). Завжди використовуй ітератор або `for-each`.
+
+.Споживання пам'яті — Node overhead
+[source,java]
+----
+// ArrayList: 1_000_000 Integer → ~4 MB (масив посилань) + об'єкти Integer
+// LinkedList: 1_000_000 Integer → ~56 MB (Node: ~40 байт кожен + Integer: ~16 байт)
+// LinkedList у ~14 разів більший за ArrayList для тих самих даних!
+
+// Кожен вузол Node<E>:
+// - заголовок об'єкта JVM: 16 байт
+// - поле item (ref): 8 байт
+// - поле next (ref): 8 байт
+// - поле prev (ref): 8 байт
+// Разом: ~40 байт на вузол + сам об'єкт-значення
+----
+
+WARNING: На практиці `LinkedList` майже завжди програє `ArrayList` навіть при частих вставках у середину — через cache miss: вузли розкидані по heap, CPU cache не допомагає. `System.arraycopy` у `ArrayList` є надзвичайно оптимізованою нативною операцією. Вимірюй продуктивність перед вибором `LinkedList`.
+
+.ConcurrentModificationException при видаленні у for-each
+[source,java]
+----
+LinkedList<String> list = new LinkedList<>(List.of("a", "b", "c"));
+for (String s : list) {
+    if (s.equals("b")) list.remove(s); // ConcurrentModificationException!
+}
+
+// ПРАВИЛЬНО — через Iterator (і отримуємо O(1) видалення!):
+Iterator<String> it = list.iterator();
+while (it.hasNext()) {
+    if (it.next().equals("b")) it.remove(); // ✅ O(1) — просто переставляємо вказівники!
+}
+----
+
+TIP: Видалення через `Iterator.remove()` у `LinkedList` — справжнє O(1): ітератор вже знає поточний вузол і просто від'єднує його зміною вказівників сусідів. Це краще ніж `list.remove(object)` яке спочатку шукає вузол O(n), а потім від'єднує O(1).
+
+.Правильний use case — Queue та Deque
+[source,java]
+----
+// ✅ LinkedList як Queue (FIFO):
+Queue<String> queue = new LinkedList<>();
+queue.offer("task1"); // addLast — O(1)
+queue.offer("task2"); // addLast — O(1)
+String next = queue.poll(); // removeFirst — O(1), повертає "task1"
+
+// ✅ LinkedList як Stack / Deque:
+Deque<String> stack = new LinkedList<>();
+stack.push("first");  // addFirst — O(1)
+stack.push("second"); // addFirst — O(1)
+stack.pop();          // removeFirst — O(1), повертає "second"
+
+// Але краще використовувати ArrayDeque — швидший, без node overhead:
+Deque<String> faster = new ArrayDeque<>();
+----
+
+TIP: `LinkedList` оптимальний *виключно* як `Deque` — коли потрібні `addFirst`/`removeFirst`/`addLast`/`removeLast` без індексованого доступу. Для Queue/Stack у новому коді завжди надавай перевагу `ArrayDeque` — він швидший і не має накладних витрат на вузли.
+
+
+
+
+
+
+
+
+
+
+
+
+Далі преведемо приклади використання класу `LinkedList`.
+
+Додамо елементи в список, виведемо їх на екран, видалимо перший елемент і виведемо список на екран знову.
+
+[source,java]
+----
+include::{linkedlistdir}/LinkedListRemoveFirstExample1.java[tag=LinkedListRemoveFirstExample1]
+----
+
+Після виконання коду на екрані буде виведено:
+
+----
+include::{linkedlistdir}/LinkedListRemoveFirstExample1.java[tag=LinkedListRemoveFirstExample1Result]
+----
+
+Як бачимо, перший елемент був видалений зі списку.
+
+Приклад видалення елемента з середини списку:
+
+[source,java]
+----
+include::{linkedlistdir}/LinkedListRemoveExample1.java[tag=LinkedListRemoveExample1]
+----
+
+Після виконання коду на екрані буде виведено:
+
+----
+include::{linkedlistdir}/LinkedListRemoveExample1.java[tag=LinkedListRemoveExample1Result]
+----
+
+Як бачимо, елемент "Second" був видалений зі списку.
+
+Приклад видалення останнього елемента зі списку:
+
+[source,java]
+----
+include::{linkedlistdir}/LinkedListRemoveLastExample1.java[tag=LinkedListRemoveLastExample1]
+----
+
+Після виконання коду на екрані буде виведено:
+
+----
+include::{linkedlistdir}/LinkedListRemoveLastExample1.java[tag=LinkedListRemoveLastExample1Result]
+----
+
+Як бачимо, останній елемент "Third" був видалений зі списку.
+
+Приклад видалення елемента за індексом:
+
+[source,java]
+----
+include::{linkedlistdir}/LinkedListRemoveExample2.java[tag=LinkedListRemoveExample2]
+----
+
+Після виконання коду на екрані буде виведено:
+
+----
+include::{linkedlistdir}/LinkedListRemoveExample2.java[tag=LinkedListRemoveExample2Result]
+----
+
+Як бачимо, елемент за індексом 1, тобто "Second", був видалений зі списку.
+
+// TODO Приклад пошуку елемента за значенням:
+
+Приклад пошуку елемента за індексом:
+
+[source,java]
+----
+include::{linkedlistdir}/LinkedListGetExample1.java[tag=LinkedListGetExample1]
+----
+
+Після виконання коду на екрані буде виведено:
+
+----
+include::{linkedlistdir}/LinkedListGetExample1.java[tag=LinkedListGetExample1Result]
+----
+
+Як бачимо, елемент за індексом 1, тобто "Second", був виведений на екран.
+
+Приклад видалення всіх елементів зі списку за допомогою методу `clear()`:
+
+[source,java]
+----
+include::{linkedlistdir}/LinkedListClearExample1.java[tag=LinkedListClearExample1]
+----
+
+Після виконання коду на екрані буде виведено:
+
+----
+include::{linkedlistdir}/LinkedListClearExample1.java[tag=LinkedListClearExample1Result]
+----
+
+Як бачимо, всі елементи були видалені зі списку.
+
+Приклад видалення всіх елементів зі списку за допомогою методу `removeAll()`:
+
+[source,java]
+----
+include::{linkedlistdir}/LinkedListRemoveAllExample1.java[tag=LinkedListRemoveAllExample1]
+----
+
+Після виконання коду на екрані буде виведено:
+
+----
+include::{linkedlistdir}/LinkedListRemoveAllExample1.java[tag=LinkedListRemoveAllExample1Result]
+----
+
+Як бачимо, всі елементи були видалені зі списку.
+
+
+// https://habr.com/ru/articles/127864/

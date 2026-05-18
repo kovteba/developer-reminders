@@ -1,0 +1,262 @@
+ifndef::imagesdir[:imagesdir: ../../../../../../imgs/]
+
+[#java-collection-framework-enumset]
+====== EnumSet class
+`EnumSet<E extends Enum<E>>` — це *абстрактний клас*, спеціалізована реалізація інтерфейсу `Set` виключно для `enum`-типів. Внутрішньо реалізований через *бітовий вектор* (один або кілька `long`), тому всі операції виконуються за O(1) і є надзвичайно швидкими. Ітерується в *порядку оголошення* enum-констант (за ordinal). Не є потокобезпечним. Не допускає `null`.
+
+.Ієрархія наслідування
+[source,subs="normal"]
+----
+Object
+  └── AbstractCollection<E>
+        └── AbstractSet<E>
+              └── <<java-collection-framework-enumset,EnumSet<E>>>          ← abstract
+                    ├── RegularEnumSet<E>  ← ≤ 64 enum-констант (один long)
+                    └── JumboEnumSet<E>    ← > 64 enum-констант (long[])
+----
+
+Реалізовані інтерфейси:
+
+* `Set<E>` — унікальні елементи
+* `Cloneable` — підтримка клонування
+* `Serializable` — підтримка серіалізації
+
+WARNING: `EnumSet` *не допускає `null`*. Спроба додати `null` викине `NullPointerException`.
+
+WARNING: `EnumSet` *не має публічних конструкторів*. Екземпляри створюються виключно через статичні фабричні методи.
+
+NOTE: JVM автоматично обирає `RegularEnumSet` або `JumboEnumSet` залежно від кількості констант enum. У 99% реальних випадків використовується `RegularEnumSet` (enum рідко має > 64 значень).
+
+[#java-collection-framework-enumset-factory-methods]
+.Фабричні методи (замість конструкторів)
+
+.EnumSet.of(E first, E... rest)
+[source,java]
+----
+enum Day { MON, TUE, WED, THU, FRI, SAT, SUN }
+
+EnumSet<Day> weekdays = EnumSet.of(Day.MON, Day.TUE, Day.WED, Day.THU, Day.FRI);
+EnumSet<Day> single   = EnumSet.of(Day.SAT);
+----
+
+*Що робить:* створює `EnumSet` що містить вказані елементи. Є спеціалізовані перевантаження для 1–5 аргументів (без varargs overhead), і загальний varargs-варіант.
+
+.EnumSet.allOf(Class<E> elementType)
+[source,java]
+----
+EnumSet<Day> allDays = EnumSet.allOf(Day.class);
+// {MON, TUE, WED, THU, FRI, SAT, SUN}
+----
+
+*Що робить:* створює `EnumSet` що містить *всі* константи переданого enum-типу.
+
+.EnumSet.noneOf(Class<E> elementType)
+[source,java]
+----
+EnumSet<Day> empty = EnumSet.noneOf(Day.class);
+----
+
+*Що робить:* створює порожній `EnumSet` для вказаного enum-типу. Зберігає інформацію про тип для майбутніх операцій.
+
+.EnumSet.range(E from, E to)
+[source,java]
+----
+EnumSet<Day> workWeek = EnumSet.range(Day.MON, Day.FRI);
+// {MON, TUE, WED, THU, FRI}
+----
+
+*Що робить:* створює `EnumSet` що містить всі константи від `from` до `to` включно в порядку оголошення.
+
+.EnumSet.complementOf(EnumSet<E> s)
+[source,java]
+----
+EnumSet<Day> weekdays  = EnumSet.of(Day.MON, Day.TUE, Day.WED, Day.THU, Day.FRI);
+EnumSet<Day> weekend   = EnumSet.complementOf(weekdays);
+// {SAT, SUN}
+----
+
+*Що робить:* створює `EnumSet` що містить всі елементи enum-типу *яких немає* в переданому `EnumSet` (доповнення множини).
+
+.EnumSet.copyOf(EnumSet<E> s)
+[source,java]
+----
+EnumSet<Day> copy = EnumSet.copyOf(weekdays);
+----
+
+.EnumSet.copyOf(Collection<E> c)
+[source,java]
+----
+List<Day> list = List.of(Day.MON, Day.WED, Day.FRI);
+EnumSet<Day> fromList = EnumSet.copyOf(list);
+----
+
+*Що робить:* копіює елементи з колекції. Колекція не повинна бути порожньою — тип enum визначається з першого елемента.
+
+[[java-collection-framework-enumset-bitset-impl]]
+[#java-collection-framework-enumset-structure]
+.Внутрішній устрій — бітовий вектор
+`RegularEnumSet` (найчастіший випадок) зберігає всі елементи в *одному полі `long elements`*:
+
+[source,java]
+----
+class RegularEnumSet<E extends Enum<E>> extends EnumSet<E> {
+    private long elements = 0L;  // бітова маска: біт i = 1 якщо enum.ordinal()==i в сеті
+}
+----
+
+Кожен enum-елемент відповідає *біту* в цьому `long` за позицією `ordinal()`:
+
+[source]
+----
+enum Day { MON(0), TUE(1), WED(2), THU(3), FRI(4), SAT(5), SUN(6) }
+            ↑ ordinal
+
+EnumSet.of(MON, WED, FRI):
+  elements = 0b_0010_1011 = bits 0, 2, 4 встановлені
+              ─────────
+              bit: 6543210
+----
+
+Операції реалізовані через *бітові операції*:
+
+[source,java]
+----
+// add(e):
+elements |= (1L << e.ordinal());     // встановити біт
+
+// remove(e):
+elements &= ~(1L << e.ordinal());    // скинути біт
+
+// contains(e):
+return (elements & (1L << e.ordinal())) != 0;  // перевірити біт
+
+// addAll(other EnumSet):
+elements |= other.elements;           // OR двох long
+
+// retainAll (intersection):
+elements &= other.elements;           // AND двох long
+
+// removeAll (difference):
+elements &= ~other.elements;          // AND NOT
+----
+
+NOTE: Всі операції — одна бітова інструкція процесора. `EnumSet` є *найшвидшою* реалізацією `Set` в Java. Для порівняння: `HashSet.contains()` вимагає обчислення хешу, lookup в масиві та порівняння через `equals()`.
+
+[[java-collection-framework-enumset-jumbo-impl]]
+[[java-collection-framework-enumset-iterator-impl]]
+[#java-collection-framework-enumset-big-o-notation]
+.BigO notation для `EnumSet`
+[cols="2,1,4", options="header"]
+|===
+|`remove(Object o)`                 |O(1)           |Один `&= ~` на `long`
+|`contains(Object o)`               |O(1)           |Один `&` та порівняння з 0
+|`size()`                           |O(1)           |`Long.bitCount(elements)` — одна CPU інструкція
+|`isEmpty()`                        |O(1)           |`elements == 0`
+|`iterator()`                       |O(1)           |Ітерація — O(n) де n = кількість елементів
+|`addAll(Collection c)`             |O(1)*          |Якщо c це EnumSet — один `\|=`. Інакше O(n)
+|`retainAll(Collection c)`          |O(1)*          |Якщо c це EnumSet — один `&=`. Інакше O(n)
+|`removeAll(Collection c)`          |O(1)*          |Якщо c це EnumSet — один `&= ~`. Інакше O(n)
+|`containsAll(Collection c)`        |O(1)*          |Якщо c це EnumSet — бітова перевірка. Інакше O(n)
+|`clear()`                          |O(1)           |`elements = 0`
+|`clone()`                          |O(1)           |Копіює один `long`
+|`EnumSet.of(E e1, E e2, ...)`      |O(k)           |k — кількість переданих елементів
+|`EnumSet.allOf(Class)`             |O(1)           |`elements = -1L >>> (64 - universe.length)`
+|`EnumSet.complementOf(EnumSet)`    |O(1)           |Один `~` та маскування
+|===
+
+.Практичні приклади
+
+.Система прав доступу
+[source,java]
+----
+enum Permission { READ, WRITE, EXECUTE, DELETE, ADMIN }
+
+// Права звичайного користувача:
+EnumSet<Permission> userPerms = EnumSet.of(Permission.READ, Permission.WRITE);
+
+// Права адміна = всі права:
+EnumSet<Permission> adminPerms = EnumSet.allOf(Permission.class);
+
+// Перевірка доступу:
+boolean canRead = userPerms.contains(Permission.READ); // true
+
+// Додати право:
+userPerms.add(Permission.EXECUTE);
+
+// Заборонені дії = доповнення прав користувача:
+EnumSet<Permission> forbidden = EnumSet.complementOf(userPerms);
+// {DELETE, ADMIN}
+----
+
+.Фільтрація робочих днів
+[source,java]
+----
+enum Day { MON, TUE, WED, THU, FRI, SAT, SUN }
+
+EnumSet<Day> weekends = EnumSet.of(Day.SAT, Day.SUN);
+
+public boolean isWorkday(Day day) {
+    return !weekends.contains(day);
+}
+
+public EnumSet<Day> getWorkdays() {
+    return EnumSet.complementOf(weekends);
+}
+----
+
+.EnumSet vs HashSet для enum
+[cols="3,1,1", options="header"]
+|===
+|Внутрішня структура            |бітовий вектор (long)  |хеш-таблиця
+|Швидкість ops                  |✅ O(1) бітові         |⚠️ O(1) але з хешуванням
+|Пам'ять                        |✅ один long (~8 байт) |❌ ~50+ байт на елемент
+|Порядок ітерації               |✅ enum declaration    |❌ не гарантується
+|`null` елементи                |❌ заборонено          |✅ один null
+|Потокобезпечність              |❌                     |❌
+|===
+
+IMPORTANT: *Завжди використовуй `EnumSet` замість `HashSet` коли елементи є enum-константами.* `EnumSet` є швидшим, використовує набагато менше пам'яті і має більш зрозумілий API (фабричні методи `of`, `range`, `complementOf`).
+
+[[java-collection-framework-enumset-pitfalls]]
+.Підводні камені
+
+.Обережно з серіалізацією між версіями
+WARNING: При *серіалізації* `EnumSet` JVM зберігає ordinal-позиції констант. Якщо між серіалізацією і десеріалізацією до enum *додати нові константи в середину* (зсунувши ordinal існуючих) — десеріалізований `EnumSet` може містити некоректні елементи або кинути `InvalidClassException`. Якщо `EnumSet` серіалізується (наприклад, у сесію або кеш) — додавай нові enum-константи *лише в кінець*.
+
+.null не допускається
+[source,java]
+----
+EnumSet<Day> days = EnumSet.noneOf(Day.class);
+days.add(null); // NullPointerException!
+----
+
+WARNING: `EnumSet` суворо забороняє `null`. Будь-яка спроба додати `null` — негайний `NullPointerException`. Перевіряй вхідні дані перед додаванням до `EnumSet`.
+
+.Тільки один тип enum
+[source,java]
+----
+enum Color { RED, GREEN, BLUE }
+enum Size { S, M, L }
+
+EnumSet<Color> colors = EnumSet.of(Color.RED);
+// colors.add(Size.S); // не компілюється — type safety!
+----
+
+NOTE: `EnumSet` є параметризованим: `EnumSet<Color>` може містити лише константи типу `Color`. Компілятор не дозволить змішувати різні enum-типи — це *compile-time* type safety, а не runtime перевірка.
+
+NOTE: Якщо enum має ≤ 64 константи → `RegularEnumSet` (один `long` бітмаск, надзвичайно швидко). Якщо > 64 → `JumboEnumSet` (масив `long[]`). `EnumSet.of()` та інші фабричні методи автоматично вибирають правильну реалізацію — розробнику не потрібно про це думати.
+
+.Factory методи EnumSet — зведена таблиця
+[source,java]
+----
+enum Day { MON, TUE, WED, THU, FRI, SAT, SUN }
+
+EnumSet<Day> workDays = EnumSet.range(Day.MON, Day.FRI); // {MON,TUE,WED,THU,FRI}
+EnumSet<Day> weekend  = EnumSet.complementOf(workDays);   // {SAT, SUN}
+EnumSet<Day> copy     = EnumSet.copyOf(workDays);         // копія
+EnumSet<Day> empty    = EnumSet.noneOf(Day.class);        // порожній
+EnumSet<Day> all      = EnumSet.allOf(Day.class);         // всі константи
+EnumSet<Day> specific = EnumSet.of(Day.MON, Day.WED, Day.FRI); // конкретні
+----
+
+TIP: `EnumSet.copyOf(Collection<E> c)` — копіює з *будь-якої* `Collection<E>` де E є enum-типом, але колекція не повинна бути порожньою (тип enum визначається з першого елемента). Для порожньої колекції використовуй `EnumSet.noneOf(Day.class)`.

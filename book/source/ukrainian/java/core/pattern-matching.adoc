@@ -1,6 +1,6 @@
 ifndef::imagesdir[:imagesdir: ../../../imgs/]
 ifndef::patternmatchingdir[:patternmatchingdir: ../../../../../examples/java/src/main/java/kovteba/java21/patternmatchings]
-ifndef::patternmatchingtestdir[:patternmatchingtestdir: ../../../../../examples/java/src/test/java/kovteba/patternmatchings]
+ifndef::patternmatchingtestdir[:patternmatchingtestdir: ../../../../../examples/java/src/test/java/kovteba/java21/patternmatchings]
 
 [#java-pattern-matching]
 ==== Pattern Matching
