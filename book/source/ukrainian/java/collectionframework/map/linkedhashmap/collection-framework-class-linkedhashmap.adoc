@@ -158,23 +158,16 @@ NOTE: `removeEldestEntry` викликається після кожного `pu
 [#java-collection-framework-linkedhashmap-big-o-notation]
 .BigO notation для `LinkedHashMap`
 [cols="2,1,4", options="header"]
-|===
+|====
 |`get(Object key)`              |O(1)*          |Пошук як у `HashMap`. При `accessOrder=true` — додатково переміщує запис у кінець списку — O(1)
 |`remove(Object key)`           |O(1)*          |Видалення з `HashMap` + виключення вузла з двозв'язного списку — O(1)
 |`containsKey(Object key)`      |O(1)*          |Пошук за хешем як у `HashMap`
-|===
 |`containsValue(Object value)`  |O(n)           |Прохід по двозв'язному списку замість масиву бакетів — але все одно O(n)
-|===
 |`size()`                       |O(1)           |Поле `size` успадковане від `HashMap`
-|===
 |`clear()`                      |O(n)           |Очищає масив бакетів і скидає `head`/`tail`
-|===
 |`entrySet()` / `keySet()`      |O(1)           |Повертає view. Ітерація — O(n) по двозв'язному списку
-|===
 |`putAll(Map m)`                |O(m)           |m — кількість елементів у переданій мапі
-|===
-|===
-|===
+|====
 
 NOTE: O(1)* — амортизоване O(1) при рівномірному розподілі хешів. `LinkedHashMap` трохи повільніший за `HashMap` через підтримку двозв'язного списку, але асимптотична складність однакова.
 
@@ -191,15 +184,12 @@ NOTE: Два додаткових посилання `before`/`after` додаю
 
 .LinkedHashMap vs HashMap vs TreeMap
 [cols="3,1,1,1", options="header"]
-|===
+|====
 |Швидкість get/put/remove       |✅ O(1)*               |✅ O(1)*           |⚠️ O(log n)
 |`null` ключ                    |✅ 1 null ключ         |✅ 1 null ключ     |❌ (без Comparator)
 |Пам'ять                        |⚠️ +8 байт на запис    |✅ мінімальна      |⚠️ +Node overhead
-|===
 |LRU-кеш                        |✅ ідеально            |❌                 |❌
-|===
-|===
-|===
+|====
 
 TIP: *Використовуй `LinkedHashMap` коли:* потрібна Map з передбачуваним порядком ітерації; будуєш простий LRU-кеш; потрібно відтворити порядок в якому елементи були додані. Для продакшн LRU-кешів з TTL і конкурентним доступом розглянь Caffeine або Guava Cache.
 

@@ -34,28 +34,16 @@ NOTE: На відміну від `ArrayList` (збільшується на 50%)
 |`set(int index, E e)`                  |O(1)           |`elementData[index] = e` з блокуванням
 |`add(E e)` / `addElement(E e)`        |O(1)*          |Амортизоване O(1). При resize — O(n): копія масиву. Resize подвоює розмір (×2, не ×1.5!)
 |`add(int index, E e)`                  |O(n)           |`System.arraycopy` зсуває елементи правіше index. Блокування на весь час
-|===
 |`remove(int index)`                    |O(n)           |Зсув елементів після видаленого + блокування
-|===
 |`remove(Object o)`                     |O(n)           |Лінійний пошук + зсув + блокування
-|===
 |`contains(Object o)`                   |O(n)           |Лінійний перебір через `equals()`
-|===
 |`size()`                               |O(1)           |Повертає поле `elementCount`, але `synchronized`!
-|===
 |`isEmpty()`                            |O(1)           |`elementCount == 0`, але `synchronized`!
-|===
 |`clear()`                              |O(n)           |Обнуляє всі елементи для GC, `elementCount = 0`
-|===
 |`addAll(Collection c)`                 |O(m)           |`System.arraycopy` блоком, блокування на весь час
-|===
 |`sort(Comparator c)`                   |O(n log n)     |TimSort, блокування на весь час сортування
-|===
 |`iterator()`                           |O(1)           |Створює ітератор — fail-fast, але сам `iterator()` виклик синхронізований
-|===
 |`elements()`                           |O(1)           |Повертає legacy `Enumeration` — не підтримує `remove()`
-|===
-|===
 |===
 
 .Vector vs ArrayList vs CopyOnWriteArrayList
@@ -64,8 +52,6 @@ NOTE: На відміну від `ArrayList` (збільшується на 50%)
 |Продуктивність                 |❌ низька              |✅ висока          |⚠️ повільний write
 |Ріст масиву                    |×2 (або +increment)    |×1.5               |нова копія при write
 |Рекомендовано                  |❌ legacy              |✅ однопотоковий   |✅ read-heavy многопотоковий
-|===
-|===
 |===
 
 [[java-collection-framework-vector-pitfalls]]

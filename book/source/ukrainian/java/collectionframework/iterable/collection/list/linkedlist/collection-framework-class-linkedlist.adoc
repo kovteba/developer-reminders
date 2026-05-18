@@ -74,78 +74,41 @@ WARNING: Якщо передати `null` — отримаєш `NullPointerExcep
 |`addFirst(E e)`                    |O(1)       |Новий вузол стає `first`, старий `first` стає його `next`
 |`addLast(E e)`                     |O(1)       |Новий вузол стає `last`, старий `last` стає його `prev`
 |`add(int index, E e)`              |O(n)       |Спочатку <<glossary-traversal,traversal>> до `index` (O(n)), потім переставляє 2 вказівники (O(1))
-|===
 |`addAll(Collection c)`             |O(m)       |m — розмір доданої колекції; кожен елемент через `addLast`
-|===
 |`addAll(int index, Collection c)`  |O(n+m)     |O(n) <<glossary-traversal,Traversal>> до index + O(m) вставка
-|===
 |`offer(E e)`                       |O(1)       |Те саме що `addLast`, повертає `true`
-|===
 |`offerFirst(E e)`                  |O(1)       |Те саме що `addFirst`, повертає `true`
-|===
 |`offerLast(E e)`                   |O(1)       |Те саме що `addLast`, повертає `true`
-|===
 |`push(E e)`                        |O(1)       |Те саме що `addFirst` (Stack-семантика)
-|===
 |`get(int index)`                   |O(n)       |<<glossary-traversal,Traversal>> від `first` або `last` (обирає ближчий кінець), але все одно лінійний
-|===
 |`getFirst()`                       |O(1)       |Просто повертає `first.item` — прямий доступ
-|===
 |`getLast()`                        |O(1)       |Просто повертає `last.item` — прямий доступ
-|===
 |`peek()`                           |O(1)       |Повертає `first.item` або `null` якщо список порожній (не кидає виняток)
-|===
 |`peekFirst()`                      |O(1)       |Те саме що `peek()`
-|===
 |`peekLast()`                       |O(1)       |Повертає `last.item` або `null`
-|===
 |`element()`                        |O(1)       |Як `getFirst()`, але кидає `NoSuchElementException` якщо порожній
-|===
 |`removeFirst()`                    |O(1)       |`first` = `first.next`, у нового `first` обнуляється `prev`. Старий вузол відривається
-|===
 |`removeLast()`                     |O(1)       |`last` = `last.prev` (можливо тільки бо є зворотний зв'язок у двозв'язному списку), старий хвіст відривається
-|===
 |`remove()`                         |O(1)       |Псевдонім `removeFirst()`
-|===
 |`remove(int index)`                |O(n)       |<<glossary-traversal,Traversal>> до вузла (O(n)) + відрив вузла зміною вказівників сусідів (O(1))
-|===
 |`remove(Object o)`                 |O(n)       |Лінійний пошук по значенню (O(n)) + відрив (O(1))
-|===
 |`poll()`                           |O(1)       |Як `removeFirst()`, але повертає `null` замість винятку якщо порожній
-|===
 |`pollFirst()`                      |O(1)       |Те саме що `poll()`
-|===
 |`pollLast()`                       |O(1)       |Як `removeLast()`, але `null` замість винятку
-|===
 |`pop()`                            |O(1)       |Псевдонім `removeFirst()` (Stack-семантика)
-|===
 |`clear()`                          |O(n)       |Проходить по всіх вузлах і обнуляє `item`, `next`, `prev` — щоб GC міг їх зібрати
-|===
 |`contains(Object o)`               |O(n)       |Лінійний перебір всіх вузлів з `equals()` порівнянням
-|===
 |`indexOf(Object o)`                |O(n)       |Перебір з початку, повертає перший знайдений індекс або -1
-|===
 |`lastIndexOf(Object o)`            |O(n)       |Перебір з кінця, повертає останній знайдений індекс або -1
-|===
 |`size()`                           |O(1)       |Повертає поле `size`, яке інкрементується при кожній зміні
-|===
 |`isEmpty()`                        |O(1)       |Перевіряє `size == 0`
-|===
 |`set(int index, E e)`              |O(n)       |<<glossary-traversal,Traversal>> до вузла (O(n)) + заміна `node.item` (O(1))
-|===
 |`toArray()`                        |O(n)       |Прохід по всіх вузлах, копіювання значень у новий масив
-|===
 |`iterator()`                       |O(1)       |Просто створює об'єкт ітератора, вказуючи на `first`
-|===
 |`listIterator()`                   |O(1)       |Створює двонаправлений ітератор
-|===
 |`descendingIterator()`             |O(1)       |Ітератор з кінця до початку
-|===
 |`clone()`                          |O(n)       |Поверхнева копія: новий список з тими самими посиланнями на об'єкти
-|===
 |`subList(from, to)`                |O(n)       |Повертає view (не копію!) від `from` до `to`
-|===
-|===
 |===
 
 [[java-collection-framework-linkedlist-link-impl]]

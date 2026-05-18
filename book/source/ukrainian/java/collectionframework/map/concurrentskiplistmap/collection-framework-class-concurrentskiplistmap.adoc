@@ -125,35 +125,22 @@ if (NEXT.compareAndSet(pred, null, newNode)) {
 [#java-collection-framework-concurrentskiplistmap-big-o-notation]
 .BigO notation для `ConcurrentSkipListMap`
 [cols="2,1,4", options="header"]
-|===
+|====
 |`get(Object key)`                          |O(log n)       |Пошук по рівнях без lock
 |`remove(Object key)`                       |O(log n)       |Логічне видалення (marking) + CAS + cleanup
 |`containsKey(Object key)`                  |O(log n)       |Як `get`
-|===
 |`containsValue(Object value)`              |O(n)           |Лінійний прохід по нижньому рівні
-|===
 |`firstKey()` / `lastKey()`                 |O(log n)       |Обхід до першого/останнього вузла
-|===
 |`firstEntry()` / `lastEntry()`             |O(log n)       |Як вище
-|===
 |`pollFirstEntry()` / `pollLastEntry()`     |O(log n)       |Пошук + CAS видалення
-|===
 |`ceilingKey()` / `floorKey()`             |O(log n)       |Навігаційний пошук
-|===
 |`higherKey()` / `lowerKey()`             |O(log n)       |Навігаційний пошук
-|===
 |`size()`                                   |O(n)           |Прохід по нижньому рівні — приблизне значення при конкуренції
-|===
 |`headMap()` / `tailMap()` / `subMap()`     |O(log n)       |Пошук меж + live view
-|===
 |`descendingMap()`                          |O(1)           |Descending view без копіювання
-|===
 |`putIfAbsent(K key, V value)`             |O(log n)       |Атомарна операція під CAS
-|===
 |`replace(K key, V old, V new)`            |O(log n)       |Атомарна операція
-|===
-|===
-|===
+|====
 
 .Паралельні операції
 [source,java]
@@ -211,23 +198,16 @@ Map.Entry<Long, String> oldest = timeline.pollFirstEntry();
 
 .ConcurrentSkipListMap vs TreeMap vs Collections.synchronizedSortedMap
 [cols="3,1,1,1", options="header"]
-|===
+|====
 |Читання без блокування             |✅                     |❌ один потік           |—
 |Складність операцій                |O(log n)               |O(log n) + lock         |O(log n)
 |`size()` точність                  |⚠️ приблизний           |✅ точний               |✅ точний
-|===
 |Навігаційні методи                 |✅ (NavigableMap)       |✅                      |✅
-|===
 |Атомарні операції                  |✅ putIfAbsent, replace, merge |❌ зовнішній lock  |❌
-|===
 |Ітерація під змінами               |✅ weakly consistent    |⚠️ external lock        |❌ ConcurrentModificationException
-|===
 |`null` ключ/значення               |❌                      |❌ (без Comparator)     |❌
-|===
 |Пам'ять                            |⚠️ більше (рівні вузлів)|✅ менше               |✅ менше
-|===
-|===
-|===
+|====
 
 [#java-collection-framework-concurrentskiplistmap-pitfalls]
 .Підводні камені

@@ -89,35 +89,22 @@ TreeMap<String, Integer> copy = new TreeMap<>(sorted);
 [#java-collection-framework-treemap-big-o-notation]
 .BigO notation для `TreeMap`
 [cols="2,1,4", options="header"]
-|===
+|====
 |`get(Object key)`                  |O(log n)       |Обхід дерева від кореня до листа
 |`remove(Object key)`               |O(log n)       |Пошук + видалення + можлива ротація
 |`containsKey(Object key)`          |O(log n)       |Як `get`
-|===
 |`containsValue(Object value)`      |O(n)           |Лінійний обхід всього дерева (in-order traversal)
-|===
 |`firstKey()` / `lastKey()`         |O(log n)       |Обхід до крайнього лівого/правого листа
-|===
 |`firstEntry()` / `lastEntry()`     |O(log n)       |Як вище
-|===
 |`pollFirstEntry()` / `pollLastEntry()` |O(log n)   |Пошук + видалення + балансування
-|===
 |`ceilingKey()` / `floorKey()`      |O(log n)       |Обхід дерева з відстеженням найближчого
-|===
 |`higherKey()` / `lowerKey()`       |O(log n)       |Як вище
-|===
 |`descendingMap()`                  |O(1)           |Повертає live view (не копію)
-|===
 |`headMap()` / `tailMap()` / `subMap()` |O(log n)   |Пошук меж + повертає live view
-|===
 |`size()`                           |O(1)           |Поле `size`
-|===
 |`clear()`                          |O(n)           |Обнуляє всі посилання вузлів, потім GC збирає дерево
-|===
 |`putAll(Map m)`                    |O(m log(n+m)) |Кожен `put` — O(log n)
-|===
-|===
-|===
+|====
 
 [[java-collection-framework-treemap-rb-invariants]]
 .5 інваріантів Red-Black Tree у TreeMap
@@ -265,19 +252,14 @@ for (char c : text.toCharArray()) {
 
 .TreeMap vs HashMap vs LinkedHashMap
 [cols="3,1,1,1", options="header"]
-|===
+|====
 |Складність get/put/remove      |⚠️ O(log n)            |✅ O(1)*           |✅ O(1)*
 |Навігаційні методи             |✅ ceiling/floor/higher/lower |❌            |❌
 |Діапазонні запити              |✅ headMap/tailMap/subMap |❌              |❌
-|===
 |`null` ключ                    |❌ (без Comparator)    |✅ 1 null          |✅ 1 null
-|===
 |Потокобезпечність              |❌                     |❌                 |❌
-|===
 |Рекомендовано для              |сортовані дані, range queries |загального використання |LRU-кеш, insertion-order
-|===
-|===
-|===
+|====
 
 TIP: *Використовуй `TreeMap` коли:* потрібна сортована за ключем Map; потрібні range-запити (`headMap`, `subMap`); потрібен `firstKey()`/`lastKey()` або `ceiling`/`floor` операції; реалізуєш EventBus, планувальник або будь-яку структуру де важливий порядок ключів. Для потокобезпечного варіанту → `ConcurrentSkipListMap`.
 

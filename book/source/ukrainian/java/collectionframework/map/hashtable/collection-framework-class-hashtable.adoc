@@ -86,14 +86,9 @@ Hashtable<String, Integer> table = new Hashtable<>(source);
 |`get(Object key)`              |O(1)*          |Пошук за хешем під `synchronized` lock
 |`remove(Object key)`           |O(1)*          |Видалення за хешем під `synchronized` lock
 |`containsKey(Object key)`      |O(1)*          |Пошук за хешем під `synchronized` lock
-|===
 |`containsValue(Object value)`  |O(n)           |Лінійний перебір всіх бакетів під `synchronized` lock
-|===
 |`size()`                       |O(1)           |Повертає поле `count` під lock
-|===
 |`clear()`                      |O(n)           |Обнуляє всі бакети під lock
-|===
-|===
 |===
 
 NOTE: O(1)* — амортизоване O(1) при рівномірному розподілі хешів. При поганій хеш-функції — O(n).
@@ -136,12 +131,8 @@ NOTE: `synchronized` на кожному методі означає *блоку
 |`null` ключ/значення           |❌ заборонено      |✅ дозволено       |❌ заборонено
 |Впорядкованість                |❌ не гарантується |❌ не гарантується |❌ не гарантується
 |Продуктивність                 |❌ низька (lock на весь об'єкт) |✅ висока |✅ висока
-|===
 |Java version                   |1.0 (legacy)       |1.2                |1.5
-|===
 |Рекомендовано                  |❌ legacy          |✅ однопотоковий   |✅ багатопотоковий
-|===
-|===
 |===
 
 [[java-collection-framework-hashtable-rehash]]

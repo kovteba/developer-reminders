@@ -105,27 +105,18 @@ get(SUMMER) → vals[1] → "hot"   ← один array access!
 [#java-collection-framework-enummap-big-o-notation]
 .BigO notation для `EnumMap`
 [cols="2,1,4", options="header"]
-|===
+|====
 |`get(Object key)`              |O(1)           |`vals[key.ordinal()]` — прямий доступ по індексу
 |`remove(Object key)`           |O(1)           |`vals[key.ordinal()] = null`
 |`containsKey(Object key)`      |O(1)           |`vals[key.ordinal()] != null`
-|===
 |`containsValue(Object value)`  |O(n)           |Лінійний прохід по `vals` — n = кількість констант enum
-|===
 |`size()`                       |O(1)           |Поле `size`
-|===
 |`clear()`                      |O(n)           |`Arrays.fill(vals, null)` — n = кількість констант enum
-|===
 |`keySet()`                     |O(1)           |View по `keyUniverse` — ітерація O(n)
-|===
 |`values()`                     |O(1)           |View по `vals` — ітерація O(n)
-|===
 |`entrySet()`                   |O(1)           |View — ітерація O(n)
-|===
 |`putAll(Map m)`                |O(m)           |m — кількість записів у переданій мапі
-|===
-|===
-|===
+|====
 
 NOTE: `EnumMap` є *найшвидшою* реалізацією `Map` для enum-ключів. Прямий доступ до масиву за індексом без хешування, без колізій, без порівняння через `equals()`.
 
@@ -190,22 +181,18 @@ taskCounts.forEach((priority, count) ->
 
 .EnumMap vs HashMap для enum-ключів
 [cols="3,1,1", options="header"]
-|===
+|====
 |Внутрішня структура                |масив за ordinal        |хеш-таблиця
 |get/put складність                 |✅ O(1) прямий доступ  |⚠️ O(1) + хешування
 |Пам'ять                            |✅ один масив значень   |❌ Entry об'єкти + масив
-|===
 |Порядок ітерації                   |✅ enum declaration     |❌ не гарантується
-|===
 |`null` ключ                        |❌ заборонено          |✅ один null
-|===
 |Thread-safe                        |❌                     |❌
-|===
-|===
-|===
+|====
 
 [#java-collection-framework-enummap-pitfalls]
 .Підводні камені
+
 
 .null ключ → NullPointerException (на відміну від HashMap)
 [source,java]

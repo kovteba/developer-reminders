@@ -71,52 +71,28 @@ CopyOnWriteArrayList<String> list = new CopyOnWriteArrayList<>(arr);
 |`size()`                           |O(1)       |Повертає довжину внутрішнього масиву `array.length`
 |`isEmpty()`                        |O(1)       |Перевіряє `array.length == 0`
 |`contains(Object o)`               |O(n)       |Лінійний перебір масиву з `equals()`. Не блокується
-|===
 |`indexOf(Object o)`                |O(n)       |Лінійний перебір від початку. Не блокується
-|===
 |`lastIndexOf(Object o)`            |O(n)       |Лінійний перебір з кінця. Не блокується
-|===
 |`add(E e)`                         |O(n)       |Захоплює lock, копіює масив (`Arrays.copyOf`, +1 елемент), додає елемент у кінець нової копії, атомарно замінює посилання
-|===
 |`add(int index, E e)`              |O(n)       |Копіює масив із зсувом елементів після `index` вправо, вставляє елемент. Lock + copy
-|===
 |`addAll(Collection c)`             |O(n+m)     |Одна копія масиву для всіх елементів колекції (m). Ефективніше ніж m разів `add`
-|===
 |`addIfAbsent(E e)`                 |O(n)       |Лінійна перевірка наявності + copy якщо елемент відсутній. Атомарна операція під lock
-|===
 |`addAllAbsent(Collection c)`       |O(n*m)     |Для кожного елемента колекції — перевірка відсутності. Одна copy для всіх нових елементів
-|===
 |`set(int index, E e)`              |O(n)       |Копіює весь масив, замінює елемент на `index` у копії, атомарно замінює посилання
-|===
 |`remove(int index)`                |O(n)       |Копіює масив без елемента на `index` (зсув через `System.arraycopy`), атомарно замінює
-|===
 |`remove(Object o)`                 |O(n)       |Лінійний пошук + copy масиву без знайденого елемента. Якщо не знайдено — copy не відбувається
-|===
 |`removeAll(Collection c)`          |O(n*m)     |Перевірка кожного елемента на наявність у `c`, одна copy для всіх видалених
-|===
 |`retainAll(Collection c)`          |O(n*m)     |Залишає тільки елементи що є у `c`, одна copy
-|===
 |`clear()`                          |O(1)       |Замінює посилання на `new Object[0]` під lock. Сам по собі дешевий, але старий масив збирається GC
-|===
 |`iterator()`                       |O(1)       |Повертає ітератор над *незмінним snapshot* масиву на момент виклику. Ніколи не кидає `ConcurrentModificationException`
-|===
 |`listIterator()`                   |O(1)       |Те саме — snapshot ітератор. `set`, `add`, `remove` через ітератор кидають `UnsupportedOperationException`
-|===
 |`subList(from, to)`                |O(1)       |Повертає view на snapshot. Мутуючі операції через subList кидають `UnsupportedOperationException`
-|===
 |`toArray()`                        |O(n)       |Повертає копію поточного внутрішнього масиву через `Arrays.copyOf`
-|===
 |`forEach(Consumer)`                |O(n)       |Ітерує по snapshot масиву. Безпечно навіть якщо список змінюється паралельно
-|===
 |`removeIf(Predicate)`              |O(n)       |Збирає елементи що не задовольняють predicate, одна copy під lock
-|===
 |`replaceAll(UnaryOperator)`        |O(n)       |Застосовує оператор до кожного елемента, одна copy під lock
-|===
 |`sort(Comparator)`                 |O(n log n) |Копіює масив, сортує копію, атомарно замінює під lock
-|===
 |`clone()`                          |O(n)       |Поверхнева копія: новий `CopyOnWriteArrayList` з копією поточного масиву
-|===
-|===
 |===
 
 .Внутрішній устрій

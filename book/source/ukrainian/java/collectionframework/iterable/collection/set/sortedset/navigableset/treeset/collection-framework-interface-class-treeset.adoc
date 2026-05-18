@@ -48,24 +48,14 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
 |`remove(Object o)`                 |O(log n)           |Видалення + перебалансування
 |`contains(Object o)`               |O(log n)           |Пошук у збалансованому дереві
 |`first()` / `last()`               |O(log n)           |Лівий/правий крайній вузол
-|===
 |`ceiling(e)` / `floor(e)`          |O(log n)           |Навігаційний пошук
-|===
 |`higher(e)` / `lower(e)`           |O(log n)           |Строго більший/менший
-|===
 |`pollFirst()` / `pollLast()`       |O(log n)           |Видалення + повернення min/max
-|===
 |`headSet(to)` / `tailSet(from)`    |O(log n)           |Live view — створення, не копія
-|===
 |`subSet(from, to)`                 |O(log n)           |Live view діапазону
-|===
 |`size()`                           |O(1)               |Поле TreeMap.size
-|===
 |`toArray()`                        |O(n)               |Копіювання у масив через ітерацію
-|===
 |`iterator()`                       |O(1)               |Ітерація O(n) — in-order traversal
-|===
-|===
 |===
 
 [[java-collection-framework-treeset-pitfalls]]

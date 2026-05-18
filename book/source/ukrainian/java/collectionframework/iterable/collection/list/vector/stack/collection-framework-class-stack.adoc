@@ -54,33 +54,21 @@ stack.addAll(source); // успадковано від Vector
 [#java-collection-framework-stack-class-big-o-notation]
 .BigO notation для Stack:
 [cols="2,1,4", options="header"]
-|===
+|====
 |`pop()`                |O(1)       |Повертає і видаляє елемент з вершини (кінця масиву). Прямий доступ за індексом `elementCount - 1`
 |`peek()`               |O(1)       |Повертає елемент з вершини *без* видалення. Прямий доступ за індексом `elementCount - 1`, не змінює стан
 |`empty()`              |O(1)       |Перевіряє `size() == 0`. `size()` — поле `elementCount` у `Vector`
-|===
 |`search(Object o)`     |O(n)       |Лінійний пошук від вершини до дна з `equals()`. Повертає позицію від 1 (вершина) або -1 якщо не знайдено
-|===
 |`get(int index)`       |O(1)       |Успадковано від `Vector` — прямий доступ до масиву за індексом (але це не Stack-семантика!)
-|===
 |`add(E e)`             |O(1)*      |Успадковано від `Vector`, еквівалент `push`. Амортизовано O(1)
-|===
 |`remove(int index)`    |O(n)       |Успадковано від `Vector` — зсуває всі елементи після `index` вліво (System.arraycopy)
-|===
 |`remove(Object o)`     |O(n)       |Лінійний пошук по значенню + зсув елементів
-|===
 |`contains(Object o)`   |O(n)       |Лінійний перебір з `equals()` порівнянням, успадковано від `Vector`
-|===
 |`size()`               |O(1)       |Повертає поле `elementCount` з `Vector`
-|===
 |`clear()`              |O(n)       |Обнуляє всі елементи масиву, щоб GC міг їх зібрати, потім `elementCount = 0`
-|===
 |`toArray()`            |O(n)       |Копіює внутрішній масив через `Arrays.copyOf`
-|===
 |`iterator()`           |O(1)       |Створює ітератор, що починає з індексу 0 (дно стеку)
-|===
-|===
-|===
+|====
 
 NOTE: Операції `push`, `pop`, `peek`, `empty`, `search` — це власні Stack-методи. Решта успадкована від `Vector` і порушує LIFO-інкапсуляцію: через `get(0)`, `add(0, e)`, `remove(0)` можна маніпулювати дном стеку, що є поганою практикою.
 
@@ -213,10 +201,7 @@ stack.pop();       // removeFirst
 |Доступ до дна стеку            |❌ можливий через Vector|✅ заблоковано семантикою
 |Продуктивність                 |❌ нижча                |✅ вища
 |Рекомендовано для нового коду  |❌                      |✅
-|===
 |Реалізує List                  |✅ (але це мінус)       |❌
-|===
-|===
 |===
 
 IMPORTANT: Документація Java явно рекомендує `Deque` замість `Stack`: _"A more complete and consistent set of LIFO stack operations is provided by the Deque interface"_.

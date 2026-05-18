@@ -119,24 +119,14 @@ Thread 3: set.remove(7);      // O(log n), без глобального lock
 |`remove(Object o)`                 |O(log n)       |Пошук + логічне видалення (marking) + CAS
 |`contains(Object o)`               |O(log n)       |Пошук по skip list без lock
 |`first()` / `last()`               |O(log n)       |Обхід до крайнього вузла
-|===
 |`ceiling(E e)` / `floor(E e)`      |O(log n)       |Навігаційний пошук по skip list
-|===
 |`higher(E e)` / `lower(E e)`       |O(log n)       |Навігаційний пошук
-|===
 |`pollFirst()` / `pollLast()`       |O(log n)       |Пошук + атомарне видалення
-|===
 |`size()`                           |O(n)           |Лінійний підрахунок (не атомарний, приблизний)
-|===
 |`isEmpty()`                        |O(1)           |Перевіряє чи є хоча б один вузол
-|===
 |`iterator()`                       |O(1)           |Ітерація — weakly consistent, O(n) для проходу
-|===
 |`descendingSet()`                  |O(1)           |Повертає descending view без копіювання
-|===
 |`headSet()` / `tailSet()` / `subSet()` |O(log n)   |Пошук меж + повертає live view
-|===
-|===
 |===
 
 NOTE: `size()` є O(n) і *не є точним* при паралельних змінах — перебирає всі вузли. Якщо потрібен точний розмір, підтримуй лічильник окремо.
@@ -192,14 +182,9 @@ executor.submit(() -> {
 |Складність ops                     |O(log n)               |O(log n) + lock overhead    |O(log n)
 |Паралельні reads                   |✅ без блокування       |❌ один потік               |—
 |Паралельні writes                  |✅ CAS                  |❌ один потік               |—
-|===
 |`size()` точність                  |⚠️ приблизний           |✅ точний                   |✅
-|===
 |Ітерація під змінами               |✅ weakly consistent    |⚠️ потребує external lock   |❌ ConcurrentModificationException
-|===
 |`null` елементи                    |❌                      |❌ (без Comparator)         |❌
-|===
-|===
 |===
 
 IMPORTANT: *Використовуй `ConcurrentSkipListSet` замість `Collections.synchronizedSortedSet(new TreeSet<>())`* у будь-якому багатопотоковому коді. Lock-free підхід дає набагато кращу масштабованість при великій кількості потоків.

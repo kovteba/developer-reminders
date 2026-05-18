@@ -262,17 +262,13 @@ int port = config.getInt("server.port"); // 8080 якщо не перевизн�
 
 .Properties vs Map<String,String> vs Environment Variables
 [cols="3,1,1,1", options="header"]
-|===
+|====
 |.properties файл               |✅ вбудована підтримка |❌ треба писати вручну |❌
 |Defaults chain                 |✅                 |❌                     |❌
 |System properties JVM          |✅ System.getProperties() |❌             |System.getenv()
-|===
 |Тип ключів/значень             |Object (але String на практиці) |String    |String
-|===
 |Рекомендовано                  |legacy конфігурація |нові API              |container/cloud config
-|===
-|===
-|===
+|====
 
 [#java-collection-framework-properties-pitfalls]
 .Підводні камені

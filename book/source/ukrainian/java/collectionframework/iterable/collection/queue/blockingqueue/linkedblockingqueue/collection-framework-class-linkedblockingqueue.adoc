@@ -72,42 +72,23 @@ LinkedBlockingQueue<String> queue = new LinkedBlockingQueue<>(source);
 |`take()`                   |O(1)           |Захоплює `takeLock`, видаляє голову (після dummy-вузла). Блокується на `notEmpty` якщо черга порожня
 |`offer(E e)`               |O(1)           |Як `put` але повертає `false` замість блокування якщо черга повна
 |`offer(E e, time, unit)`   |O(1)           |Як `put` але блокує не довше ніж `time`. Повертає `false` при таймауті
-|===
 |`poll()`                   |O(1)           |Як `take` але повертає `null` замість блокування якщо черга порожня
-|===
 |`poll(time, unit)`         |O(1)           |Як `take` але блокує не довше ніж `time`. Повертає `null` при таймауті
-|===
 |`peek()`                   |O(1)           |Повертає перший елемент після dummy-вузла без видалення. `null` якщо порожня. Захоплює `takeLock`
-|===
 |`add(E e)`                 |O(1)           |Як `offer` але кидає `IllegalStateException` якщо черга повна
-|===
 |`remove()`                 |O(1)           |Як `poll` але кидає `NoSuchElementException` якщо порожня
-|===
 |`remove(Object o)`         |O(n)           |Захоплює *обидва* lock (`putLock` і `takeLock`), лінійний пошук + відрив вузла зміною вказівників
-|===
 |`contains(Object o)`       |O(n)           |Захоплює обидва lock, лінійний перебір з `equals()`
-|===
 |`size()`                   |O(1)           |Повертає `AtomicInteger count` — без захоплення lock
-|===
 |`isEmpty()`                |O(1)           |Перевіряє `count.get() == 0` — без lock
-|===
 |`remainingCapacity()`      |O(1)           |Повертає `capacity - count.get()` — без lock
-|===
 |`clear()`                  |O(n)           |Захоплює обидва lock, обнуляє всі вузли між head і tail
-|===
 |`drainTo(Collection c)`    |O(n)           |Захоплює `takeLock`, атомарно переміщує всі елементи у `c`. Ефективніше ніж n разів `poll`
-|===
 |`drainTo(Collection c, n)` |O(n)           |Як `drainTo` але максимум `n` елементів
-|===
 |`toArray()`                |O(n)           |Захоплює обидва lock, копіює всі елементи у новий масив
-|===
 |`iterator()`               |O(1)           |Слабко консистентний ітератор — *не кидає* `ConcurrentModificationException`, але може бачити зміни що відбулись після його створення
-|===
 |`forEach(Consumer)`        |O(n)           |Слабко консистентний прохід — не захоплює lock на весь час, може бачити нові елементи додані під час ітерації
-|===
 |`spliterator()`            |O(1)           |Слабко консистентний `Spliterator` для паралельних стрімів
-|===
-|===
 |===
 
 NOTE: *Слабко консистентний (weakly consistent) ітератор* — на відміну від `ArrayList` ітератор `LinkedBlockingQueue` *не кидає* `ConcurrentModificationException`. Він гарантує що побачить всі елементи що існували на момент його створення, і *може* (але не зобов'язаний) побачити зміни що відбулись після.
@@ -271,7 +252,6 @@ Producer захоплює `putLock` і пише у `last`. Consumer захопл
 |Черга *порожня* (remove)    |`remove` → `NoSuchElementException` |`poll` → `null` |`take` → блокує |`poll(t,u)` → `null`
 |Черга *порожня* (examine)   |`element` → `NoSuchElementException` |`peek` → `null` | — | —
 |===
-|===
 
 .High-throughput producer-consumer
 [source,java]
@@ -317,18 +297,11 @@ NOTE: `Executors.newFixedThreadPool` і `Executors.newCachedThreadPool` всер
 |Lock архітектура                   |✅ два lock (put/take незалежні) |⚠️ один спільний lock
 |Throughput при high contention     |✅ вищий                   |⚠️ нижчий
 |Пам'ять на елемент                 |❌ +Node overhead (~32 байт) |✅ мінімальна
-|===
 |CPU cache                          |❌ поганий (Node розкидані) |✅ хороший (масив)
-|===
 |Fair режим                         |❌ немає                   |✅ є
-|===
 |`size()` без lock                  |✅ AtomicInteger           |❌ потребує lock
-|===
 |Небезпека OOM при unbounded        |⚠️ так                    |❌ неможливо
-|===
 |Підходить для                      |high-throughput pipeline, thread pool |обмежений буфер, fair режим
-|===
-|===
 |===
 
 IMPORTANT: `LinkedBlockingQueue` є вибором за замовчуванням у `Executors.newFixedThreadPool` і `Executors.newCachedThreadPool` — це найкраще свідчення його надійності для high-throughput сценаріїв. Обирай `ArrayBlockingQueue` коли потрібен fair режим, передбачувана пам'ять або жорсткий back-pressure.

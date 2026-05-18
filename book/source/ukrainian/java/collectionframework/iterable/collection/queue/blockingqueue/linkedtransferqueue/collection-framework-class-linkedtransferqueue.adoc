@@ -120,26 +120,15 @@ NOTE: Ключова різниця `transfer()` vs `put()`/`offer()`: `transfer
 |`transfer(E e)`                |O(1)*          |Прямий handoff якщо є consumer (O(1)). Блокує якщо немає — чекає REQUEST вузла
 |`tryTransfer(E e)`             |O(1)           |Прямий handoff або `false`. Не блокує
 |`tryTransfer(E e, time, unit)` |O(1)*          |Як `transfer` але з таймаутом
-|===
 |`take()`                       |O(1)*          |Прямий handoff від DATA вузла або блокує (REQUEST вузол)
-|===
 |`poll()`                       |O(1)           |DATA вузол або `null` без блокування
-|===
 |`poll(time, unit)`             |O(1)*          |Як `take` з таймаутом
-|===
 |`peek()`                       |O(1)           |Перший DATA вузол або `null`
-|===
 |`size()`                       |O(n)           |Підраховує лише DATA вузли — O(n) прохід
-|===
 |`hasWaitingConsumer()`         |O(1)           |Перевіряє чи є REQUEST вузли
-|===
 |`getWaitingConsumerCount()`    |O(n)           |Підраховує REQUEST вузли
-|===
 |`remove(Object o)`             |O(n)           |Лінійний пошук
-|===
 |`contains(Object o)`           |O(n)           |Лінійний пошук
-|===
-|===
 |===
 
 .Практичні застосування

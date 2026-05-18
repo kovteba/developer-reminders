@@ -315,28 +315,16 @@ O(1) гарантований (без амортизації): `size()`, `isEmpt
 |`get(Object key)`              |O(1)*          |Обчислення хешу + lookup. O(log n) якщо бакет-дерево
 |`remove(Object key)`           |O(1)*          |Як `get` + від'єднання вузла. O(log n) якщо дерево
 |`containsKey(Object key)`      |O(1)*          |Аналог `get != null`
-|===
 |`containsValue(Object value)`  |O(n)           |Лінійний перебір всіх бакетів і ланцюжків
-|===
 |`size()`                       |O(1)           |Повертає поле `size`
-|===
 |`isEmpty()`                    |O(1)           |`size == 0`
-|===
 |`clear()`                      |O(n)           |Обнулення кожного бакету масиву
-|===
 |`putAll(Map m)`                |O(m)           |m — розмір переданої мапи
-|===
 |`keySet()` / `values()` / `entrySet()` |O(1)  |Повертають live-view. Ітерація O(n)
-|===
 |`forEach(action)`              |O(n)           |Прохід по всіх бакетах і вузлах
-|===
 |`merge(k, v, remapFn)`         |O(1)*          |Дуже зручно для підрахунку (word frequency)
-|===
 |`computeIfAbsent(k, fn)`       |O(1)*          |Вставляє якщо ключ відсутній. Корисно для кешування
-|===
 |`getOrDefault(k, default)`     |O(1)*          |Зручна альтернатива null-check
-|===
-|===
 |===
 
 NOTE: O(1)* — *амортизоване O(1)* за умови рівномірного розподілу хешів. [[java-collection-framework-hash-map-big-o-get-element]]При деградованій хеш-функції (наприклад `hashCode()` завжди повертає 0) — всі елементи в одному бакеті → O(n) для ланцюжка або O(log n) після treeification.
@@ -690,12 +678,8 @@ wordCount.putIfAbsent("rust", 0);
 |Складність get/put             |O(1)*              |O(1)*              |O(log n)           |O(1)*
 |`null` ключ                    |✅ один            |✅ один            |❌ (без Comparator) |❌
 |Thread-safe                    |❌                 |❌                 |❌                 |✅
-|===
 |Пам'ять (vs HashMap)           |baseline           |+16 байт/entry     |+16 байт/entry     |+~20%
-|===
 |Коли використовувати           |загального призначення |LRU cache, стабільний порядок |відсортований Map |multithreading
-|===
-|===
 |===
 
 IMPORTANT: Вибір реалізації Map: (1) Якщо потрібна швидкість і порядок не важливий → `HashMap`. (2) Якщо потрібен insertion-order або LRU cache → `LinkedHashMap`. (3) Якщо потрібне сортування по ключу → `TreeMap`. (4) Якщо багатопотоковість → `ConcurrentHashMap`. Ніколи не використовуй `Hashtable` у новому коді.

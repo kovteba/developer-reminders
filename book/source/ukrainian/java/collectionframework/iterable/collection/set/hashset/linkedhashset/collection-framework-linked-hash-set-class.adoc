@@ -97,20 +97,12 @@ for (String s : set) {
 |`remove(Object o)`     |O(1)*      |Як у HashSet + від'єднання з linked list
 |`contains(Object o)`   |O(1)*      |Як у HashSet — хешування + lookup
 |`size()`               |O(1)       |Пряме поле
-|===
 |`isEmpty()`            |O(1)       |`size == 0`
-|===
 |`clear()`              |O(n)       |Обнуляє бакети + двозв'язний список
-|===
 |`iterator()`           |O(1)       |Ітерує по linked list → передбачуваний порядок вставки
-|===
 |`addAll(Collection c)` |O(m)       |m — розмір доданої колекції
-|===
 |`retainAll(Collection c)` |O(n)    |Лінійний перебір + contains по c
-|===
 |`removeIf(Predicate)`  |O(n)       |Лінійний перебір
-|===
-|===
 |===
 
 NOTE: Пам'ять: +16 байт на запис порівняно з `HashSet` (поля `before` і `after` у `LinkedHashMap.Entry`). При великих множинах це може бути значним overhead.

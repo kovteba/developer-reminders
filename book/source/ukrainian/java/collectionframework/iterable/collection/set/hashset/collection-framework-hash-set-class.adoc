@@ -170,24 +170,14 @@ diff.removeAll(b); // {1}
 |`remove(Object o)`                 |O(1)*      |Хешування + видалення з HashMap
 |`contains(Object o)`               |O(1)*      |Хешування + пошук у HashMap
 |`size()`                           |O(1)       |Делегує до `HashMap.size()`
-|===
 |`isEmpty()`                        |O(1)       |`size == 0`
-|===
 |`clear()`                          |O(n)       |Обнуляє всі бакети HashMap
-|===
 |`iterator()`                       |O(1)       |Повертає ітератор. Ітерація — O(n)
-|===
 |`addAll(Collection c)`             |O(m)       |m — розмір доданої колекції
-|===
 |`retainAll(Collection c)`          |O(n)       |Лінійний перебір + contains по c
-|===
 |`removeAll(Collection c)`          |O(n*m)     |Залежить від реалізації c.contains
-|===
 |`containsAll(Collection c)`        |O(m)       |m — розмір c; для кожного елемента — O(1)* contains
-|===
 |`toArray()`                        |O(n)       |Копіювання у масив
-|===
-|===
 |===
 
 [[java-collection-framework-hashset-spliterator]]
@@ -277,18 +267,11 @@ while (it.hasNext()) {
 |Внутрішня структура        |HashMap                |LinkedHashMap          |TreeMap (Red-Black Tree)
 |`add/remove/contains`      |O(1)*                  |O(1)*                  |O(log n)
 |`null`-елемент             |✅ один                |✅ один                |❌ (без Comparator)
-|===
 |Thread-safe                |❌                     |❌                     |❌
-|===
 |Пам'ять (vs HashSet)       |baseline               |+16 байт/entry         |+16 байт/entry
-|===
 |`first()` / `last()`       |❌                     |❌                     |✅
-|===
 |`headSet()` / `tailSet()`  |❌                     |❌                     |✅
-|===
 |Коли обирати               |дедуплікація, lookup   |стабільний порядок     |відсортований Set, range queries
-|===
-|===
 |===
 
 IMPORTANT: Завжди правило трьох `Set`: (1) Потрібна тільки унікальність і O(1) lookup → `HashSet`. (2) Потрібна унікальність + стабільний порядок вставки → `LinkedHashSet`. (3) Потрібна унікальність + сортування + навігаційні методи → `TreeSet`. Для thread-safety → `ConcurrentHashMap.newKeySet()` (аналог потокобезпечного `HashSet`).

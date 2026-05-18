@@ -40,7 +40,6 @@ ifndef::queuetestdir[:queuetestdir: ../../../../../../../../examples/java/src/ma
 |Видалення      |`remove()` → `NoSuchElementException` |`poll()` → `null`
 |Перегляд       |`element()` → `NoSuchElementException` |`peek()` → `null`
 |===
-|===
 
 .Опис методів:
 * `boolean add(E e)` — додає елемент у хвіст черги. Якщо черга обмежена і заповнена — кидає `IllegalStateException`;

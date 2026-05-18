@@ -27,12 +27,8 @@ ifndef::dequetestdir[:dequetestdir: ../../../../../../../../../../examples/java/
 |Вставка в кінець   |`addLast(E e)`             |`offerLast(E e)`              |—
 |Видалення з початку|`removeFirst()`            |`pollFirst()`                 |`pop()`
 |Видалення з кінця  |`removeLast()`             |`pollLast()`                  |—
-|===
 |Перегляд початку   |`getFirst()`               |`peekFirst()`                 |`peek()`
-|===
 |Перегляд кінця     |`getLast()`                |`peekLast()`                  |—
-|===
-|===
 |===
 
 .Повний список методів:

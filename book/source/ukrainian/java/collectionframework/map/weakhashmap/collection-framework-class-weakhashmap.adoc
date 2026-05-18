@@ -369,17 +369,10 @@ listeners.put(button, event -> handleClick());
 |`get(Object key)`                  |O(1)       |Пошук за хешем; може повернути `null` якщо ключ зібраний GC
 |`remove(Object key)`               |O(1)       |Видалення запису за хешем ключа
 |`containsKey(Object key)`          |O(1)       |Пошук за хешем
-|===
 |`containsValue(Object value)`      |O(n)       |Лінійний перебір всіх бакетів і ланцюжків
-|===
 |`size()`                           |O(n)       |Викликає `expungeStaleEntries()` перед поверненням `size`
-|===
 |`isEmpty()`                        |O(n)       |Викликає `size()` → `expungeStaleEntries()`
-|===
 |`clear()`                          |O(n)       |Обнуляє всі бакети та очищує чергу
-|===
 |`entrySet()` / `keySet()`          |O(1)       |Повертає view; ітерація по ньому — O(n)
-|===
 |`putAll(Map m)`                    |O(m)       |m — кількість елементів у переданій мапі
-|===
 |===

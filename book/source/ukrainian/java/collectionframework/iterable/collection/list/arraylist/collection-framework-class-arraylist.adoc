@@ -213,14 +213,9 @@ WARNING: Автоматичного *зменшення* ємності при `
 |`set(int index, E e)`                  |O(1)           |`elementData[index] = e` — пряма заміна
 |`add(E e)`                             |O(1)*          |Амортизоване O(1). При resize — O(n): `Arrays.copyOf` копіює всі елементи
 |`add(int index, E e)`                  |O(n)           |`System.arraycopy` зсуває всі елементи правіше index на 1 позицію
-|===
 |`remove(int index)`                    |O(n)           |`System.arraycopy` зсуває елементи вліво після видаленого
-|===
 |`remove(Object obj)`                   |O(n)           |Спочатку лінійний пошук O(n), потім зсув O(n)
-|===
 |`contains(Object obj)`                 |O(n)           |Лінійний перебір через `equals()`
-|===
-|===
 |===
 
 === Memory & GC
@@ -243,22 +238,13 @@ WARNING: Автоматичного *зменшення* ємності при `
 |`size()`                               |O(1)           |Повертає поле `size`
 |`isEmpty()`                            |O(1)           |`size == 0`
 |`clear()`                              |O(n)           |Обнуляє всі елементи масиву (`elementData[i] = null`) для GC
-|===
 |`addAll(Collection c)`                 |O(m)           |`System.arraycopy` блоком. m — розмір c
-|===
 |`addAll(int index, Collection c)`      |O(n+m)         |Зсув + копіювання
-|===
 |`removeAll(Collection c)` / `retainAll`|O(n*m)         |Для кожного з n елементів — `c.contains()` (O(m) якщо c=List)
-|===
 |`sort(Comparator c)`                   |O(n log n)     |TimSort — стабільне сортування
-|===
 |`subList(from, to)`                    |O(1)           |Повертає live-view, не копію. Ітерація O(k)
-|===
 |`iterator()`                           |O(1)           |Створює об'єкт ітератора
-|===
 |`trimToSize()`                         |O(n)           |`Arrays.copyOf` до розміру `size`
-|===
-|===
 |===
 
 [[java-collection-framework-arraylist-class-remove-big-o]]
@@ -304,18 +290,11 @@ while (it.hasNext()) {
 |Додавання в кінець `add(e)`        |✅ O(1)*       |✅ O(1)
 |Додавання на початок `addFirst(e)` |❌ O(n)        |✅ O(1)
 |Видалення з середини               |❌ O(n)        |❌ O(n) (пошук) + O(1) (від'єднання)
-|===
 |Пам'ять на елемент                 |✅ ~4 байти (ref) |❌ ~24 байти (Node: item + prev + next)
-|===
 |Локальність пам'яті (CPU cache)    |✅ елементи поруч |❌ вузли розкидані по heap
-|===
 |Iterator / for-each швидкість      |✅ швидший     |❌ повільніший (cache miss)
-|===
 |Використання як Queue/Deque        |❌ неефективно |✅ O(1) addFirst/removeLast
-|===
 |Загальна рекомендація              |✅ 95% випадків |⚠️ тільки для Deque/Queue
-|===
-|===
 |===
 
 TIP: На практиці `ArrayList` виграє у `LinkedList` навіть при частих вставках у середину списку через локальність пам'яті (CPU cache hits). `System.arraycopy` надзвичайно оптимізований на рівні JVM і процесора. `LinkedList` оптимальний тільки як `Deque` (часті операції на обох кінцях). Для Queue/Stack використовуй `ArrayDeque`.

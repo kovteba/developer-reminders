@@ -75,40 +75,22 @@ ArrayBlockingQueue<String> queue = new ArrayBlockingQueue<>(10, false, initial);
 |`take()`                   |O(1)           |Читає елемент з позиції `takeIndex`. Якщо черга порожня — блокує потік на `Condition notEmpty` до появи елемента
 |`offer(E e)`               |O(1)           |Як `put`, але повертає `false` замість блокування якщо черга повна
 |`offer(E e, time, unit)`   |O(1)           |Як `put`, але блокує не довше ніж `time`. Повертає `false` при таймауті
-|===
 |`poll()`                   |O(1)           |Як `take`, але повертає `null` замість блокування якщо черга порожня
-|===
 |`poll(time, unit)`         |O(1)           |Як `take`, але блокує не довше ніж `time`. Повертає `null` при таймауті
-|===
 |`peek()`                   |O(1)           |Повертає елемент з `takeIndex` без видалення і без блокування. `null` якщо порожня
-|===
 |`add(E e)`                 |O(1)           |Як `offer`, але кидає `IllegalStateException` якщо черга повна
-|===
 |`remove()`                 |O(1)           |Як `poll`, але кидає `NoSuchElementException` якщо черга порожня
-|===
 |`remove(Object o)`         |O(n)           |Лінійний пошук з `equals()` + зсув елементів для заповнення діри. Захоплює lock на весь час
-|===
 |`contains(Object o)`       |O(n)           |Лінійний перебір масиву з `equals()` під lock
-|===
 |`size()`                   |O(1)           |Повертає поле `count` — лічильник елементів під lock
-|===
 |`isEmpty()`                |O(1)           |Перевіряє `count == 0` під lock
-|===
 |`remainingCapacity()`      |O(1)           |Повертає `capacity - count` — скільки ще можна додати без блокування
-|===
 |`clear()`                  |O(n)           |Обнуляє всі елементи масиву між `takeIndex` і `putIndex`, `count = 0`. Сигналізує `notFull`
-|===
 |`drainTo(Collection c)`    |O(n)           |Атомарно переміщує всі елементи у колекцію `c` під lock. Ефективніше ніж n разів `poll`
-|===
 |`drainTo(Collection c, n)` |O(n)           |Як `drainTo`, але максимум `n` елементів
-|===
 |`toArray()`                |O(n)           |Копіює елементи від `takeIndex` до `putIndex` з урахуванням wrap-around
-|===
 |`iterator()`               |O(1)           |Створює ітератор під lock. *Може* кинути `ConcurrentModificationException` на відміну від `CopyOnWriteArrayList`
-|===
 |`forEach(Consumer)`        |O(n)           |Ітерує під lock — блокує інші потоки на весь час ітерації
-|===
-|===
 |===
 
 [[java-collection-framework-arrayblockingqueue-lock-condition]]
@@ -250,7 +232,6 @@ private E dequeue() {
 |Черга *порожня* (remove)|`remove` → `NoSuchElementException` |`poll` → `null` |`take` → блокує |`poll(t,u)` → `null`
 |Черга *порожня* (examine)|`element` → `NoSuchElementException` |`peek` → `null` | — | —
 |===
-|===
 
 .Producer-Consumer паттерн
 [source,java]
@@ -302,14 +283,9 @@ NOTE: `drainTo` ефективніший ніж `n` разів `poll` — оди
 |Пам'ять                        |✅ передбачувана       |❌ +Node overhead на елемент
 |Lock архітектура               |⚠️ один lock           |✅ два lock (put/take незалежні)
 |Пропускна здатність            |⚠️ нижча при contention|✅ вища при high throughput
-|===
 |Fair режим                     |✅ є                   |❌ немає
-|===
 |CPU cache                      |✅ хороший (масив)     |❌ поганий (Node розкидані)
-|===
 |Підходить для                  |обмежений буфер, fair  |high-throughput pipeline
-|===
-|===
 |===
 
 IMPORTANT: Обирай `ArrayBlockingQueue` коли: (1) потрібен *жорсткий ліміт* на кількість елементів у черзі (back-pressure), (2) важлива *передбачувана пам'ять*, (3) потрібен *fair* режим. Обирай `LinkedBlockingQueue` коли важлива максимальна пропускна здатність у high-throughput системах з великою кількістю producer/consumer потоків.
